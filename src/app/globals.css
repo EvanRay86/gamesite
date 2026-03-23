@@ -50,6 +50,33 @@
   50% { transform: translateY(-8px); }
 }
 
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes card-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes grid-shuffle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-2deg) scale(1.05); }
+  75% { transform: rotate(2deg) scale(1.05); }
+}
+
+@keyframes ball-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes slime-hop {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  40% { transform: translateY(-4px) scaleY(1.1); }
+  60% { transform: translateY(0) scaleY(0.9); }
+}
+
 body {
   background: linear-gradient(160deg, #0d0d0d 0%, #1a1a2e 50%, #16213e 100%);
   min-height: 100vh;
