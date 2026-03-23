@@ -380,8 +380,22 @@ export default function SlimeVolleyball() {
             ref={canvasRef}
             width={CANVAS_W}
             height={CANVAS_H}
-            className="rounded-xl border-2 border-border max-w-full"
+            className="rounded-xl border-2 border-border max-w-full cursor-pointer"
             style={{ aspectRatio: `${CANVAS_W}/${CANVAS_H}` }}
+            onClick={(e) => {
+              if (gameStateRef.current.winner === 0) return;
+              const rect = canvasRef.current!.getBoundingClientRect();
+              const scaleX = CANVAS_W / rect.width;
+              const scaleY = CANVAS_H / rect.height;
+              const cx = (e.clientX - rect.left) * scaleX;
+              const cy = (e.clientY - rect.top) * scaleY;
+              const btnW = 160, btnH = 40;
+              const btnX = CANVAS_W / 2 - btnW / 2;
+              const btnY = CANVAS_H / 2 + 50;
+              if (cx >= btnX && cx <= btnX + btnW && cy >= btnY && cy <= btnY + btnH) {
+                handleBackToMenu();
+              }
+            }}
           />
           <div className="flex justify-between items-center mt-3 px-1">
             <p className="text-text-dim text-xs">

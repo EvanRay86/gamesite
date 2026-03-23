@@ -7,13 +7,13 @@ export const BALL_RADIUS = 12;
 export const NET_HEIGHT = 70;
 export const NET_WIDTH = 6;
 export const NET_X = CANVAS_W / 2;
-export const GRAVITY = 0.45;
-export const JUMP_VEL = -9.5;
+export const GRAVITY = 0.25;
+export const JUMP_VEL = -8;
 export const MOVE_SPEED = 4.5;
 export const MAX_SCORE = 7;
-export const BALL_DAMPING = 0.98;
-export const BOUNCE_FACTOR = 0.85;
-export const MAX_BALL_SPEED = 12;
+export const BALL_DAMPING = 1.0;
+export const BOUNCE_FACTOR = 0.9;
+export const MAX_BALL_SPEED = 15;
 
 // ── Types ──────────────────────────────────────────────────
 export interface PlayerInput {
@@ -394,6 +394,18 @@ export function renderGame(
       CANVAS_W / 2,
       CANVAS_H / 2 + 25
     );
+
+    // "Back to Menu" button
+    const btnW = 160, btnH = 40;
+    const btnX = CANVAS_W / 2 - btnW / 2;
+    const btnY = CANVAS_H / 2 + 50;
+    ctx.fillStyle = "rgba(255,107,107,0.9)";
+    ctx.beginPath();
+    ctx.roundRect(btnX, btnY, btnW, btnH, 20);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 14px 'Outfit', sans-serif";
+    ctx.fillText("Back to Menu", CANVAS_W / 2, btnY + 26);
   }
 }
 
