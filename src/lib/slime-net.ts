@@ -134,15 +134,14 @@ export class GameChannel {
     });
 
     // Presence for detecting joins/disconnects
-    this.channel.on("presence", { event: "join" }, ({ newPresences }) => {
-      if (isHost && newPresences.length > 0) {
-        // Check if it's not ourselves
-        const others = newPresences.filter(
-          (p) => p.presence_ref !== playerId
-        );
-        if (others.length > 0 && this.onGuestJoined) {
-          this.onGuestJoined();
-        }
+    this.channel.on("presence", { event: "sync" }, () => {
+      if (!isHost || !this.channel) return;
+      const state = this.channel.presenceState();
+      // Count unique players (each key is a player ID)
+      const playerCount = Object.keys(state).length;
+      if (playerCount >= 2 && this.onGuestJoined) {
+        this.onGuestJoined();
+        this.onGuestJoined = null; // only fire once
       }
     });
 
