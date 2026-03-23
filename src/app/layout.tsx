@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Linked — Daily Word Puzzle",
-  description: "Find four groups of four words that share a hidden link.",
+  title: "Gamesite — Browser Games",
+  description: "Play word puzzles, multiplayer games, and more in your browser.",
 };
 
 export default function RootLayout({
