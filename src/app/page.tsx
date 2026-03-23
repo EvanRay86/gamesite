@@ -20,7 +20,7 @@ export default function HomePage() {
       </div>
 
       {/* Game Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-[560px]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full max-w-[860px]">
         {/* Linked */}
         <Link
           href="/linked"
@@ -107,10 +107,53 @@ export default function HomePage() {
             Multiplayer
           </span>
         </Link>
+
+        {/* Daily Trivia */}
+        <Link
+          href="/trivia"
+          className="group relative block bg-surface/80 backdrop-blur-sm
+                     border border-border-light rounded-2xl p-6 pb-5
+                     hover:border-sky/50 hover:bg-sky/[0.07]
+                     hover:shadow-[0_0_40px_rgba(69,183,209,0.12)]
+                     transition-all duration-300 no-underline cursor-pointer
+                     animate-[fade-up_0.5s_ease_0.4s_forwards] opacity-0"
+        >
+          {/* Mini preview - question marks */}
+          <div className="grid grid-cols-4 gap-2 mb-5">
+            {["Science", "History", "Geography", "Art", "Music", "Nature", "Literature", "Technology"].map((cat, i) => {
+              const colors: Record<string, string> = {
+                Science: "bg-teal", History: "bg-coral", Geography: "bg-sky",
+                Art: "bg-amber", Music: "bg-amber", Nature: "bg-teal",
+                Literature: "bg-coral", Technology: "bg-sky",
+              };
+              return (
+                <div
+                  key={i}
+                  className={`aspect-square rounded-lg ${colors[cat]} opacity-60 group-hover:opacity-90
+                             flex items-center justify-center text-white/80 text-xs font-bold
+                             transition-opacity duration-300`}
+                >
+                  ?
+                </div>
+              );
+            })}
+          </div>
+
+          <h2 className="font-body text-xl font-bold text-text-primary group-hover:text-sky transition-colors duration-200">
+            Daily Trivia
+          </h2>
+          <p className="text-text-dim text-sm mt-1">Test your knowledge daily</p>
+
+          {/* Tag */}
+          <span className="inline-block mt-3 text-[10px] font-semibold uppercase tracking-wider
+                          text-sky/80 bg-sky/10 rounded-full px-2.5 py-0.5">
+            Daily puzzle
+          </span>
+        </Link>
       </div>
 
       {/* Footer hint */}
-      <p className="text-text-dim text-xs mt-10 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
+      <p className="text-text-dim text-xs mt-10 animate-[fade-up_0.5s_ease_0.6s_forwards] opacity-0">
         More games coming soon
       </p>
     </main>
