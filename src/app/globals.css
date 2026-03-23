@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "DM Serif Display", serif;
+  --font-body: "Outfit", sans-serif;
+
+  --color-coral: #FF6B6B;
+  --color-coral-dark: #e05555;
+  --color-teal: #4ECDC4;
+  --color-sky: #45B7D1;
+  --color-amber: #F7B731;
+  --color-surface: rgba(255, 255, 255, 0.05);
+  --color-surface-hover: rgba(255, 255, 255, 0.1);
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-light: rgba(255, 255, 255, 0.12);
+  --color-text-primary: #f0ece2;
+  --color-text-secondary: #d0cdc4;
+  --color-text-muted: #8a8a9a;
+  --color-text-dim: #6a6a7a;
+  --color-dark: #1a1a2e;
+  --color-error: #e74c3c;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+body {
+  background: linear-gradient(160deg, #0d0d0d 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 100vh;
+}
