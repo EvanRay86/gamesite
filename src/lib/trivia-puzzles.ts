@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabase";
 import { TRIVIA_SEED_PUZZLES } from "./trivia-seed-data";
+import { generateTriviaQuestions } from "./trivia-generate";
 import type { TriviaPuzzle } from "@/types/trivia";
 
 export function getTodayDate(): string {
@@ -17,6 +18,34 @@ export async function getTriviaPuzzleByDate(
     .from("trivia_puzzles")
     .select("*")
     .eq("puzzle_date", date)
+    .single();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    puzzle_date: data.puzzle_date,
+    questions: data.questions,
+  };
+}
+
+/**
+ * Try to generate today's puzzle with Gemini and store it.
+ * Returns the puzzle if successful, null otherwise.
+ */
+export async function generateAndStorePuzzle(
+  date: string
+): Promise<TriviaPuzzle | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+
+  const questions = await generateTriviaQuestions(date);
+  if (!questions) return null;
+
+  const { data, error } = await supabase
+    .from("trivia_puzzles")
+    .insert({ puzzle_date: date, questions })
+    .select()
     .single();
 
   if (error || !data) return null;
