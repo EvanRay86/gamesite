@@ -244,7 +244,7 @@ export default function SlimeVolleyball() {
 
   // ── Render ────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-6">
+    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-4 py-6">
       {/* Menu */}
       {screen === "menu" && (
         <div className="text-center animate-[fade-up_0.4s_ease_forwards]">

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1a3e"/>
+      <stop offset="100%" stop-color="#2d1b69"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <rect x="0" y="0" width="800" height="6" fill="none" stroke="#ffffff10" stroke-dasharray="12 8" stroke-width="6"/>
+  <rect x="0" y="444" width="800" height="6" fill="none" stroke="#ffffff10" stroke-dasharray="12 8" stroke-width="6"/>
+  <!-- Spinning top silhouette hint -->
+  <circle cx="400" cy="225" r="80" fill="none" stroke="#4a3a8a25" stroke-width="2"/>
+  <circle cx="400" cy="225" r="50" fill="none" stroke="#5a4a9a20" stroke-width="1.5"/>
+  <circle cx="400" cy="225" r="20" fill="none" stroke="#6a5aaa25" stroke-width="1"/>
+  <polygon points="400,170 385,240 415,240" fill="#5a4a9a15" stroke="#6a5aaa20" stroke-width="1"/>
+  <text x="400" y="380" text-anchor="middle" font-family="monospace" font-size="14" fill="#ffffff10">Frame 4</text>
+</svg>

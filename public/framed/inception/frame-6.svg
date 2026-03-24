@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1a3e"/>
+      <stop offset="100%" stop-color="#2d1b69"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <rect x="0" y="0" width="800" height="6" fill="none" stroke="#ffffff20" stroke-dasharray="12 8" stroke-width="6"/>
+  <rect x="0" y="444" width="800" height="6" fill="none" stroke="#ffffff20" stroke-dasharray="12 8" stroke-width="6"/>
+  <!-- Spinning top prominent -->
+  <circle cx="400" cy="180" r="100" fill="none" stroke="#5a4a9a35" stroke-width="2.5"/>
+  <circle cx="400" cy="180" r="65" fill="none" stroke="#6a5aaa35" stroke-width="2"/>
+  <circle cx="400" cy="180" r="35" fill="#4a3a8a18" stroke="#7a6aba40" stroke-width="2"/>
+  <polygon points="400,110 375,220 425,220" fill="#5a4a9a30" stroke="#8a7aca40" stroke-width="2"/>
+  <line x1="400" y1="220" x2="400" y2="260" stroke="#7a6aba35" stroke-width="2.5"/>
+  <!-- City skyline folding -->
+  <rect x="100" y="300" width="35" height="100" fill="#3a2a6a28"/>
+  <rect x="145" y="280" width="28" height="120" fill="#3a2a6a25"/>
+  <rect x="183" y="310" width="32" height="90" fill="#3a2a6a22"/>
+  <rect x="225" y="290" width="26" height="110" fill="#3a2a6a25"/>
+  <rect x="550" y="295" width="30" height="105" fill="#3a2a6a28"/>
+  <rect x="590" y="315" width="35" height="85" fill="#3a2a6a25"/>
+  <rect x="635" y="280" width="28" height="120" fill="#3a2a6a22"/>
+  <rect x="673" y="305" width="32" height="95" fill="#3a2a6a25"/>
+  <!-- Dream layers hint -->
+  <rect x="300" y="340" width="200" height="3" fill="#6a5aaa20"/>
+  <rect x="320" y="360" width="160" height="3" fill="#6a5aaa15"/>
+  <rect x="340" y="380" width="120" height="3" fill="#6a5aaa10"/>
+  <text x="400" y="430" text-anchor="middle" font-family="monospace" font-size="14" fill="#ffffff20">Frame 6</text>
+</svg>

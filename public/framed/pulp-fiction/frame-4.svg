@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2d1b1b"/>
+      <stop offset="100%" stop-color="#4a1a1a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <rect x="0" y="0" width="800" height="6" fill="none" stroke="#ffffff10" stroke-dasharray="12 8" stroke-width="6"/>
+  <rect x="0" y="444" width="800" height="6" fill="none" stroke="#ffffff10" stroke-dasharray="12 8" stroke-width="6"/>
+  <!-- Briefcase with golden glow -->
+  <rect x="330" y="160" width="140" height="90" rx="6" fill="none" stroke="#8a5a4a28" stroke-width="2"/>
+  <rect x="370" y="146" width="60" height="18" rx="4" fill="none" stroke="#8a5a4a22" stroke-width="1.5"/>
+  <ellipse cx="400" cy="205" rx="50" ry="30" fill="#ffcc0012"/>
+  <!-- Gun silhouette -->
+  <line x1="200" y1="300" x2="280" y2="300" stroke="#6a3a3a20" stroke-width="3"/>
+  <line x1="280" y1="300" x2="280" y2="330" stroke="#6a3a3a18" stroke-width="2"/>
+  <line x1="250" y1="300" x2="250" y2="320" stroke="#6a3a3a15" stroke-width="1.5"/>
+  <text x="400" y="420" text-anchor="middle" font-family="monospace" font-size="14" fill="#ffffff10">Frame 4</text>
+</svg>

@@ -104,7 +104,7 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
     });
 
     const pct = Math.round((score / totalQ) * 100);
-    const text = `Daily Trivia ${puzzle.puzzle_date}\n${score}/${totalQ} (${pct}%)\n${lines.join("")}\ngamesite-orpin.vercel.app/trivia`;
+    const text = `Daily Trivia ${puzzle.puzzle_date}\n${score}/${totalQ} (${pct}%)\n${lines.join("")}\ngamesite-orpin.vercel.app/daily/daily-trivia`;
 
     try {
       await navigator.clipboard.writeText(text);
@@ -128,7 +128,7 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
   // ── Splash ──────────────────────────────────────────────
   if (screen === "splash") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 animate-[fade-up_0.5s_ease_forwards]">
+      <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-4 py-8 animate-[fade-up_0.5s_ease_forwards]">
         <h1 className="font-body text-5xl font-extrabold text-text-primary tracking-tight mb-3">
           <span className="bg-gradient-to-r from-sky to-teal bg-clip-text text-transparent">
             Daily Trivia
@@ -162,7 +162,7 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
     else if (pct >= 50) remark = "Not bad!";
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 animate-[fade-up_0.5s_ease_forwards]">
+      <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-4 py-8 animate-[fade-up_0.5s_ease_forwards]">
         <h2 className="font-body text-4xl font-extrabold text-text-primary mb-2">
           {remark}
         </h2>
@@ -245,7 +245,7 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
   const timerUrgent = timeLeft <= 3;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-4 py-8">
       {/* Progress + timer row */}
       <div className="w-full max-w-md mb-6">
         <div className="flex items-center justify-between mb-2">

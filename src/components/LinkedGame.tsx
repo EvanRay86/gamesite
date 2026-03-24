@@ -163,7 +163,7 @@ export default function LinkedGame({ puzzle, puzzleNumber }: Props) {
   // --- Splash Screen ---
   if (showSplash) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+      <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-6 text-center">
         <div className="animate-[float_3s_ease-in-out_infinite]">
           <div className="grid grid-cols-2 gap-1.5 mb-8">
             {["bg-coral", "bg-teal", "bg-sky", "bg-amber"].map((c, i) => (
@@ -199,7 +199,7 @@ export default function LinkedGame({ puzzle, puzzleNumber }: Props) {
   // --- Main Game ---
   return (
     <div
-      className="min-h-screen flex flex-col items-center px-4 py-6 transition-opacity duration-400"
+      className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center px-4 py-6 transition-opacity duration-400"
       style={{ opacity: fadeIn ? 1 : 0 }}
     >
       {/* Header */}

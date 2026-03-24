@@ -1,0 +1,211 @@
+// Game Registry — metadata for all games on the portal
+// Color tokens: coral (#FF6B6B), teal (#4ECDC4), sky (#45B7D1), amber (#F7B731), purple (#A855F7), green (#22C55E)
+
+export type GameColor = "coral" | "teal" | "sky" | "amber" | "purple" | "green";
+
+export type GameCategory = "daily" | "arcade";
+
+export interface GameVariant {
+  slug: string;
+  name: string;
+  description: string;
+  comingSoon?: boolean;
+}
+
+export interface Game {
+  slug: string;
+  name: string;
+  description: string;
+  category: GameCategory;
+  color: GameColor;
+  comingSoon?: boolean;
+  variants?: GameVariant[];
+  /** Credits required to play (arcade games only). 0 = free. */
+  creditCost?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Registry
+// ---------------------------------------------------------------------------
+
+export const games: Game[] = [
+  // ── Daily Games ──────────────────────────────────────────────────────────
+
+  {
+    slug: "linked",
+    name: "Linked",
+    description:
+      "Find four groups of four words that share a hidden connection.",
+    category: "daily",
+    color: "coral",
+  },
+
+  {
+    slug: "wordle",
+    name: "Wordle",
+    description: "Six guesses to find the five-letter word.",
+    category: "daily",
+    color: "amber",
+    comingSoon: true,
+  },
+
+  {
+    slug: "heardle",
+    name: "Heardle",
+    description: "Name the song from its opening seconds.",
+    category: "daily",
+    color: "purple",
+    comingSoon: true,
+    variants: [
+      {
+        slug: "pop",
+        name: "Pop",
+        description: "Guess the pop hit from its opening seconds.",
+        comingSoon: true,
+      },
+      {
+        slug: "rock",
+        name: "Rock",
+        description: "Guess the rock track from its opening seconds.",
+        comingSoon: true,
+      },
+      {
+        slug: "hip-hop",
+        name: "Hip-Hop",
+        description: "Guess the hip-hop track from its opening seconds.",
+        comingSoon: true,
+      },
+      {
+        slug: "2000s",
+        name: "2000s",
+        description: "Guess the 2000s hit from its opening seconds.",
+        comingSoon: true,
+      },
+      {
+        slug: "country",
+        name: "Country",
+        description: "Guess the country song from its opening seconds.",
+        comingSoon: true,
+      },
+      {
+        slug: "rnb",
+        name: "R&B",
+        description: "Guess the R&B track from its opening seconds.",
+        comingSoon: true,
+      },
+    ],
+  },
+
+  {
+    slug: "framed",
+    name: "Framed",
+    description: "Guess the movie one frame at a time.",
+    category: "daily",
+    color: "green",
+    variants: [
+      {
+        slug: "action",
+        name: "Action",
+        description: "Guess the action movie one frame at a time.",
+      },
+      {
+        slug: "horror",
+        name: "Horror",
+        description: "Guess the horror movie one frame at a time.",
+      },
+      {
+        slug: "2000s",
+        name: "2000s",
+        description: "Guess the 2000s movie one frame at a time.",
+      },
+      {
+        slug: "sci-fi",
+        name: "Sci-Fi",
+        description: "Guess the sci-fi movie one frame at a time.",
+      },
+      {
+        slug: "animated",
+        name: "Animated",
+        description: "Guess the animated movie one frame at a time.",
+        comingSoon: true,
+      },
+      {
+        slug: "comedy",
+        name: "Comedy",
+        description: "Guess the comedy movie one frame at a time.",
+        comingSoon: true,
+      },
+    ],
+  },
+
+  {
+    slug: "daily-trivia",
+    name: "8 Second Trivia",
+    description: "Eight questions, eight seconds each. How far can you go?",
+    category: "daily",
+    color: "sky",
+  },
+
+  // ── Arcade Games ─────────────────────────────────────────────────────────
+
+  {
+    slug: "slime-volleyball",
+    name: "Slime Volleyball",
+    description: "Jump, bump, and spike your way to 7 points.",
+    category: "arcade",
+    color: "teal",
+    creditCost: 0,
+  },
+
+  {
+    slug: "clicker-frenzy",
+    name: "Clicker Frenzy",
+    description:
+      "Tap your way to riches. Upgrades, prestiges, and endless progression.",
+    category: "arcade",
+    color: "amber",
+    creditCost: 5,
+    comingSoon: true,
+  },
+
+  {
+    slug: "gem-crush",
+    name: "Gem Crush",
+    description: "Match gems, chain combos, and climb the leaderboard.",
+    category: "arcade",
+    color: "purple",
+    creditCost: 5,
+    comingSoon: true,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** All daily-category games. */
+export function getDailyGames(): Game[] {
+  return games.filter((g) => g.category === "daily");
+}
+
+/** All arcade-category games. */
+export function getArcadeGames(): Game[] {
+  return games.filter((g) => g.category === "arcade");
+}
+
+/** Look up a game by its slug. Returns `undefined` if not found. */
+export function getGameBySlug(slug: string): Game | undefined {
+  return games.find((g) => g.slug === slug);
+}
+
+/**
+ * Look up a specific variant within a game.
+ * Returns `undefined` if the game or variant is not found.
+ */
+export function getVariant(
+  gameSlug: string,
+  variantSlug: string,
+): GameVariant | undefined {
+  const game = getGameBySlug(gameSlug);
+  return game?.variants?.find((v) => v.slug === variantSlug);
+}
