@@ -94,6 +94,33 @@
   100% { opacity: 0; transform: translateY(-60px); }
 }
 
+@keyframes koala-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes koala-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes koala-drift {
+  0% { top: -5%; opacity: 0; transform: translateX(0) rotate(0deg); }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 105%; opacity: 0; transform: translateX(40px) rotate(360deg); }
+}
+
+@keyframes koala-twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes koala-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
 body {
   background: #ffffff;
   min-height: 100vh;
