@@ -55,43 +55,36 @@ export const games: Game[] = [
     description: "Name the song from its opening seconds.",
     category: "daily",
     color: "purple",
-    comingSoon: true,
     variants: [
       {
         slug: "pop",
         name: "Pop",
         description: "Guess the pop hit from its opening seconds.",
-        comingSoon: true,
       },
       {
         slug: "rock",
         name: "Rock",
         description: "Guess the rock track from its opening seconds.",
-        comingSoon: true,
       },
       {
         slug: "hip-hop",
         name: "Hip-Hop",
         description: "Guess the hip-hop track from its opening seconds.",
-        comingSoon: true,
       },
       {
         slug: "2000s",
         name: "2000s",
         description: "Guess the 2000s hit from its opening seconds.",
-        comingSoon: true,
       },
       {
         slug: "country",
         name: "Country",
         description: "Guess the country song from its opening seconds.",
-        comingSoon: true,
       },
       {
         slug: "rnb",
         name: "R&B",
         description: "Guess the R&B track from its opening seconds.",
-        comingSoon: true,
       },
     ],
   },
