@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { getSupabaseClient, getPlayerId } from "@/lib/supabase-client";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -153,6 +154,96 @@ function formatNumber(n: number): string {
   return Math.floor(n).toLocaleString();
 }
 
+function buildSaveData(
+  leaves: number,
+  totalLeaves: number,
+  totalClicks: number,
+  upgrades: Upgrade[],
+): SaveData {
+  return {
+    leaves,
+    totalLeaves,
+    totalClicks,
+    upgrades: Object.fromEntries(upgrades.map((u) => [u.id, u.owned])),
+    lastSave: Date.now(),
+  };
+}
+
+function applySave(save: SaveData): {
+  upgrades: Upgrade[];
+  leaves: number;
+  totalLeaves: number;
+  totalClicks: number;
+} {
+  const elapsed = (Date.now() - save.lastSave) / 1000;
+  const restoredUpgrades = INITIAL_UPGRADES.map((u) => ({
+    ...u,
+    owned: save.upgrades[u.id] || 0,
+  }));
+  const offlineLps = restoredUpgrades.reduce(
+    (sum, u) => sum + u.lps * u.owned,
+    0,
+  );
+  const offlineEarnings = Math.floor(
+    offlineLps * Math.min(elapsed, 28800),
+  ); // cap at 8hrs
+
+  return {
+    upgrades: restoredUpgrades,
+    leaves: save.leaves + offlineEarnings,
+    totalLeaves: save.totalLeaves + offlineEarnings,
+    totalClicks: save.totalClicks,
+  };
+}
+
+// ── Cloud save helpers ────────────────────────────────────────────────────────
+
+async function loadCloudSave(playerId: string): Promise<SaveData | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from("koala_saves")
+      .select("save_data")
+      .eq("player_id", playerId)
+      .single();
+
+    if (error || !data) return null;
+    return data.save_data as SaveData;
+  } catch {
+    return null;
+  }
+}
+
+async function writeCloudSave(
+  playerId: string,
+  save: SaveData,
+): Promise<void> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return;
+
+  try {
+    await supabase.from("koala_saves").upsert(
+      {
+        player_id: playerId,
+        save_data: save,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "player_id" },
+    );
+  } catch {
+    // Silent fail — localStorage is the backup
+  }
+}
+
+/** Pick whichever save has more total progress */
+function pickBestSave(a: SaveData | null, b: SaveData | null): SaveData | null {
+  if (!a) return b;
+  if (!b) return a;
+  return a.totalLeaves >= b.totalLeaves ? a : b;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function KoalaClicker() {
@@ -163,71 +254,116 @@ export default function KoalaClicker() {
   const [floatingTexts, setFloatingTexts] = useState<FloatingText[]>([]);
   const [koalaScale, setKoalaScale] = useState(1);
   const [loaded, setLoaded] = useState(false);
+  const [cloudStatus, setCloudStatus] = useState<"off" | "synced" | "saving">("off");
   const floatId = useRef(0);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const playerIdRef = useRef<string>("");
 
   // Derived values
-  const leavesPerClick = 1 + upgrades.reduce((sum, u) => sum + u.clickBonus * u.owned, 0);
-  const leavesPerSecond = upgrades.reduce((sum, u) => sum + u.lps * u.owned, 0);
+  const leavesPerClick =
+    1 + upgrades.reduce((sum, u) => sum + u.clickBonus * u.owned, 0);
+  const leavesPerSecond = upgrades.reduce(
+    (sum, u) => sum + u.lps * u.owned,
+    0,
+  );
 
-  // ── Load save ───────────────────────────────────────────────────────
+  // ── Load save (localStorage + cloud, pick best) ───────────────────
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      if (raw) {
-        const save: SaveData = JSON.parse(raw);
-        // Calculate offline earnings
-        const elapsed = (Date.now() - save.lastSave) / 1000;
-        const restoredUpgrades = INITIAL_UPGRADES.map((u) => ({
-          ...u,
-          owned: save.upgrades[u.id] || 0,
-        }));
-        const offlineLps = restoredUpgrades.reduce(
-          (sum, u) => sum + u.lps * u.owned,
-          0,
-        );
-        const offlineEarnings = Math.floor(offlineLps * Math.min(elapsed, 28800)); // cap at 8hrs
+    async function load() {
+      const playerId = getPlayerId();
+      playerIdRef.current = playerId;
 
-        setUpgrades(restoredUpgrades);
-        setLeaves(save.leaves + offlineEarnings);
-        setTotalLeaves(save.totalLeaves + offlineEarnings);
-        setTotalClicks(save.totalClicks);
+      // Load localStorage save
+      let localSave: SaveData | null = null;
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (raw) localSave = JSON.parse(raw);
+      } catch {
+        // Corrupted
       }
-    } catch {
-      // Corrupted save, start fresh
+
+      // Load cloud save
+      const cloudSave = await loadCloudSave(playerId);
+      if (cloudSave) setCloudStatus("synced");
+
+      // Pick best
+      const best = pickBestSave(localSave, cloudSave);
+      if (best) {
+        const restored = applySave(best);
+        setUpgrades(restored.upgrades);
+        setLeaves(restored.leaves);
+        setTotalLeaves(restored.totalLeaves);
+        setTotalClicks(restored.totalClicks);
+      }
+
+      setLoaded(true);
     }
-    setLoaded(true);
+    load();
   }, []);
 
-  // ── Auto-save every 15s ─────────────────────────────────────────────
-  useEffect(() => {
-    if (!loaded) return;
-    const interval = setInterval(() => {
-      saveGame();
-    }, 15000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, leaves, upgrades, totalLeaves, totalClicks]);
-
-  // Save on unmount
-  useEffect(() => {
-    return () => saveGame();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const saveGame = useCallback(() => {
-    const save: SaveData = {
-      leaves,
-      totalLeaves,
-      totalClicks,
-      upgrades: Object.fromEntries(upgrades.map((u) => [u.id, u.owned])),
-      lastSave: Date.now(),
-    };
+  // ── Save to localStorage ──────────────────────────────────────────
+  const saveToLocal = useCallback(() => {
+    const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades);
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(save));
     } catch {
-      // Storage full or unavailable
+      // Storage full
     }
+    return save;
+  }, [leaves, totalLeaves, totalClicks, upgrades]);
+
+  // ── Save to cloud ─────────────────────────────────────────────────
+  const saveToCloud = useCallback(
+    async (save: SaveData) => {
+      if (!playerIdRef.current) return;
+      setCloudStatus("saving");
+      await writeCloudSave(playerIdRef.current, save);
+      setCloudStatus("synced");
+    },
+    [],
+  );
+
+  // ── Auto-save every 15s (local) + every 30s (cloud) ───────────────
+  const cloudTickRef = useRef(0);
+  useEffect(() => {
+    if (!loaded) return;
+    const interval = setInterval(() => {
+      const save = saveToLocal();
+      cloudTickRef.current++;
+      // Cloud save every other tick (30s)
+      if (cloudTickRef.current % 2 === 0) {
+        saveToCloud(save);
+      }
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [loaded, saveToLocal, saveToCloud]);
+
+  // Save on unmount
+  useEffect(() => {
+    const handleUnload = () => {
+      const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades);
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+      } catch {
+        // ignore
+      }
+      // Best-effort cloud save via sendBeacon
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (supabaseUrl && supabaseKey && playerIdRef.current) {
+        const body = JSON.stringify({
+          player_id: playerIdRef.current,
+          save_data: save,
+          updated_at: new Date().toISOString(),
+        });
+        navigator.sendBeacon(
+          `${supabaseUrl}/rest/v1/koala_saves?on_conflict=player_id`,
+          new Blob([body], { type: "application/json" }),
+        );
+      }
+    };
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
   }, [leaves, totalLeaves, totalClicks, upgrades]);
 
   // ── Production tick (10 times/sec) ──────────────────────────────────
@@ -261,7 +397,10 @@ export default function KoalaClicker() {
       const x = e.clientX - rect.left + (Math.random() - 0.5) * 40;
       const y = e.clientY - rect.top - 20;
       const id = floatId.current++;
-      setFloatingTexts((prev) => [...prev, { id, x, y, value: leavesPerClick }]);
+      setFloatingTexts((prev) => [
+        ...prev,
+        { id, x, y, value: leavesPerClick },
+      ]);
       setTimeout(() => {
         setFloatingTexts((prev) => prev.filter((f) => f.id !== id));
       }, 800);
@@ -311,7 +450,9 @@ export default function KoalaClicker() {
             {leavesPerSecond > 0 && (
               <span>{formatNumber(leavesPerSecond)} per second</span>
             )}
-            {leavesPerSecond > 0 && leavesPerClick > 1 && <span> &middot; </span>}
+            {leavesPerSecond > 0 && leavesPerClick > 1 && (
+              <span> &middot; </span>
+            )}
             {leavesPerClick > 1 && (
               <span>+{formatNumber(leavesPerClick)} per click</span>
             )}
@@ -368,6 +509,22 @@ export default function KoalaClicker() {
             </div>
             <div className="text-xs text-emerald-600">Total clicks</div>
           </div>
+        </div>
+
+        {/* Cloud sync indicator */}
+        <div className="mt-4 flex items-center gap-1.5 text-[11px] text-emerald-500/60">
+          <div
+            className={`w-1.5 h-1.5 rounded-full ${
+              cloudStatus === "synced"
+                ? "bg-emerald-400"
+                : cloudStatus === "saving"
+                  ? "bg-amber-400 animate-pulse"
+                  : "bg-gray-300"
+            }`}
+          />
+          {cloudStatus === "synced" && "Cloud saved"}
+          {cloudStatus === "saving" && "Saving..."}
+          {cloudStatus === "off" && "Local save only"}
         </div>
       </div>
 
@@ -434,7 +591,6 @@ export default function KoalaClicker() {
           })}
         </div>
       </div>
-
     </div>
   );
 }
