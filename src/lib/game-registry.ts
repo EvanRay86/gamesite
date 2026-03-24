@@ -32,10 +32,10 @@ export const games: Game[] = [
   // ── Daily Games ──────────────────────────────────────────────────────────
 
   {
-    slug: "linked",
-    name: "Linked",
+    slug: "cluster",
+    name: "Cluster",
     description:
-      "Find four groups of four words that share a hidden connection.",
+      "Find five groups of three words that share a hidden connection.",
     category: "daily",
     color: "coral",
   },

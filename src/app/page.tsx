@@ -194,34 +194,33 @@ export default function HomePage() {
   );
 }
 
-/* ─── Linked Mini Preview ────────────────────────────────────────────────── */
+/* ─── Cluster Mini Preview ───────────────────────────────────────────────── */
 
-const linkedWords = [
+const clusterWords = [
   { word: "CASH", selected: false },
   { word: "LOVER", selected: true },
   { word: "TABLE", selected: false },
-  { word: "NOOK", selected: false },
-  { word: "RADIO", selected: true },
-  { word: "HEAT", selected: false },
+  { word: "RADIO", selected: false },
   { word: "FOLKLORE", selected: true },
-  { word: "CLUB", selected: false },
+  { word: "HEAT", selected: false },
   { word: "PHOTO", selected: false },
   { word: "MIDNIGHTS", selected: true },
   { word: "LICENSE", selected: false },
   { word: "BURRITO", selected: false },
-  { word: "TIDAL", selected: false },
   { word: "SOUND", selected: false },
-  { word: "RECEIPT", selected: false },
-  { word: "REPUTATION", selected: false },
+  { word: "POKER", selected: false },
+  { word: "CLUB", selected: false },
+  { word: "BRIDGE", selected: false },
+  { word: "RUMMY", selected: false },
 ];
 
-function LinkedPreview() {
+function ClusterPreview() {
   return (
-    <div className="grid grid-cols-4 gap-1.5 mb-4">
-      {linkedWords.map(({ word, selected }, i) => (
+    <div className="grid grid-cols-5 gap-1.5 mb-4">
+      {clusterWords.map(({ word, selected }, i) => (
         <div
           key={i}
-          className={`rounded-lg py-2 px-1 text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide transition-all
+          className={`rounded-lg py-2 px-1 text-center text-[9px] sm:text-[11px] font-bold uppercase tracking-wide transition-all
             ${selected
               ? "bg-coral text-white shadow-sm"
               : "bg-gray-100 text-text-secondary"
@@ -279,7 +278,7 @@ function SlimePreview() {
 /* ─── Card Components ────────────────────────────────────────────────────── */
 
 function DailyCard({ game }: { game: Game }) {
-  const isLinked = game.slug === "linked";
+  const isCluster = game.slug === "cluster";
   const isTrivia = game.slug === "daily-trivia";
 
   return (
@@ -294,7 +293,7 @@ function DailyCard({ game }: { game: Game }) {
       <div className={`absolute top-0 left-6 right-6 h-1 ${colorMap[game.color]} rounded-b-full`} />
 
       {/* Preview */}
-      {isLinked && <LinkedPreview />}
+      {isCluster && <ClusterPreview />}
       {isTrivia && <TriviaPreview />}
 
       <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>

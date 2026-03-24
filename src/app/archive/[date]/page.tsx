@@ -6,5 +6,5 @@ interface Props {
 
 export default async function Page({ params }: Props) {
   const { date } = await params;
-  redirect(`/daily/linked/archive/${date}`);
+  redirect(`/daily/cluster/archive/${date}`);
 }
