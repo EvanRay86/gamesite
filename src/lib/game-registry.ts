@@ -45,7 +45,7 @@ export const games: Game[] = [
     name: "Wordle",
     description: "Six guesses to find the five-letter word.",
     category: "daily",
-    color: "amber",
+    color: "green",
     comingSoon: true,
   },
 
@@ -136,6 +136,15 @@ export const games: Game[] = [
         comingSoon: true,
       },
     ],
+  },
+
+  {
+    slug: "crossword",
+    name: "News Crossword",
+    description:
+      "A daily crossword puzzle built from today's headlines and pop culture.",
+    category: "daily",
+    color: "amber",
   },
 
   {

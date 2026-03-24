@@ -276,11 +276,57 @@ function SlimePreview() {
   );
 }
 
+/* ─── Crossword Mini Preview ────────────────────────────────────────────── */
+
+function CrosswordPreview() {
+  // A small decorative crossword grid
+  const mini = [
+    [0, 0, 1, 1, 1, 1, 0],
+    [0, 0, 1, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 0, 0],
+    [0, 0, 1, 0, 1, 0, 0],
+    [0, 1, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 1, 0, 0],
+  ];
+  const letters = [
+    ["", "", "N", "E", "W", "S", ""],
+    ["", "", "A", "", "", "", ""],
+    ["T", "R", "A", "D", "E", "", ""],
+    ["", "", "Q", "", "C", "", ""],
+    ["", "S", "U", "M", "I", "T", ""],
+    ["", "", "", "", "F", "", ""],
+  ];
+  return (
+    <div className="mb-4 flex justify-center">
+      <div className="inline-grid gap-[2px] bg-text-primary/20 p-[2px] rounded">
+        {mini.map((row, ri) =>
+          row.map((cell, ci) => (
+            <div
+              key={`${ri}-${ci}`}
+              className={`flex items-center justify-center text-[8px] sm:text-[9px] font-bold uppercase
+                ${cell ? "bg-white text-text-primary" : "bg-transparent"}`}
+              style={{
+                width: 20,
+                height: 20,
+                gridRow: ri + 1,
+                gridColumn: ci + 1,
+              }}
+            >
+              {cell ? letters[ri][ci] : ""}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Card Components ────────────────────────────────────────────────────── */
 
 function DailyCard({ game }: { game: Game }) {
   const isLinked = game.slug === "linked";
   const isTrivia = game.slug === "daily-trivia";
+  const isCrossword = game.slug === "crossword";
 
   return (
     <Link
@@ -296,6 +342,7 @@ function DailyCard({ game }: { game: Game }) {
       {/* Preview */}
       {isLinked && <LinkedPreview />}
       {isTrivia && <TriviaPreview />}
+      {isCrossword && <CrosswordPreview />}
 
       <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
         {game.name}
