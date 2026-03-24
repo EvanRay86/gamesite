@@ -25,12 +25,41 @@ interface FloatingText {
   value: number;
 }
 
+interface Achievement {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  check: (state: GameState) => boolean;
+  reward: string; // description of reward
+  multiplier: number; // production multiplier bonus (e.g. 1.01 = +1%)
+}
+
+interface GameState {
+  leaves: number;
+  totalLeaves: number;
+  totalClicks: number;
+  leavesPerSecond: number;
+  leavesPerClick: number;
+  upgrades: Upgrade[];
+  prestigeLevel: number;
+  essenceCount: number;
+}
+
 interface SaveData {
   leaves: number;
   totalLeaves: number;
   totalClicks: number;
   upgrades: Record<string, number>;
   lastSave: number;
+  // Prestige
+  prestigeLevel?: number;
+  essenceCount?: number;
+  lifetimeLeaves?: number;
+  // Achievements
+  unlockedAchievements?: string[];
+  // Golden leaf
+  goldenLeavesClicked?: number;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -138,6 +167,140 @@ const INITIAL_UPGRADES: Upgrade[] = [
     clickBonus: 0,
     owned: 0,
   },
+  // ── Tier 2: Post-million upgrades ──
+  {
+    id: "time-warp-tree",
+    name: "Time-Warp Tree",
+    emoji: "⏳",
+    description: "A tree that grows leaves across multiple timelines.",
+    baseCost: 5000000,
+    lps: 50000,
+    clickBonus: 0,
+    owned: 0,
+  },
+  {
+    id: "diamond-paws",
+    name: "Diamond Paws",
+    emoji: "💎",
+    description: "Paws forged from crystallized eucalyptus essence.",
+    baseCost: 25000000,
+    lps: 0,
+    clickBonus: 100,
+    owned: 0,
+  },
+  {
+    id: "koala-dimension",
+    name: "Koala Dimension",
+    emoji: "🌌",
+    description: "An entire dimension inhabited solely by koalas.",
+    baseCost: 100000000,
+    lps: 250000,
+    clickBonus: 0,
+    owned: 0,
+  },
+  {
+    id: "cosmic-grove",
+    name: "Cosmic Grove",
+    emoji: "🪐",
+    description: "A grove of eucalyptus orbiting a koala-shaped nebula.",
+    baseCost: 500000000,
+    lps: 1000000,
+    clickBonus: 0,
+    owned: 0,
+  },
+  {
+    id: "quantum-koala",
+    name: "Quantum Koala",
+    emoji: "⚛️",
+    description: "Exists in all states simultaneously. Produces leaves in each one.",
+    baseCost: 2500000000,
+    lps: 5000000,
+    clickBonus: 0,
+    owned: 0,
+  },
+  // ── Tier 3: Endgame (billions+) ──
+  {
+    id: "eternal-canopy",
+    name: "Eternal Canopy",
+    emoji: "🌅",
+    description: "A canopy that stretches across infinity, always in bloom.",
+    baseCost: 10000000000,
+    lps: 25000000,
+    clickBonus: 0,
+    owned: 0,
+  },
+  {
+    id: "omnipaws",
+    name: "Omnipaws",
+    emoji: "🔮",
+    description: "Transcendent paws that click across all realities at once.",
+    baseCost: 50000000000,
+    lps: 0,
+    clickBonus: 1000,
+    owned: 0,
+  },
+  {
+    id: "multiverse-colony",
+    name: "Multiverse Colony",
+    emoji: "🌐",
+    description: "Koala colonies spanning every universe in the multiverse.",
+    baseCost: 250000000000,
+    lps: 100000000,
+    clickBonus: 0,
+    owned: 0,
+  },
+  {
+    id: "leaf-singularity",
+    name: "Leaf Singularity",
+    emoji: "☀️",
+    description: "A black hole made entirely of compressed eucalyptus leaves.",
+    baseCost: 1000000000000,
+    lps: 500000000,
+    clickBonus: 0,
+    owned: 0,
+  },
+  {
+    id: "koala-god",
+    name: "Koala God",
+    emoji: "🦥",
+    description: "The all-knowing, all-leaf-producing koala deity.",
+    baseCost: 10000000000000,
+    lps: 2500000000,
+    clickBonus: 0,
+    owned: 0,
+  },
+];
+
+// ── Achievements ─────────────────────────────────────────────────────────────
+
+const ACHIEVEMENTS: Achievement[] = [
+  // Click milestones
+  { id: "click-1", name: "First Nibble", emoji: "🐾", description: "Click the koala for the first time", check: (s) => s.totalClicks >= 1, reward: "+1% production", multiplier: 1.01 },
+  { id: "click-100", name: "Persistent Paws", emoji: "🐾", description: "Click 100 times", check: (s) => s.totalClicks >= 100, reward: "+1% production", multiplier: 1.01 },
+  { id: "click-1k", name: "Carpal Koala", emoji: "🐾", description: "Click 1,000 times", check: (s) => s.totalClicks >= 1000, reward: "+2% production", multiplier: 1.02 },
+  { id: "click-10k", name: "The Clicker", emoji: "🐾", description: "Click 10,000 times", check: (s) => s.totalClicks >= 10000, reward: "+3% production", multiplier: 1.03 },
+  { id: "click-100k", name: "Finger of God", emoji: "🐾", description: "Click 100,000 times", check: (s) => s.totalClicks >= 100000, reward: "+5% production", multiplier: 1.05 },
+  // Leaf milestones
+  { id: "leaves-1k", name: "Leafy", emoji: "🍃", description: "Earn 1,000 total leaves", check: (s) => s.totalLeaves >= 1000, reward: "+1% production", multiplier: 1.01 },
+  { id: "leaves-1m", name: "Millionaire Koala", emoji: "🍃", description: "Earn 1 million total leaves", check: (s) => s.totalLeaves >= 1e6, reward: "+2% production", multiplier: 1.02 },
+  { id: "leaves-1b", name: "Billionaire Koala", emoji: "🍃", description: "Earn 1 billion total leaves", check: (s) => s.totalLeaves >= 1e9, reward: "+3% production", multiplier: 1.03 },
+  { id: "leaves-1t", name: "Trillionaire Koala", emoji: "🍃", description: "Earn 1 trillion total leaves", check: (s) => s.totalLeaves >= 1e12, reward: "+5% production", multiplier: 1.05 },
+  { id: "leaves-1q", name: "Quadrillionaire", emoji: "🍃", description: "Earn 1 quadrillion total leaves", check: (s) => s.totalLeaves >= 1e15, reward: "+10% production", multiplier: 1.10 },
+  // LPS milestones
+  { id: "lps-10", name: "Passive Income", emoji: "💤", description: "Reach 10 leaves per second", check: (s) => s.leavesPerSecond >= 10, reward: "+1% production", multiplier: 1.01 },
+  { id: "lps-1k", name: "Leaf Machine", emoji: "💤", description: "Reach 1,000 leaves per second", check: (s) => s.leavesPerSecond >= 1000, reward: "+2% production", multiplier: 1.02 },
+  { id: "lps-1m", name: "Leaf Factory", emoji: "💤", description: "Reach 1M leaves per second", check: (s) => s.leavesPerSecond >= 1e6, reward: "+3% production", multiplier: 1.03 },
+  { id: "lps-1b", name: "Leaf Universe", emoji: "💤", description: "Reach 1B leaves per second", check: (s) => s.leavesPerSecond >= 1e9, reward: "+5% production", multiplier: 1.05 },
+  // Prestige milestones
+  { id: "prestige-1", name: "Rebirth", emoji: "🔄", description: "Ascend for the first time", check: (s) => s.prestigeLevel >= 1, reward: "+5% production", multiplier: 1.05 },
+  { id: "prestige-5", name: "Veteran", emoji: "🔄", description: "Ascend 5 times", check: (s) => s.prestigeLevel >= 5, reward: "+10% production", multiplier: 1.10 },
+  { id: "prestige-10", name: "Transcendent", emoji: "🔄", description: "Ascend 10 times", check: (s) => s.prestigeLevel >= 10, reward: "+15% production", multiplier: 1.15 },
+  { id: "prestige-25", name: "Eternal Koala", emoji: "🔄", description: "Ascend 25 times", check: (s) => s.prestigeLevel >= 25, reward: "+25% production", multiplier: 1.25 },
+  // Upgrade count milestones
+  { id: "total-50", name: "Collector", emoji: "📦", description: "Own 50 total upgrades", check: (s) => s.upgrades.reduce((a, u) => a + u.owned, 0) >= 50, reward: "+2% production", multiplier: 1.02 },
+  { id: "total-100", name: "Hoarder", emoji: "📦", description: "Own 100 total upgrades", check: (s) => s.upgrades.reduce((a, u) => a + u.owned, 0) >= 100, reward: "+3% production", multiplier: 1.03 },
+  { id: "total-500", name: "Empire Builder", emoji: "📦", description: "Own 500 total upgrades", check: (s) => s.upgrades.reduce((a, u) => a + u.owned, 0) >= 500, reward: "+5% production", multiplier: 1.05 },
+  { id: "total-1000", name: "Koala Tycoon", emoji: "📦", description: "Own 1,000 total upgrades", check: (s) => s.upgrades.reduce((a, u) => a + u.owned, 0) >= 1000, reward: "+10% production", multiplier: 1.10 },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -147,6 +310,7 @@ function getCost(upgrade: Upgrade): number {
 }
 
 function formatNumber(n: number): string {
+  if (n >= 1e15) return `${(n / 1e15).toFixed(1)}Qa`;
   if (n >= 1e12) return `${(n / 1e12).toFixed(1)}T`;
   if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
   if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
@@ -154,11 +318,28 @@ function formatNumber(n: number): string {
   return Math.floor(n).toLocaleString();
 }
 
+/** Calculate essence earned from ascending - based on lifetime leaves */
+function calcEssenceGain(lifetimeLeaves: number, currentEssence: number): number {
+  // sqrt-based formula: you get diminishing returns but always more
+  const raw = Math.floor(Math.pow(lifetimeLeaves / 1e6, 0.5));
+  return Math.max(0, raw - currentEssence);
+}
+
+/** Essence multiplier: each essence gives +2% compounding */
+function getEssenceMultiplier(essence: number): number {
+  return Math.pow(1.02, essence);
+}
+
 function buildSaveData(
   leaves: number,
   totalLeaves: number,
   totalClicks: number,
   upgrades: Upgrade[],
+  prestigeLevel: number = 0,
+  essenceCount: number = 0,
+  lifetimeLeaves: number = 0,
+  unlockedAchievements: string[] = [],
+  goldenLeavesClicked: number = 0,
 ): SaveData {
   return {
     leaves,
@@ -166,6 +347,11 @@ function buildSaveData(
     totalClicks,
     upgrades: Object.fromEntries(upgrades.map((u) => [u.id, u.owned])),
     lastSave: Date.now(),
+    prestigeLevel,
+    essenceCount,
+    lifetimeLeaves,
+    unlockedAchievements,
+    goldenLeavesClicked,
   };
 }
 
@@ -174,16 +360,22 @@ function applySave(save: SaveData): {
   leaves: number;
   totalLeaves: number;
   totalClicks: number;
+  prestigeLevel: number;
+  essenceCount: number;
+  lifetimeLeaves: number;
+  unlockedAchievements: string[];
+  goldenLeavesClicked: number;
 } {
   const elapsed = (Date.now() - save.lastSave) / 1000;
   const restoredUpgrades = INITIAL_UPGRADES.map((u) => ({
     ...u,
     owned: save.upgrades[u.id] || 0,
   }));
+  const essenceMultiplier = getEssenceMultiplier(save.essenceCount || 0);
   const offlineLps = restoredUpgrades.reduce(
     (sum, u) => sum + u.lps * u.owned,
     0,
-  );
+  ) * essenceMultiplier;
   const offlineEarnings = Math.floor(
     offlineLps * Math.min(elapsed, 28800),
   ); // cap at 8hrs
@@ -193,6 +385,11 @@ function applySave(save: SaveData): {
     leaves: save.leaves + offlineEarnings,
     totalLeaves: save.totalLeaves + offlineEarnings,
     totalClicks: save.totalClicks,
+    prestigeLevel: save.prestigeLevel || 0,
+    essenceCount: save.essenceCount || 0,
+    lifetimeLeaves: save.lifetimeLeaves || save.totalLeaves || 0,
+    unlockedAchievements: save.unlockedAchievements || [],
+    goldenLeavesClicked: save.goldenLeavesClicked || 0,
   };
 }
 
@@ -255,17 +452,38 @@ export default function KoalaClicker() {
   const [koalaScale, setKoalaScale] = useState(1);
   const [loaded, setLoaded] = useState(false);
   const [cloudStatus, setCloudStatus] = useState<"off" | "synced" | "saving">("off");
+  // Prestige
+  const [prestigeLevel, setPrestigeLevel] = useState(0);
+  const [essenceCount, setEssenceCount] = useState(0);
+  const [lifetimeLeaves, setLifetimeLeaves] = useState(0);
+  const [showPrestigeConfirm, setShowPrestigeConfirm] = useState(false);
+  // Achievements
+  const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
+  // Golden leaf
+  const [goldenLeaf, setGoldenLeaf] = useState<{ x: number; y: number } | null>(null);
+  const [goldenLeavesClicked, setGoldenLeavesClicked] = useState(0);
+
   const floatId = useRef(0);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const playerIdRef = useRef<string>("");
 
   // Derived values
-  const leavesPerClick =
+  const essenceMultiplier = getEssenceMultiplier(essenceCount);
+  const achievementMultiplier = ACHIEVEMENTS
+    .filter((a) => unlockedAchievements.includes(a.id))
+    .reduce((m, a) => m * a.multiplier, 1);
+  const totalMultiplier = essenceMultiplier * achievementMultiplier;
+
+  const baseLeavesPerClick =
     1 + upgrades.reduce((sum, u) => sum + u.clickBonus * u.owned, 0);
-  const leavesPerSecond = upgrades.reduce(
+  const leavesPerClick = Math.floor(baseLeavesPerClick * totalMultiplier);
+  const baseLeavesPerSecond = upgrades.reduce(
     (sum, u) => sum + u.lps * u.owned,
     0,
   );
+  const leavesPerSecond = baseLeavesPerSecond * totalMultiplier;
 
   // ── Load save (localStorage + cloud, pick best) ───────────────────
   useEffect(() => {
@@ -294,6 +512,11 @@ export default function KoalaClicker() {
         setLeaves(restored.leaves);
         setTotalLeaves(restored.totalLeaves);
         setTotalClicks(restored.totalClicks);
+        setPrestigeLevel(restored.prestigeLevel);
+        setEssenceCount(restored.essenceCount);
+        setLifetimeLeaves(restored.lifetimeLeaves);
+        setUnlockedAchievements(restored.unlockedAchievements);
+        setGoldenLeavesClicked(restored.goldenLeavesClicked);
       }
 
       setLoaded(true);
@@ -303,14 +526,14 @@ export default function KoalaClicker() {
 
   // ── Save to localStorage ──────────────────────────────────────────
   const saveToLocal = useCallback(() => {
-    const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades);
+    const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, unlockedAchievements, goldenLeavesClicked);
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(save));
     } catch {
       // Storage full
     }
     return save;
-  }, [leaves, totalLeaves, totalClicks, upgrades]);
+  }, [leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, unlockedAchievements, goldenLeavesClicked]);
 
   // ── Save to cloud ─────────────────────────────────────────────────
   const saveToCloud = useCallback(
@@ -341,7 +564,7 @@ export default function KoalaClicker() {
   // Save on unmount
   useEffect(() => {
     const handleUnload = () => {
-      const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades);
+      const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, unlockedAchievements, goldenLeavesClicked);
       try {
         localStorage.setItem(SAVE_KEY, JSON.stringify(save));
       } catch {
@@ -364,7 +587,7 @@ export default function KoalaClicker() {
     };
     window.addEventListener("beforeunload", handleUnload);
     return () => window.removeEventListener("beforeunload", handleUnload);
-  }, [leaves, totalLeaves, totalClicks, upgrades]);
+  }, [leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, unlockedAchievements, goldenLeavesClicked]);
 
   // ── Production tick (10 times/sec) ──────────────────────────────────
   useEffect(() => {
@@ -426,6 +649,84 @@ export default function KoalaClicker() {
     [leaves, upgrades],
   );
 
+  // ── Prestige / Ascend ──────────────────────────────────────────────
+  const essenceGain = calcEssenceGain(lifetimeLeaves, essenceCount);
+  const canAscend = essenceGain > 0;
+
+  const doAscend = useCallback(() => {
+    if (!canAscend) return;
+    setPrestigeLevel((p) => p + 1);
+    setEssenceCount((e) => e + essenceGain);
+    // Reset progress but keep prestige stuff
+    setLeaves(0);
+    setTotalLeaves(0);
+    setTotalClicks(0);
+    setUpgrades(INITIAL_UPGRADES.map((u) => ({ ...u, owned: 0 })));
+    setShowPrestigeConfirm(false);
+  }, [canAscend, essenceGain]);
+
+  // ── Achievement checking ───────────────────────────────────────────
+  useEffect(() => {
+    if (!loaded) return;
+    const state: GameState = {
+      leaves, totalLeaves, totalClicks, leavesPerSecond, leavesPerClick,
+      upgrades, prestigeLevel, essenceCount,
+    };
+    for (const ach of ACHIEVEMENTS) {
+      if (!unlockedAchievements.includes(ach.id) && ach.check(state)) {
+        setUnlockedAchievements((prev) => [...prev, ach.id]);
+        setNewAchievement(ach);
+        setTimeout(() => setNewAchievement(null), 3000);
+        break; // one at a time
+      }
+    }
+  }, [loaded, leaves, totalLeaves, totalClicks, leavesPerSecond, leavesPerClick, upgrades, prestigeLevel, essenceCount, unlockedAchievements]);
+
+  // ── Track lifetime leaves ──────────────────────────────────────────
+  useEffect(() => {
+    setLifetimeLeaves((prev) => Math.max(prev, totalLeaves));
+  }, [totalLeaves]);
+
+  // ── Golden leaf random event ───────────────────────────────────────
+  useEffect(() => {
+    if (!loaded) return;
+    const spawnGolden = () => {
+      if (!goldenLeaf) {
+        setGoldenLeaf({
+          x: 10 + Math.random() * 70,
+          y: 15 + Math.random() * 60,
+        });
+        // Auto-despawn after 10 seconds
+        setTimeout(() => setGoldenLeaf(null), 10000);
+      }
+    };
+    // Spawn every 60-180 seconds
+    const interval = setInterval(spawnGolden, (60 + Math.random() * 120) * 1000);
+    // First one after 30-60s
+    const firstTimeout = setTimeout(spawnGolden, (30 + Math.random() * 30) * 1000);
+    return () => { clearInterval(interval); clearTimeout(firstTimeout); };
+  }, [loaded, goldenLeaf]);
+
+  const clickGoldenLeaf = useCallback(() => {
+    if (!goldenLeaf) return;
+    // Golden leaf gives 10% of current LPS * 60 seconds, or 1000 leaves minimum
+    const bonus = Math.max(1000, Math.floor(leavesPerSecond * 60 * 0.1));
+    setLeaves((l) => l + bonus);
+    setTotalLeaves((t) => t + bonus);
+    setGoldenLeavesClicked((g) => g + 1);
+    setGoldenLeaf(null);
+
+    // Show floating text for golden leaf
+    const id = floatId.current++;
+    setFloatingTexts((prev) => [
+      ...prev,
+      { id, x: 100, y: 100, value: bonus },
+    ]);
+    setTimeout(() => {
+      setFloatingTexts((prev) => prev.filter((f) => f.id !== id));
+    }, 800);
+  }, [goldenLeaf, leavesPerSecond]);
+
   // ── Visual progression ──────────────────────────────────────────────
   const owned = (id: string) => upgrades.find((u) => u.id === id)?.owned ?? 0;
   const totalOwned = upgrades.reduce((s, u) => s + u.owned, 0);
@@ -440,35 +741,113 @@ export default function KoalaClicker() {
   const hasSanctuary = owned("koala-sanctuary");
   const hasPortal = owned("leaf-portal");
   const hasOverlord = owned("koala-overlord");
+  const hasDimension = owned("koala-dimension");
+  const hasQuantum = owned("quantum-koala");
+  const hasKoalaGod = owned("koala-god");
 
-  // Background evolves based on progression
-  const bgClass = hasPortal
-    ? "from-indigo-950 via-purple-900 to-emerald-900"
-    : hasForest
-      ? "from-emerald-800 via-green-700 to-teal-800"
-      : hasTrees
-        ? "from-emerald-200 via-green-100 to-teal-100"
-        : hasBushes
-          ? "from-green-100 via-emerald-50 to-lime-50"
-          : "from-green-50 to-emerald-50";
+  // Background evolves based on progression — 6 tiers
+  const bgClass = hasKoalaGod
+    ? "from-amber-950 via-yellow-900 to-orange-950"
+    : hasQuantum
+      ? "from-cyan-950 via-blue-900 to-indigo-950"
+      : hasDimension
+        ? "from-violet-950 via-fuchsia-900 to-pink-950"
+        : hasPortal
+          ? "from-indigo-950 via-purple-900 to-emerald-900"
+          : hasForest
+            ? "from-emerald-800 via-green-700 to-teal-800"
+            : hasTrees
+              ? "from-emerald-200 via-green-100 to-teal-100"
+              : hasBushes
+                ? "from-green-100 via-emerald-50 to-lime-50"
+                : "from-green-50 to-emerald-50";
 
-  const textClass = hasPortal
-    ? "text-purple-200"
-    : hasForest
-      ? "text-emerald-100"
-      : "text-emerald-800";
+  const textClass = hasKoalaGod
+    ? "text-amber-200"
+    : hasQuantum
+      ? "text-cyan-200"
+      : hasDimension
+        ? "text-fuchsia-200"
+        : hasPortal
+          ? "text-purple-200"
+          : hasForest
+            ? "text-emerald-100"
+            : "text-emerald-800";
 
-  const subtextClass = hasPortal
-    ? "text-purple-300"
-    : hasForest
-      ? "text-emerald-200"
-      : "text-emerald-600";
+  const subtextClass = hasKoalaGod
+    ? "text-amber-300"
+    : hasQuantum
+      ? "text-cyan-300"
+      : hasDimension
+        ? "text-fuchsia-300"
+        : hasPortal
+          ? "text-purple-300"
+          : hasForest
+            ? "text-emerald-200"
+            : "text-emerald-600";
 
-  const dimTextClass = hasPortal
-    ? "text-purple-300/70"
+  const dimTextClass = hasKoalaGod
+    ? "text-amber-300/70"
+    : hasQuantum
+      ? "text-cyan-300/70"
+      : hasDimension
+        ? "text-fuchsia-300/70"
+        : hasPortal
+          ? "text-purple-300/70"
+          : hasForest
+            ? "text-emerald-300/70"
+            : "text-emerald-500/70";
+
+  // Is it a "dark" theme tier? (for panel styling)
+  const isDark = !!(hasPortal || hasDimension || hasQuantum || hasKoalaGod);
+
+  const panelBg = hasKoalaGod
+    ? "bg-amber-950/80 border-amber-500/30"
+    : hasQuantum
+      ? "bg-cyan-950/80 border-cyan-500/30"
+      : hasDimension
+        ? "bg-fuchsia-950/80 border-fuchsia-500/30"
+        : hasPortal
+          ? "bg-indigo-950/80 border-purple-500/30"
+          : hasForest
+            ? "bg-emerald-900/60 border-emerald-500/30"
+            : "bg-white/80 border-emerald-200";
+
+  const panelHeaderBg = hasKoalaGod
+    ? "bg-amber-950/90 border-amber-500/30"
+    : hasQuantum
+      ? "bg-cyan-950/90 border-cyan-500/30"
+      : hasDimension
+        ? "bg-fuchsia-950/90 border-fuchsia-500/30"
+        : hasPortal
+          ? "bg-indigo-950/90 border-purple-500/30"
+          : hasForest
+            ? "bg-emerald-900/80 border-emerald-500/30"
+            : "bg-white/90 border-emerald-200";
+
+  const headerTextClass = isDark ? "text-white/90" : hasForest ? "text-emerald-100" : "text-emerald-900";
+  const headerSubClass = isDark ? "text-white/60" : hasForest ? "text-emerald-300" : "text-emerald-600";
+
+  const cardBgAfford = isDark
+    ? `border-white/20 ${hasKoalaGod ? "bg-amber-900/40" : hasQuantum ? "bg-cyan-900/40" : hasDimension ? "bg-fuchsia-900/40" : "bg-purple-900/40"} hover:border-white/40 hover:shadow-md cursor-pointer`
     : hasForest
-      ? "text-emerald-300/70"
-      : "text-emerald-500/70";
+      ? "border-emerald-500/40 bg-emerald-900/30 hover:border-emerald-400 hover:shadow-md cursor-pointer"
+      : "border-emerald-300 bg-white hover:border-emerald-500 hover:shadow-md cursor-pointer";
+
+  const cardBgLocked = isDark
+    ? `border-white/10 ${hasKoalaGod ? "bg-amber-950/30" : hasQuantum ? "bg-cyan-950/30" : hasDimension ? "bg-fuchsia-950/30" : "bg-purple-950/30"} opacity-50 cursor-not-allowed`
+    : hasForest
+      ? "border-emerald-800/30 bg-emerald-950/30 opacity-50 cursor-not-allowed"
+      : "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed";
+
+  const cardNameClass = isDark ? "text-white/90" : hasForest ? "text-emerald-100" : "text-gray-900";
+  const cardDescClass = isDark ? "text-white/50" : hasForest ? "text-emerald-300" : "text-gray-500";
+  const cardCostClass = isDark ? "text-white/60" : hasForest ? "text-emerald-300" : "text-emerald-600";
+  const cardStatClass = isDark ? "text-white/40" : hasForest ? "text-emerald-400" : "text-gray-400";
+  const badgeBg = isDark ? "text-white/70 bg-white/10" : hasForest ? "text-emerald-200 bg-emerald-800/50" : "text-emerald-700 bg-emerald-100";
+  const statCardBg = isDark
+    ? `${hasKoalaGod ? "bg-amber-900/40 border-amber-500/30" : hasQuantum ? "bg-cyan-900/40 border-cyan-500/30" : hasDimension ? "bg-fuchsia-900/40 border-fuchsia-500/30" : "bg-purple-900/40 border-purple-500/30"}`
+    : hasForest ? "bg-emerald-900/30 border-emerald-500/30" : "bg-white/60 border-emerald-200";
 
   if (!loaded) {
     return (
@@ -483,8 +862,8 @@ export default function KoalaClicker() {
       {/* ── Left Panel: Koala + Scene ──────────────────────────────────── */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden">
 
-        {/* ── Sky layer (portal/sanctuary) ──────────────────────────── */}
-        {hasPortal > 0 && (
+        {/* ── Sky layer (portal+) ──────────────────────────────────── */}
+        {isDark && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {/* Stars */}
             {Array.from({ length: 30 }).map((_, i) => (
@@ -500,118 +879,78 @@ export default function KoalaClicker() {
               />
             ))}
             {/* Portal swirl */}
-            <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-20"
-              style={{
-                background: "conic-gradient(from 0deg, transparent, #a855f7, transparent, #22c55e, transparent)",
-                animation: "koala-spin 8s linear infinite",
-              }}
-            />
+            {hasPortal > 0 && (
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-20"
+                style={{
+                  background: hasKoalaGod
+                    ? "conic-gradient(from 0deg, transparent, #f59e0b, transparent, #ef4444, transparent)"
+                    : hasQuantum
+                      ? "conic-gradient(from 0deg, transparent, #06b6d4, transparent, #3b82f6, transparent)"
+                      : hasDimension
+                        ? "conic-gradient(from 0deg, transparent, #d946ef, transparent, #ec4899, transparent)"
+                        : "conic-gradient(from 0deg, transparent, #a855f7, transparent, #22c55e, transparent)",
+                  animation: "koala-spin 8s linear infinite",
+                }}
+              />
+            )}
           </div>
         )}
 
         {/* ── Ground layer ─────────────────────────────────────────── */}
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-          {/* Grass - appears with bushes */}
           {hasBushes > 0 && (
-            <div className={`h-16 ${hasPortal ? "bg-gradient-to-t from-emerald-900/50 to-transparent" : hasForest ? "bg-gradient-to-t from-emerald-900/30 to-transparent" : "bg-gradient-to-t from-emerald-200/60 to-transparent"}`} />
+            <div className={`h-16 ${isDark ? "bg-gradient-to-t from-black/30 to-transparent" : hasForest ? "bg-gradient-to-t from-emerald-900/30 to-transparent" : "bg-gradient-to-t from-emerald-200/60 to-transparent"}`} />
           )}
-
-          {/* Ground line */}
           {hasBushes > 0 && (
-            <div className={`h-1 ${hasPortal ? "bg-emerald-500/30" : hasForest ? "bg-emerald-600/30" : "bg-emerald-300/50"}`} />
+            <div className={`h-1 ${isDark ? "bg-white/10" : hasForest ? "bg-emerald-600/30" : "bg-emerald-300/50"}`} />
           )}
         </div>
 
         {/* ── Scene elements (behind koala) ─────────────────────────── */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Bushes */}
           {hasBushes > 0 && Array.from({ length: Math.min(hasBushes, 6) }).map((_, i) => (
-            <div
-              key={`bush-${i}`}
-              className="absolute bottom-12 text-2xl sm:text-3xl"
-              style={{
-                left: `${10 + i * 15}%`,
-                animation: `koala-sway ${3 + i * 0.5}s ease-in-out infinite`,
-              }}
-            >
+            <div key={`bush-${i}`} className="absolute bottom-12 text-2xl sm:text-3xl"
+              style={{ left: `${10 + i * 15}%`, animation: `koala-sway ${3 + i * 0.5}s ease-in-out infinite` }}>
               🌿
             </div>
           ))}
-
-          {/* Trees */}
           {hasTrees > 0 && Array.from({ length: Math.min(hasTrees, 5) }).map((_, i) => (
-            <div
-              key={`tree-${i}`}
-              className="absolute bottom-10 text-4xl sm:text-5xl"
-              style={{
-                left: `${5 + i * 20}%`,
-                animation: `koala-sway ${4 + i * 0.3}s ease-in-out infinite`,
-              }}
-            >
+            <div key={`tree-${i}`} className="absolute bottom-10 text-4xl sm:text-5xl"
+              style={{ left: `${5 + i * 20}%`, animation: `koala-sway ${4 + i * 0.3}s ease-in-out infinite` }}>
               🌳
             </div>
           ))}
-
-          {/* Colony huts */}
           {hasColony > 0 && Array.from({ length: Math.min(hasColony, 4) }).map((_, i) => (
-            <div
-              key={`hut-${i}`}
-              className="absolute bottom-10 text-2xl sm:text-3xl"
-              style={{ left: `${15 + i * 22}%` }}
-            >
+            <div key={`hut-${i}`} className="absolute bottom-10 text-2xl sm:text-3xl"
+              style={{ left: `${15 + i * 22}%` }}>
               🏠
             </div>
           ))}
-
-          {/* Forest layer (dense trees behind everything) */}
           {hasForest > 0 && (
             <div className="absolute bottom-8 left-0 right-0 flex justify-around opacity-50 text-3xl">
               {Array.from({ length: 8 }).map((_, i) => (
-                <span key={`forest-${i}`} style={{ animation: `koala-sway ${5 + i * 0.2}s ease-in-out infinite` }}>
-                  🌲
-                </span>
+                <span key={`forest-${i}`} style={{ animation: `koala-sway ${5 + i * 0.2}s ease-in-out infinite` }}>🌲</span>
               ))}
             </div>
           )}
-
-          {/* Sanctuary */}
           {hasSanctuary > 0 && (
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-4xl sm:text-5xl opacity-60"
-              style={{ transform: "translateX(-50%) translateY(-40px)" }}>
-              🏛️
-            </div>
+              style={{ transform: "translateX(-50%) translateY(-40px)" }}>🏛️</div>
           )}
         </div>
 
         {/* ── Floating particles ────────────────────────────────────── */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Floating leaves */}
           {hasBushes > 0 && Array.from({ length: Math.min(3 + totalOwned, 15) }).map((_, i) => (
-            <div
-              key={`leaf-${i}`}
-              className="absolute text-sm"
-              style={{
-                left: `${(i * 29 + 11) % 100}%`,
-                animation: `koala-drift ${6 + (i % 4) * 2}s linear ${i * 0.8}s infinite`,
-                opacity: 0.4 + (i % 3) * 0.2,
-              }}
-            >
+            <div key={`leaf-${i}`} className="absolute text-sm"
+              style={{ left: `${(i * 29 + 11) % 100}%`, animation: `koala-drift ${6 + (i % 4) * 2}s linear ${i * 0.8}s infinite`, opacity: 0.4 + (i % 3) * 0.2 }}>
               🍃
             </div>
           ))}
-
-          {/* Sparkles for golden claws */}
           {hasGolden > 0 && Array.from({ length: Math.min(hasGolden * 2, 10) }).map((_, i) => (
-            <div
-              key={`sparkle-${i}`}
-              className="absolute text-xs"
-              style={{
-                left: `${(i * 31 + 17) % 90 + 5}%`,
-                top: `${(i * 23 + 13) % 80 + 10}%`,
-                animation: `koala-twinkle ${1.5 + (i % 3)}s ease-in-out ${i * 0.3}s infinite`,
-              }}
-            >
+            <div key={`sparkle-${i}`} className="absolute text-xs"
+              style={{ left: `${(i * 31 + 17) % 90 + 5}%`, top: `${(i * 23 + 13) % 80 + 10}%`, animation: `koala-twinkle ${1.5 + (i % 3)}s ease-in-out ${i * 0.3}s infinite` }}>
               ✨
             </div>
           ))}
@@ -624,21 +963,47 @@ export default function KoalaClicker() {
               const angle = (i / Math.min(hasBabies, 8)) * Math.PI * 2;
               const radius = 140 + (i % 2) * 20;
               return (
-                <div
-                  key={`baby-${i}`}
-                  className="absolute text-xl sm:text-2xl"
-                  style={{
-                    left: Math.cos(angle) * radius - 12,
-                    top: Math.sin(angle) * radius - 12,
-                    animation: `koala-bob ${2 + (i % 3) * 0.5}s ease-in-out ${i * 0.3}s infinite`,
-                  }}
-                >
+                <div key={`baby-${i}`} className="absolute text-xl sm:text-2xl"
+                  style={{ left: Math.cos(angle) * radius - 12, top: Math.sin(angle) * radius - 12, animation: `koala-bob ${2 + (i % 3) * 0.5}s ease-in-out ${i * 0.3}s infinite` }}>
                   🐨
                 </div>
               );
             })}
           </div>
         )}
+
+        {/* ── Golden Leaf (random event) ───────────────────────────── */}
+        {goldenLeaf && (
+          <button
+            onClick={clickGoldenLeaf}
+            className="absolute z-30 text-4xl cursor-pointer animate-bounce drop-shadow-[0_0_20px_rgba(247,183,49,0.8)] hover:scale-125 transition-transform"
+            style={{ left: `${goldenLeaf.x}%`, top: `${goldenLeaf.y}%` }}
+            title="Click for bonus leaves!"
+          >
+            🍂
+          </button>
+        )}
+
+        {/* ── Prestige / Essence info bar ──────────────────────────── */}
+        {(essenceCount > 0 || prestigeLevel > 0) && (
+          <div className={`absolute top-3 left-3 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs ${isDark ? "bg-black/30" : "bg-white/60"} backdrop-blur z-20`}>
+            <span className={dimTextClass}>Essence: <span className={`font-bold ${textClass}`}>{essenceCount}</span></span>
+            <span className={dimTextClass}>|</span>
+            <span className={dimTextClass}>x{totalMultiplier.toFixed(2)}</span>
+            {prestigeLevel > 0 && <>
+              <span className={dimTextClass}>|</span>
+              <span className={dimTextClass}>Ascensions: {prestigeLevel}</span>
+            </>}
+          </div>
+        )}
+
+        {/* ── Achievements button ──────────────────────────────────── */}
+        <button
+          onClick={() => setShowAchievements(!showAchievements)}
+          className={`absolute top-3 right-3 rounded-lg px-3 py-1.5 text-xs z-20 cursor-pointer ${isDark ? "bg-black/30 hover:bg-black/50" : "bg-white/60 hover:bg-white/80"} backdrop-blur transition-colors ${dimTextClass}`}
+        >
+          🏆 {unlockedAchievements.length}/{ACHIEVEMENTS.length}
+        </button>
 
         {/* Leaf counter */}
         <div className="text-center mb-6 relative z-10">
@@ -668,13 +1033,19 @@ export default function KoalaClicker() {
             className={`relative w-48 h-48 sm:w-56 sm:h-56 rounded-full cursor-pointer
                        transition-shadow duration-200 select-none
                        flex items-center justify-center
-                       ${hasPortal
-                         ? "bg-gradient-to-br from-purple-900 to-indigo-900 border-4 border-purple-400 shadow-[0_0_60px_rgba(168,85,247,0.4)] hover:shadow-[0_0_80px_rgba(168,85,247,0.6)]"
-                         : hasForest
-                           ? "bg-gradient-to-br from-emerald-800 to-green-900 border-4 border-emerald-400 shadow-[0_8px_40px_rgba(34,197,94,0.3)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.5)]"
-                           : hasGolden
-                             ? "bg-white border-4 border-amber-400 shadow-[0_0_40px_rgba(247,183,49,0.3)] hover:shadow-[0_0_50px_rgba(247,183,49,0.5)]"
-                             : "bg-white border-4 border-emerald-300 shadow-[0_8px_40px_rgba(34,197,94,0.2)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.35)]"
+                       ${hasKoalaGod
+                         ? "bg-gradient-to-br from-amber-900 to-orange-950 border-4 border-amber-400 shadow-[0_0_60px_rgba(245,158,11,0.4)] hover:shadow-[0_0_80px_rgba(245,158,11,0.6)]"
+                         : hasQuantum
+                           ? "bg-gradient-to-br from-cyan-900 to-blue-950 border-4 border-cyan-400 shadow-[0_0_60px_rgba(6,182,212,0.4)] hover:shadow-[0_0_80px_rgba(6,182,212,0.6)]"
+                           : hasDimension
+                             ? "bg-gradient-to-br from-fuchsia-900 to-pink-950 border-4 border-fuchsia-400 shadow-[0_0_60px_rgba(217,70,239,0.4)] hover:shadow-[0_0_80px_rgba(217,70,239,0.6)]"
+                             : hasPortal
+                               ? "bg-gradient-to-br from-purple-900 to-indigo-900 border-4 border-purple-400 shadow-[0_0_60px_rgba(168,85,247,0.4)] hover:shadow-[0_0_80px_rgba(168,85,247,0.6)]"
+                               : hasForest
+                                 ? "bg-gradient-to-br from-emerald-800 to-green-900 border-4 border-emerald-400 shadow-[0_8px_40px_rgba(34,197,94,0.3)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.5)]"
+                                 : hasGolden
+                                   ? "bg-white border-4 border-amber-400 shadow-[0_0_40px_rgba(247,183,49,0.3)] hover:shadow-[0_0_50px_rgba(247,183,49,0.5)]"
+                                   : "bg-white border-4 border-emerald-300 shadow-[0_8px_40px_rgba(34,197,94,0.2)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.35)]"
                        }
                        active:scale-95`}
             style={{
@@ -682,45 +1053,33 @@ export default function KoalaClicker() {
               transition: "transform 0.1s ease",
             }}
           >
-            {/* Koala with accessories */}
             <span className="text-8xl sm:text-9xl leading-none pointer-events-none relative">
               🐨
-              {/* Crown for overlord */}
-              {hasOverlord > 0 && (
+              {hasKoalaGod > 0 && (
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-3xl sm:text-4xl"
+                  style={{ animation: "koala-twinkle 1.5s ease-in-out infinite" }}>☀️</span>
+              )}
+              {hasOverlord > 0 && !hasKoalaGod && (
                 <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl sm:text-4xl"
-                  style={{ animation: "koala-bob 3s ease-in-out infinite" }}>
-                  👑
-                </span>
+                  style={{ animation: "koala-bob 3s ease-in-out infinite" }}>👑</span>
               )}
-              {/* Paw sparkle for golden claws */}
-              {hasGolden > 0 && !hasOverlord && (
+              {hasGolden > 0 && !hasOverlord && !hasKoalaGod && (
                 <span className="absolute -top-4 right-0 text-xl"
-                  style={{ animation: "koala-twinkle 2s ease-in-out infinite" }}>
-                  ✨
-                </span>
+                  style={{ animation: "koala-twinkle 2s ease-in-out infinite" }}>✨</span>
               )}
-              {/* Paw glow for koala paws */}
               {hasPaws > 0 && !hasGolden && (
-                <span className="absolute -bottom-1 right-0 text-lg">
-                  🐾
-                </span>
+                <span className="absolute -bottom-1 right-0 text-lg">🐾</span>
               )}
             </span>
           </button>
 
           {/* Floating click text */}
           {floatingTexts.map((ft) => (
-            <div
-              key={ft.id}
+            <div key={ft.id}
               className={`absolute pointer-events-none font-bold text-lg ${
-                hasGolden ? "text-amber-400" : hasPortal ? "text-purple-300" : "text-emerald-600"
+                hasKoalaGod ? "text-amber-400" : hasQuantum ? "text-cyan-400" : hasDimension ? "text-fuchsia-400" : hasGolden ? "text-amber-400" : hasPortal ? "text-purple-300" : "text-emerald-600"
               }`}
-              style={{
-                left: ft.x,
-                top: ft.y,
-                animation: "koala-float-up 0.8s ease-out forwards",
-              }}
-            >
+              style={{ left: ft.x, top: ft.y, animation: "koala-float-up 0.8s ease-out forwards" }}>
               +{formatNumber(ft.value)}
             </div>
           ))}
@@ -728,62 +1087,140 @@ export default function KoalaClicker() {
 
         {/* Stats */}
         <div className="mt-8 grid grid-cols-2 gap-4 text-center relative z-10">
-          <div className={`rounded-xl px-4 py-3 border ${
-            hasPortal ? "bg-purple-900/40 border-purple-500/30" : hasForest ? "bg-emerald-900/30 border-emerald-500/30" : "bg-white/60 border-emerald-200"
-          }`}>
-            <div className={`text-lg font-bold tabular-nums ${textClass}`}>
-              {formatNumber(totalLeaves)}
-            </div>
+          <div className={`rounded-xl px-4 py-3 border ${statCardBg}`}>
+            <div className={`text-lg font-bold tabular-nums ${textClass}`}>{formatNumber(totalLeaves)}</div>
             <div className={`text-xs ${subtextClass}`}>Total earned</div>
           </div>
-          <div className={`rounded-xl px-4 py-3 border ${
-            hasPortal ? "bg-purple-900/40 border-purple-500/30" : hasForest ? "bg-emerald-900/30 border-emerald-500/30" : "bg-white/60 border-emerald-200"
-          }`}>
-            <div className={`text-lg font-bold tabular-nums ${textClass}`}>
-              {totalClicks.toLocaleString()}
-            </div>
+          <div className={`rounded-xl px-4 py-3 border ${statCardBg}`}>
+            <div className={`text-lg font-bold tabular-nums ${textClass}`}>{totalClicks.toLocaleString()}</div>
             <div className={`text-xs ${subtextClass}`}>Total clicks</div>
           </div>
         </div>
 
         {/* Cloud sync indicator */}
         <div className={`mt-4 flex items-center gap-1.5 text-[11px] ${dimTextClass} relative z-10`}>
-          <div
-            className={`w-1.5 h-1.5 rounded-full ${
-              cloudStatus === "synced"
-                ? "bg-emerald-400"
-                : cloudStatus === "saving"
-                  ? "bg-amber-400 animate-pulse"
-                  : "bg-gray-300"
-            }`}
-          />
+          <div className={`w-1.5 h-1.5 rounded-full ${
+            cloudStatus === "synced" ? "bg-emerald-400" : cloudStatus === "saving" ? "bg-amber-400 animate-pulse" : "bg-gray-300"
+          }`} />
           {cloudStatus === "synced" && "Cloud saved"}
           {cloudStatus === "saving" && "Saving..."}
           {cloudStatus === "off" && "Local save only"}
         </div>
       </div>
 
+      {/* ── Achievement Toast ─────────────────────────────────────────── */}
+      {newAchievement && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-amber-100 border-2 border-amber-400 rounded-xl px-6 py-3 shadow-lg"
+          style={{ animation: "slide-down 0.3s ease-out" }}>
+          <div className="text-center">
+            <div className="text-lg font-bold text-amber-800">🏆 Achievement Unlocked!</div>
+            <div className="text-sm text-amber-700">{newAchievement.emoji} {newAchievement.name} — {newAchievement.reward}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Achievements Modal ────────────────────────────────────────── */}
+      {showAchievements && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowAchievements(false)}>
+          <div className={`w-full max-w-md max-h-[80vh] overflow-y-auto rounded-2xl border-2 p-4 ${
+            isDark ? "bg-gray-900 border-white/20 text-white" : "bg-white border-emerald-300 text-gray-900"
+          }`} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">🏆 Achievements ({unlockedAchievements.length}/{ACHIEVEMENTS.length})</h3>
+              <button onClick={() => setShowAchievements(false)} className="text-lg cursor-pointer opacity-60 hover:opacity-100">✕</button>
+            </div>
+            <div className="space-y-2">
+              {ACHIEVEMENTS.map((ach) => {
+                const unlocked = unlockedAchievements.includes(ach.id);
+                return (
+                  <div key={ach.id} className={`rounded-lg p-3 border ${unlocked
+                    ? isDark ? "border-amber-500/40 bg-amber-900/20" : "border-amber-300 bg-amber-50"
+                    : isDark ? "border-white/10 bg-white/5 opacity-50" : "border-gray-200 bg-gray-50 opacity-50"
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{unlocked ? ach.emoji : "🔒"}</span>
+                      <div className="flex-1">
+                        <div className="font-bold text-sm">{unlocked ? ach.name : "???"}</div>
+                        <div className={`text-xs ${isDark ? "text-white/50" : "text-gray-500"}`}>
+                          {unlocked ? ach.description : "???"}
+                        </div>
+                      </div>
+                      {unlocked && (
+                        <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
+                          {ach.reward}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Prestige Confirmation Modal ───────────────────────────────── */}
+      {showPrestigeConfirm && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowPrestigeConfirm(false)}>
+          <div className={`w-full max-w-sm rounded-2xl border-2 p-6 text-center ${
+            isDark ? "bg-gray-900 border-purple-500/40 text-white" : "bg-white border-purple-300 text-gray-900"
+          }`} onClick={(e) => e.stopPropagation()}>
+            <div className="text-4xl mb-3">🔄</div>
+            <h3 className="text-xl font-bold mb-2">Ascend?</h3>
+            <p className={`text-sm mb-4 ${isDark ? "text-white/60" : "text-gray-600"}`}>
+              Reset all leaves and upgrades, but gain <span className="font-bold text-purple-400">+{essenceGain} Eucalyptus Essence</span>.
+              <br />Each essence permanently boosts all production by 2%.
+              <br />
+              <span className="text-xs opacity-70">
+                Current multiplier: x{totalMultiplier.toFixed(2)} → x{(getEssenceMultiplier(essenceCount + essenceGain) * achievementMultiplier).toFixed(2)}
+              </span>
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={() => setShowPrestigeConfirm(false)}
+                className={`px-4 py-2 rounded-lg cursor-pointer ${isDark ? "bg-white/10 hover:bg-white/20" : "bg-gray-100 hover:bg-gray-200"}`}>
+                Cancel
+              </button>
+              <button onClick={doAscend}
+                className="px-4 py-2 rounded-lg cursor-pointer bg-purple-600 text-white hover:bg-purple-500 font-bold">
+                Ascend (+{essenceGain} Essence)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Right Panel: Upgrades ──────────────────────────────────────── */}
-      <div className={`w-full lg:w-[400px] backdrop-blur border-l overflow-y-auto max-h-screen ${
-        hasPortal
-          ? "bg-indigo-950/80 border-purple-500/30"
-          : hasForest
-            ? "bg-emerald-900/60 border-emerald-500/30"
-            : "bg-white/80 border-emerald-200"
-      } transition-colors duration-1000`}>
-        <div className={`sticky top-0 backdrop-blur border-b p-4 z-10 ${
-          hasPortal
-            ? "bg-indigo-950/90 border-purple-500/30"
-            : hasForest
-              ? "bg-emerald-900/80 border-emerald-500/30"
-              : "bg-white/90 border-emerald-200"
-        }`}>
-          <h2 className={`text-lg font-bold ${hasPortal ? "text-purple-100" : hasForest ? "text-emerald-100" : "text-emerald-900"}`}>
-            Upgrades
-          </h2>
-          <p className={`text-xs mt-0.5 ${hasPortal ? "text-purple-300" : hasForest ? "text-emerald-300" : "text-emerald-600"}`}>
-            Build your koala empire
-          </p>
+      <div className={`w-full lg:w-[400px] backdrop-blur border-l overflow-y-auto max-h-screen ${panelBg} transition-colors duration-1000`}>
+        <div className={`sticky top-0 backdrop-blur border-b p-4 z-10 ${panelHeaderBg}`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className={`text-lg font-bold ${headerTextClass}`}>Upgrades</h2>
+              <p className={`text-xs mt-0.5 ${headerSubClass}`}>Build your koala empire</p>
+            </div>
+            {/* Ascend button */}
+            <button
+              onClick={() => canAscend && setShowPrestigeConfirm(true)}
+              disabled={!canAscend}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                canAscend
+                  ? "bg-purple-600 text-white hover:bg-purple-500 cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                  : `${isDark ? "bg-white/5 text-white/20" : "bg-gray-100 text-gray-400"} cursor-not-allowed`
+              }`}
+              title={canAscend ? `Ascend for +${essenceGain} essence` : `Earn more lifetime leaves to ascend (need 1M+)`}
+            >
+              🔄 Ascend{canAscend ? ` (+${essenceGain})` : ""}
+            </button>
+          </div>
+          {/* Multiplier bar */}
+          {totalMultiplier > 1 && (
+            <div className={`text-[10px] mt-2 ${headerSubClass}`}>
+              Production multiplier: x{totalMultiplier.toFixed(2)}
+              {essenceCount > 0 && <span> ({essenceCount} essence)</span>}
+              {unlockedAchievements.length > 0 && <span> ({unlockedAchievements.length} achievements)</span>}
+            </div>
+          )}
         </div>
 
         <div className="p-3 space-y-2">
@@ -796,52 +1233,23 @@ export default function KoalaClicker() {
                 onClick={() => buyUpgrade(upgrade.id)}
                 disabled={!canAfford}
                 className={`w-full text-left rounded-xl border-2 p-3 transition-all duration-150
-                  ${canAfford
-                    ? hasPortal
-                      ? "border-purple-500/40 bg-purple-900/40 hover:border-purple-400 hover:shadow-md cursor-pointer"
-                      : hasForest
-                        ? "border-emerald-500/40 bg-emerald-900/30 hover:border-emerald-400 hover:shadow-md cursor-pointer"
-                        : "border-emerald-300 bg-white hover:border-emerald-500 hover:shadow-md cursor-pointer"
-                    : hasPortal
-                      ? "border-purple-800/30 bg-purple-950/30 opacity-50 cursor-not-allowed"
-                      : hasForest
-                        ? "border-emerald-800/30 bg-emerald-950/30 opacity-50 cursor-not-allowed"
-                        : "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
-                  }`}
+                  ${canAfford ? cardBgAfford : cardBgLocked}`}
               >
                 <div className="flex items-start gap-3">
-                  <div className="text-2xl flex-shrink-0 mt-0.5">
-                    {upgrade.emoji}
-                  </div>
+                  <div className="text-2xl flex-shrink-0 mt-0.5">{upgrade.emoji}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className={`font-bold text-sm ${hasPortal ? "text-purple-100" : hasForest ? "text-emerald-100" : "text-gray-900"}`}>
-                        {upgrade.name}
-                      </span>
-                      <span className={`text-xs font-bold rounded-full px-2 py-0.5 ${
-                        hasPortal ? "text-purple-200 bg-purple-800/50" : hasForest ? "text-emerald-200 bg-emerald-800/50" : "text-emerald-700 bg-emerald-100"
-                      }`}>
-                        {upgrade.owned}
-                      </span>
+                      <span className={`font-bold text-sm ${cardNameClass}`}>{upgrade.name}</span>
+                      <span className={`text-xs font-bold rounded-full px-2 py-0.5 ${badgeBg}`}>{upgrade.owned}</span>
                     </div>
-                    <div className={`text-xs mt-0.5 ${hasPortal ? "text-purple-300" : hasForest ? "text-emerald-300" : "text-gray-500"}`}>
-                      {upgrade.description}
-                    </div>
+                    <div className={`text-xs mt-0.5 ${cardDescClass}`}>{upgrade.description}</div>
                     <div className="flex items-center justify-between mt-1.5">
-                      <span
-                        className={`text-xs font-bold tabular-nums ${
-                          canAfford
-                            ? hasPortal ? "text-purple-300" : hasForest ? "text-emerald-300" : "text-emerald-600"
-                            : "text-red-400"
-                        }`}
-                      >
+                      <span className={`text-xs font-bold tabular-nums ${canAfford ? cardCostClass : "text-red-400"}`}>
                         🍃 {formatNumber(cost)}
                       </span>
-                      <span className={`text-[10px] ${hasPortal ? "text-purple-400" : hasForest ? "text-emerald-400" : "text-gray-400"}`}>
-                        {upgrade.lps > 0 &&
-                          `+${formatNumber(upgrade.lps)}/s`}
-                        {upgrade.clickBonus > 0 &&
-                          `+${formatNumber(upgrade.clickBonus)}/click`}
+                      <span className={`text-[10px] ${cardStatClass}`}>
+                        {upgrade.lps > 0 && `+${formatNumber(upgrade.lps)}/s`}
+                        {upgrade.clickBonus > 0 && `+${formatNumber(upgrade.clickBonus)}/click`}
                       </span>
                     </div>
                   </div>

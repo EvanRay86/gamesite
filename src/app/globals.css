@@ -121,6 +121,11 @@
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+@keyframes koala-golden-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(247,183,49,0.6)); transform: scale(1) rotate(-5deg); }
+  50% { filter: drop-shadow(0 0 20px rgba(247,183,49,1)); transform: scale(1.1) rotate(5deg); }
+}
+
 body {
   background: #ffffff;
   min-height: 100vh;
