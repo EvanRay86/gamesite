@@ -1,10 +1,11 @@
 import type { CrosswordPuzzle, CrosswordClue, CrosswordCell } from "@/types/crossword";
+import { getSupabase } from "./supabase";
 
 // ---------------------------------------------------------------------------
 // Word placement engine — builds a crossword grid from a list of clue entries
 // ---------------------------------------------------------------------------
 
-interface ClueEntry {
+export interface ClueEntry {
   answer: string;
   clue: string;
 }
@@ -267,11 +268,11 @@ function buildPuzzle(
 }
 
 // ---------------------------------------------------------------------------
-// Daily puzzle data — news & pop culture themed
+// Fallback seed puzzles — rotate through these when Supabase is unavailable
 // ---------------------------------------------------------------------------
 
-const dailyPuzzles: Record<string, { title: string; subtitle: string; entries: ClueEntry[] }> = {
-  "2026-03-24": {
+const SEED_PUZZLES: { title: string; subtitle: string; entries: ClueEntry[] }[] = [
+  {
     title: "News Crossword",
     subtitle: "Today in the headlines — March 24, 2026",
     entries: [
@@ -289,23 +290,78 @@ const dailyPuzzles: Record<string, { title: string; subtitle: string; entries: C
       { answer: "FISK", clue: "Wilson ___, Kingpin who declared martial law in Hell's Kitchen" },
     ],
   },
-};
-
-// Fallback puzzle for any date without specific data
-const fallbackEntries: ClueEntry[] = [
-  { answer: "HEADLINE", clue: "Top story in a newspaper" },
-  { answer: "BREAKING", clue: "___ news: urgent report" },
-  { answer: "ANCHOR", clue: "TV news presenter" },
-  { answer: "VIRAL", clue: "Spreading rapidly online" },
-  { answer: "TREND", clue: "What's popular on social media" },
-  { answer: "SUMMIT", clue: "Meeting of world leaders" },
-  { answer: "CLIMATE", clue: "Global ___ change" },
-  { answer: "BALLOT", clue: "What voters cast on Election Day" },
-  { answer: "PODCAST", clue: "Audio show you subscribe to" },
-  { answer: "STREAM", clue: "Watch a show online" },
-  { answer: "MEME", clue: "Funny image shared on the internet" },
-  { answer: "SCOOP", clue: "Exclusive news story" },
+  {
+    title: "News Crossword",
+    subtitle: "Test your knowledge of current events",
+    entries: [
+      { answer: "HEADLINE", clue: "Top story in a newspaper" },
+      { answer: "BREAKING", clue: "___ news: urgent report" },
+      { answer: "ANCHOR", clue: "TV news presenter" },
+      { answer: "VIRAL", clue: "Spreading rapidly online" },
+      { answer: "TREND", clue: "What's popular on social media" },
+      { answer: "SUMMIT", clue: "Meeting of world leaders" },
+      { answer: "CLIMATE", clue: "Global ___ change" },
+      { answer: "BALLOT", clue: "What voters cast on Election Day" },
+      { answer: "PODCAST", clue: "Audio show you subscribe to" },
+      { answer: "STREAM", clue: "Watch a show online" },
+      { answer: "MEME", clue: "Funny image shared on the internet" },
+      { answer: "SCOOP", clue: "Exclusive news story" },
+    ],
+  },
+  {
+    title: "News Crossword",
+    subtitle: "Headlines and pop culture",
+    entries: [
+      { answer: "OSCAR", clue: "Golden statuette for best picture" },
+      { answer: "SENATE", clue: "Upper chamber of Congress" },
+      { answer: "TESLA", clue: "Elon Musk's electric car company" },
+      { answer: "GRAMMY", clue: "Top music industry award" },
+      { answer: "STOCK", clue: "___ market: where shares are traded" },
+      { answer: "TARIFF", clue: "Tax on imported goods" },
+      { answer: "NETFLIX", clue: "Streaming giant behind 'Squid Game'" },
+      { answer: "RALLY", clue: "Market surge or political gathering" },
+      { answer: "CEASE", clue: "___fire: end to hostilities" },
+      { answer: "ALBUM", clue: "Collection of songs released together" },
+      { answer: "SOLAR", clue: "___ eclipse: moon blocks the sun" },
+      { answer: "PRIME", clue: "___ minister: head of government" },
+    ],
+  },
 ];
+
+// ---------------------------------------------------------------------------
+// Supabase-backed fetching
+// ---------------------------------------------------------------------------
+
+interface StoredCrosswordData {
+  id: string;
+  puzzle_date: string;
+  title: string;
+  subtitle: string;
+  entries: ClueEntry[];
+}
+
+export async function getCrosswordByDate(
+  date: string
+): Promise<StoredCrosswordData | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("crossword_puzzles")
+    .select("*")
+    .eq("puzzle_date", date)
+    .single();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    puzzle_date: data.puzzle_date,
+    title: data.title,
+    subtitle: data.subtitle,
+    entries: data.entries,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -313,25 +369,61 @@ const fallbackEntries: ClueEntry[] = [
 
 const GRID_SIZE = 20;
 
-export function getCrosswordPuzzle(date: string): CrosswordPuzzle {
-  const data = dailyPuzzles[date] ?? {
-    title: "News Crossword",
-    subtitle: "Test your knowledge of current events",
-    entries: fallbackEntries,
-  };
-
-  const placed = placeWords(data.entries, GRID_SIZE);
+function buildFromEntries(
+  id: string,
+  date: string,
+  title: string,
+  subtitle: string,
+  entries: ClueEntry[]
+): CrosswordPuzzle {
+  const placed = placeWords(entries, GRID_SIZE);
 
   if (!placed || placed.length === 0) {
-    // Should not happen with well-chosen words, but fallback
-    const fb = placeWords(fallbackEntries, GRID_SIZE)!;
-    return buildPuzzle(date, date, data.title, data.subtitle, fb);
+    // Fall back to seed puzzle 1 (news-themed generic)
+    const fb = placeWords(SEED_PUZZLES[1].entries, GRID_SIZE)!;
+    return buildPuzzle(id, date, title, subtitle, fb);
   }
 
-  return buildPuzzle(date, date, data.title, data.subtitle, placed);
+  return buildPuzzle(id, date, title, subtitle, placed);
 }
 
-export function getTodaysCrossword(): CrosswordPuzzle {
-  const today = new Date().toISOString().slice(0, 10);
-  return getCrosswordPuzzle(today);
+/**
+ * Get the crossword puzzle for a given date.
+ * Tries Supabase first, then falls back to rotating seed puzzles.
+ */
+export async function getCrosswordPuzzle(
+  date: string
+): Promise<CrosswordPuzzle> {
+  // 1. Try Supabase (AI-generated daily puzzle)
+  const stored = await getCrosswordByDate(date);
+  if (stored) {
+    return buildFromEntries(
+      stored.id,
+      date,
+      stored.title,
+      stored.subtitle,
+      stored.entries
+    );
+  }
+
+  // 2. Fall back to rotating seed puzzles
+  return getFallbackCrossword(date);
+}
+
+export function getFallbackCrossword(date: string): CrosswordPuzzle {
+  const epoch = new Date("2024-01-01").getTime();
+  const target = new Date(date).getTime();
+  const daysSinceEpoch = Math.floor(
+    (target - epoch) / (1000 * 60 * 60 * 24)
+  );
+  const index = Math.abs(daysSinceEpoch) % SEED_PUZZLES.length;
+  const seed = SEED_PUZZLES[index];
+
+  return buildFromEntries(
+    `fallback-crossword-${date}`,
+    date,
+    seed.title,
+    seed.subtitle,
+    seed.entries
+  );
 }
