@@ -151,14 +151,13 @@ export const games: Game[] = [
   },
 
   {
-    slug: "clicker-frenzy",
-    name: "Clicker Frenzy",
+    slug: "koala-clicker",
+    name: "Koala Clicker",
     description:
-      "Tap your way to riches. Upgrades, prestiges, and endless progression.",
+      "Click the koala, collect eucalyptus leaves, and build the ultimate koala colony.",
     category: "arcade",
-    color: "amber",
-    creditCost: 5,
-    comingSoon: true,
+    color: "green",
+    creditCost: 0,
   },
 
   {

@@ -89,6 +89,11 @@
   50% { opacity: 0.10; }
 }
 
+@keyframes koala-float-up {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-60px); }
+}
+
 body {
   background: #ffffff;
   min-height: 100vh;
