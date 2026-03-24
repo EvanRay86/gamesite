@@ -272,17 +272,19 @@ export default function KoalaClicker() {
   // ── Buy upgrade ─────────────────────────────────────────────────────
   const buyUpgrade = useCallback(
     (upgradeId: string) => {
+      const upgrade = upgrades.find((u) => u.id === upgradeId);
+      if (!upgrade) return;
+      const cost = getCost(upgrade);
+      if (leaves < cost) return;
+
+      setLeaves((l) => l - cost);
       setUpgrades((prev) =>
-        prev.map((u) => {
-          if (u.id !== upgradeId) return u;
-          const cost = getCost(u);
-          if (leaves < cost) return u;
-          setLeaves((l) => l - cost);
-          return { ...u, owned: u.owned + 1 };
-        }),
+        prev.map((u) =>
+          u.id === upgradeId ? { ...u, owned: u.owned + 1 } : u,
+        ),
       );
     },
-    [leaves],
+    [leaves, upgrades],
   );
 
   if (!loaded) {
