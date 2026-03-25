@@ -45,7 +45,7 @@ export const games: Game[] = [
     name: "Wordle",
     description: "Six guesses to find the five-letter word.",
     category: "daily",
-    color: "amber",
+    color: "green",
     comingSoon: true,
   },
 
@@ -132,11 +132,38 @@ export const games: Game[] = [
   },
 
   {
+    slug: "crossword",
+    name: "News Crossword",
+    description:
+      "A daily crossword puzzle built from today's headlines and pop culture.",
+    category: "daily",
+    color: "amber",
+  },
+
+  {
     slug: "daily-trivia",
     name: "8 Second Trivia",
     description: "Eight questions, eight seconds each. How far can you go?",
     category: "daily",
     color: "sky",
+  },
+
+  {
+    slug: "geo-guess",
+    name: "GeoGuess",
+    description:
+      "Guess the country from progressive hints: flag, capital, population, and fun facts.",
+    category: "daily",
+    color: "green",
+  },
+
+  {
+    slug: "mathler",
+    name: "Mathler",
+    description:
+      "Find the hidden math equation that equals the target number.",
+    category: "daily",
+    color: "purple",
   },
 
   // ── Arcade Games ─────────────────────────────────────────────────────────

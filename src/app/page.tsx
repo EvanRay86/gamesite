@@ -275,11 +275,106 @@ function SlimePreview() {
   );
 }
 
+/* ─── Crossword Mini Preview ────────────────────────────────────────────── */
+
+function CrosswordPreview() {
+  // A small decorative crossword grid
+  const mini = [
+    [0, 0, 1, 1, 1, 1, 0],
+    [0, 0, 1, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 0, 0],
+    [0, 0, 1, 0, 1, 0, 0],
+    [0, 1, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 1, 0, 0],
+  ];
+  const letters = [
+    ["", "", "N", "E", "W", "S", ""],
+    ["", "", "A", "", "", "", ""],
+    ["T", "R", "A", "D", "E", "", ""],
+    ["", "", "Q", "", "C", "", ""],
+    ["", "S", "U", "M", "I", "T", ""],
+    ["", "", "", "", "F", "", ""],
+  ];
+  return (
+    <div className="mb-4 flex justify-center">
+      <div className="inline-grid gap-[2px] bg-text-primary/20 p-[2px] rounded">
+        {mini.map((row, ri) =>
+          row.map((cell, ci) => (
+            <div
+              key={`${ri}-${ci}`}
+              className={`flex items-center justify-center text-[8px] sm:text-[9px] font-bold uppercase
+                ${cell ? "bg-white text-text-primary" : "bg-transparent"}`}
+              style={{
+                width: 20,
+                height: 20,
+                gridRow: ri + 1,
+                gridColumn: ci + 1,
+              }}
+            >
+              {cell ? letters[ri][ci] : ""}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── GeoGuess Mini Preview ────────────────────────────────────────────── */
+
+function GeoGuessPreview() {
+  return (
+    <div className="mb-4 rounded-lg bg-green/5 border border-green/20 p-3">
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-3xl">🇧🇷</span>
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-green">Hint 1</span>
+          <p className="text-xs font-semibold text-text-primary">South America</p>
+        </div>
+      </div>
+      <div className="flex gap-1.5">
+        <div className="rounded bg-white border border-border-light px-2 py-1 text-[10px] font-medium text-text-secondary flex-1 text-center">Argentina?</div>
+        <div className="rounded bg-green text-white px-2 py-1 text-[10px] font-bold flex-1 text-center">Brazil</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Mathler Mini Preview ─────────────────────────────────────────────── */
+
+function MathlerPreview() {
+  const rows = [
+    { chars: "15+9*3", colors: ["green", "gray", "yellow", "gray", "green", "green"] },
+    { chars: "18-3*2", colors: ["green", "green", "green", "green", "green", "green"] },
+  ];
+  return (
+    <div className="mb-4 flex flex-col items-center gap-1">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-purple mb-1">Target: 12</span>
+      {rows.map((row, ri) => (
+        <div key={ri} className="flex gap-1">
+          {row.chars.split("").map((ch, ci) => (
+            <div
+              key={ci}
+              className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded text-white
+                ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "yellow" ? "bg-amber" : "bg-gray-400"}`}
+            >
+              {ch}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ─── Card Components ────────────────────────────────────────────────────── */
 
 function DailyCard({ game }: { game: Game }) {
   const isCluster = game.slug === "cluster";
   const isTrivia = game.slug === "daily-trivia";
+  const isCrossword = game.slug === "crossword";
+  const isGeoGuess = game.slug === "geo-guess";
+  const isMathler = game.slug === "mathler";
 
   return (
     <Link
@@ -295,6 +390,9 @@ function DailyCard({ game }: { game: Game }) {
       {/* Preview */}
       {isCluster && <ClusterPreview />}
       {isTrivia && <TriviaPreview />}
+      {isCrossword && <CrosswordPreview />}
+      {isGeoGuess && <GeoGuessPreview />}
+      {isMathler && <MathlerPreview />}
 
       <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
         {game.name}
