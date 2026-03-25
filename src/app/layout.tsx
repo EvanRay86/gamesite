@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import TopNav from "@/components/layout/TopNav";
+import MarqueeBg from "@/components/MarqueeBg";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
+        <MarqueeBg />
         <TopNav />
         {children}
       </body>
