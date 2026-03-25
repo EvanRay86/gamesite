@@ -155,6 +155,24 @@ export const games: Game[] = [
     color: "sky",
   },
 
+  {
+    slug: "geo-guess",
+    name: "GeoGuess",
+    description:
+      "Guess the country from progressive hints: flag, capital, population, and fun facts.",
+    category: "daily",
+    color: "green",
+  },
+
+  {
+    slug: "mathler",
+    name: "Mathler",
+    description:
+      "Find the hidden math equation that equals the target number.",
+    category: "daily",
+    color: "purple",
+  },
+
   // ── Arcade Games ─────────────────────────────────────────────────────────
 
   {

@@ -321,12 +321,61 @@ function CrosswordPreview() {
   );
 }
 
+/* ─── GeoGuess Mini Preview ────────────────────────────────────────────── */
+
+function GeoGuessPreview() {
+  return (
+    <div className="mb-4 rounded-lg bg-green/5 border border-green/20 p-3">
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-3xl">🇧🇷</span>
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-green">Hint 1</span>
+          <p className="text-xs font-semibold text-text-primary">South America</p>
+        </div>
+      </div>
+      <div className="flex gap-1.5">
+        <div className="rounded bg-white border border-border-light px-2 py-1 text-[10px] font-medium text-text-secondary flex-1 text-center">Argentina?</div>
+        <div className="rounded bg-green text-white px-2 py-1 text-[10px] font-bold flex-1 text-center">Brazil</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Mathler Mini Preview ─────────────────────────────────────────────── */
+
+function MathlerPreview() {
+  const rows = [
+    { chars: "15+9*3", colors: ["green", "gray", "yellow", "gray", "green", "green"] },
+    { chars: "18-3*2", colors: ["green", "green", "green", "green", "green", "green"] },
+  ];
+  return (
+    <div className="mb-4 flex flex-col items-center gap-1">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-purple mb-1">Target: 12</span>
+      {rows.map((row, ri) => (
+        <div key={ri} className="flex gap-1">
+          {row.chars.split("").map((ch, ci) => (
+            <div
+              key={ci}
+              className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded text-white
+                ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "yellow" ? "bg-amber" : "bg-gray-400"}`}
+            >
+              {ch}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ─── Card Components ────────────────────────────────────────────────────── */
 
 function DailyCard({ game }: { game: Game }) {
   const isLinked = game.slug === "linked";
   const isTrivia = game.slug === "daily-trivia";
   const isCrossword = game.slug === "crossword";
+  const isGeoGuess = game.slug === "geo-guess";
+  const isMathler = game.slug === "mathler";
 
   return (
     <Link
@@ -343,6 +392,8 @@ function DailyCard({ game }: { game: Game }) {
       {isLinked && <LinkedPreview />}
       {isTrivia && <TriviaPreview />}
       {isCrossword && <CrosswordPreview />}
+      {isGeoGuess && <GeoGuessPreview />}
+      {isMathler && <MathlerPreview />}
 
       <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
         {game.name}
