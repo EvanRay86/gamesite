@@ -36,12 +36,12 @@ const bgLightMap: Record<GameColor, string> = {
 };
 
 const hoverBgMap: Record<GameColor, string> = {
-  coral: "hover:bg-coral/5",
-  teal: "hover:bg-teal/5",
-  sky: "hover:bg-sky/5",
-  amber: "hover:bg-amber/5",
-  purple: "hover:bg-purple/5",
-  green: "hover:bg-green/5",
+  coral: "hover:bg-[#fff5f5]",
+  teal: "hover:bg-[#f0fdfb]",
+  sky: "hover:bg-[#f0f9ff]",
+  amber: "hover:bg-[#fffbeb]",
+  purple: "hover:bg-[#faf5ff]",
+  green: "hover:bg-[#f0fdf4]",
 };
 
 const borderColorMap: Record<GameColor, string> = {
@@ -84,7 +84,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen flex flex-col items-center px-4 py-10 relative overflow-hidden">
       {/* ── Hero Section ─────────────────────────────────────────────────── */}
-      <section className="text-center mb-12 max-w-2xl animate-[fade-up_0.6s_ease_forwards]">
+      <section className="text-center mb-10 max-w-3xl animate-[fade-up_0.6s_ease_forwards]">
         <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-3 leading-snug">
           Your daily dose of brain teasers, quick matches, and friendly
           competition.
@@ -112,7 +112,7 @@ export default function HomePage() {
 
       {/* ── Featured Game ──────────────────────────────────────────────── */}
       {featuredGame && (
-        <section className="w-full max-w-[640px] mb-14 animate-[fade-up_0.5s_ease_0.3s_forwards] opacity-0">
+        <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.3s_forwards] opacity-0">
           <h2 className="text-xl font-bold text-text-primary mb-5">
             Featured
           </h2>
@@ -121,7 +121,7 @@ export default function HomePage() {
       )}
 
       {/* ── Today's Puzzles ──────────────────────────────────────────────── */}
-      <section id="daily" className="w-full max-w-[640px] mb-14 animate-[fade-up_0.5s_ease_0.35s_forwards] opacity-0">
+      <section id="daily" className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.35s_forwards] opacity-0">
         <div className="flex items-baseline justify-between mb-5">
           <h2 className="text-xl font-bold text-text-primary">
             Today&apos;s Puzzles
@@ -134,7 +134,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {dailyGames.map((game) => (
             <DailyCard key={game.slug} game={game} />
           ))}
@@ -142,7 +142,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Arcade ───────────────────────────────────────────────────────── */}
-      <section id="arcade" className="w-full max-w-[640px] mb-14 animate-[fade-up_0.5s_ease_0.4s_forwards] opacity-0">
+      <section id="arcade" className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.4s_forwards] opacity-0">
         <div className="flex items-baseline justify-between mb-5">
           <h2 className="text-xl font-bold text-text-primary">Arcade</h2>
           <Link
@@ -153,7 +153,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {arcadeGames.map((game) => (
             <ArcadeCard key={game.slug} game={game} />
           ))}
@@ -161,7 +161,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Coming Soon ──────────────────────────────────────────────────── */}
-      <section className="w-full max-w-[640px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
+      <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
         <div className="bg-white rounded-2xl border border-border-light p-8 text-center shadow-sm">
           <h2 className="text-lg font-bold text-text-primary mb-4">
             More games on the way
@@ -180,7 +180,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Subscription CTA ─────────────────────────────────────────────── */}
-      <section className="w-full max-w-[640px] mb-14 animate-[fade-up_0.5s_ease_0.55s_forwards] opacity-0">
+      <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.55s_forwards] opacity-0">
         <div className="relative rounded-2xl bg-gradient-to-br from-coral via-coral-dark to-amber p-8 sm:p-10 text-center text-white shadow-lg shadow-coral/20">
           <h2 className="text-2xl font-bold mb-2">
             Unlock the full experience
@@ -200,7 +200,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="w-full max-w-[640px] pt-6 pb-4 text-center animate-[fade-up_0.5s_ease_0.6s_forwards] opacity-0">
+      <footer className="w-full max-w-[1120px] pt-6 pb-4 text-center animate-[fade-up_0.5s_ease_0.6s_forwards] opacity-0">
         <p className="text-text-muted text-sm">
           Built for quick breaks and long rivalries.
         </p>
