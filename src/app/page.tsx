@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   getDailyGames,
   getArcadeGames,
@@ -264,18 +265,8 @@ function TriviaPreview() {
 
 function SlimePreview() {
   return (
-    <div className="relative h-16 mb-4 flex items-end justify-center gap-8 overflow-hidden">
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-0.5 h-6 bg-text-dim/30 rounded-t-full" />
-      <div className="relative z-10">
-        <div className="w-8 h-4 rounded-t-full bg-coral" />
-      </div>
-      <div className="absolute top-2 left-1/2 -translate-x-1/2">
-        <div className="w-3 h-3 rounded-full bg-text-primary/60" />
-      </div>
-      <div className="relative z-10">
-        <div className="w-8 h-4 rounded-t-full bg-teal" />
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-text-dim/20" />
+    <div className="mb-4 rounded-xl overflow-hidden">
+      <Image src="/images/slime-volleyball.jpg" alt="Slime Volleyball" width={688} height={384} className="w-full h-auto" />
     </div>
   );
 }
@@ -375,35 +366,9 @@ function MathlerPreview() {
 /* ─── Heardle Mini Preview ─────────────────────────────────────────────── */
 
 function HeardlePreview() {
-  const bars = [3, 5, 8, 6, 10, 7, 4, 9, 6, 11, 8, 5, 7, 10, 6, 9, 4, 8, 12, 7, 5, 10, 8, 6];
   return (
-    <div className="mb-4 rounded-lg bg-purple/5 border border-purple/20 p-3">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-6 h-6 rounded-full bg-purple flex items-center justify-center">
-          <span className="text-white text-[10px]">&#9654;</span>
-        </div>
-        <div className="flex-1 h-1 bg-purple/20 rounded-full overflow-hidden">
-          <div className="h-full w-1/3 bg-purple rounded-full" />
-        </div>
-        <span className="text-[10px] font-bold text-purple tabular-nums">0:01</span>
-      </div>
-      <div className="flex items-end justify-center gap-[2px] h-8">
-        {bars.map((h, i) => (
-          <div
-            key={i}
-            className={`w-1 rounded-full ${i < 8 ? "bg-purple" : "bg-purple/25"}`}
-            style={{ height: `${h * 2.5}px` }}
-          />
-        ))}
-      </div>
-      <div className="flex gap-1 mt-2">
-        <div className="h-1.5 flex-1 rounded-full bg-red-400" />
-        <div className="h-1.5 flex-1 rounded-full bg-red-400" />
-        <div className="h-1.5 flex-1 rounded-full bg-amber" />
-        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
-        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
-        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
-      </div>
+    <div className="mb-4 rounded-xl overflow-hidden">
+      <Image src="/images/heardle.jpg" alt="Heardle - guess the song" width={688} height={384} className="w-full h-auto" />
     </div>
   );
 }
@@ -412,25 +377,8 @@ function HeardlePreview() {
 
 function FramedPreview() {
   return (
-    <div className="mb-4 rounded-lg bg-green/5 border border-green/20 p-3">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-green">Frame 2 of 6</span>
-        <span className="text-[10px] font-bold text-text-dim">🎬</span>
-      </div>
-      <div className="relative w-full h-16 rounded bg-gradient-to-br from-green/20 via-green/10 to-amber/10 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center opacity-20">
-          <div className="w-12 h-8 border-2 border-green rounded" />
-        </div>
-        <span className="text-2xl">🎞️</span>
-      </div>
-      <div className="flex gap-1 mt-2">
-        <div className="h-1.5 flex-1 rounded-full bg-red-400" />
-        <div className="h-1.5 flex-1 rounded-full bg-green" />
-        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
-        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
-        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
-        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
-      </div>
+    <div className="mb-4 rounded-xl overflow-hidden">
+      <Image src="/images/framed.jpg" alt="Framed - guess the movie" width={688} height={384} className="w-full h-auto" />
     </div>
   );
 }
@@ -439,12 +387,8 @@ function FramedPreview() {
 
 function KoalaPreview() {
   return (
-    <div className="relative h-20 mb-4 flex flex-col items-center justify-center">
-      <span className="text-4xl mb-1">🐨</span>
-      <div className="flex items-center gap-1">
-        <span className="text-[10px]">🍃</span>
-        <span className="text-[11px] font-bold text-green tabular-nums">1,247</span>
-      </div>
+    <div className="mb-4 rounded-xl overflow-hidden">
+      <Image src="/images/koala-clicker.jpg" alt="Koala Clicker" width={688} height={384} className="w-full h-auto" />
     </div>
   );
 }
