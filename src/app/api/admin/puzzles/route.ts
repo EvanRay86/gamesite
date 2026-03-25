@@ -39,6 +39,18 @@ export async function GET() {
     .select("id, puzzle_date, title, artist, year, variant, song_slug, created_at")
     .order("puzzle_date", { ascending: true });
 
+  // Fetch anagram puzzles (table may not exist yet — fail gracefully)
+  const { data: anagram } = await supabase
+    .from("anagram_puzzles")
+    .select("id, puzzle_date, words, created_at")
+    .order("puzzle_date", { ascending: true });
+
+  // Fetch word ladder puzzles (table may not exist yet — fail gracefully)
+  const { data: wordLadder } = await supabase
+    .from("word_ladder_puzzles")
+    .select("id, puzzle_date, start_word, end_word, solution, created_at")
+    .order("puzzle_date", { ascending: true });
+
   if (triviaErr || crosswordErr || clustersErr) {
     return NextResponse.json(
       { error: "Failed to fetch puzzles", details: { triviaErr, crosswordErr, clustersErr } },
@@ -52,6 +64,8 @@ export async function GET() {
     clusters: clusters ?? [],
     framed: framed ?? [],
     heardle: heardle ?? [],
+    anagram: anagram ?? [],
+    wordLadder: wordLadder ?? [],
     fetchedAt: new Date().toISOString(),
   });
 }

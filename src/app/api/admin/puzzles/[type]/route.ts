@@ -8,6 +8,8 @@ const TABLE_MAP: Record<string, string> = {
   connections: "puzzles",
   framed: "framed_puzzles",
   heardle: "heardle_puzzles",
+  anagram: "anagram_puzzles",
+  "word-ladder": "word_ladder_puzzles",
 };
 
 function getTable(type: string): string | null {

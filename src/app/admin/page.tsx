@@ -49,16 +49,34 @@ interface HeardlePuzzle {
   created_at: string;
 }
 
+interface AnagramPuzzle {
+  id: string;
+  puzzle_date: string;
+  words: { word: string; scrambled: string; hint: string }[];
+  created_at: string;
+}
+
+interface WordLadderPuzzle {
+  id: string;
+  puzzle_date: string;
+  start_word: string;
+  end_word: string;
+  solution: string[];
+  created_at: string;
+}
+
 interface PuzzleData {
   trivia: TriviaPuzzle[];
   crosswords: CrosswordPuzzle[];
   clusters: ClusterPuzzle[];
   framed: FramedPuzzle[];
   heardle: HeardlePuzzle[];
+  anagram: AnagramPuzzle[];
+  wordLadder: WordLadderPuzzle[];
   fetchedAt: string;
 }
 
-type Tab = "overview" | "trivia" | "crossword" | "clusters" | "framed" | "heardle" | "prompt";
+type Tab = "overview" | "trivia" | "crossword" | "clusters" | "framed" | "heardle" | "anagram" | "word-ladder" | "prompt";
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
 
@@ -154,6 +172,22 @@ Format per date:
 }
 \`\`\`
 
+## 3. ANAGRAM SCRAMBLE (5 words per date)
+- 5 words, each 5-7 letters long
+- Mix of categories: animals, science, geography, food, music, sports, etc.
+- Each word has a scrambled version (shuffle the letters so it's not trivially obvious)
+- Each word has a one-word category hint
+
+Format per date:
+\`\`\`json
+{
+  "puzzle_date": "YYYY-MM-DD",
+  "words": [
+    { "word": "PLANET", "scrambled": "LENTAP", "hint": "Space" }
+  ]
+}
+\`\`\`
+
 ---
 
 After generating, provide the SQL INSERT statements to run in Supabase SQL editor:
@@ -166,6 +200,10 @@ INSERT INTO trivia_puzzles (puzzle_date, questions) VALUES
 -- Crosswords
 INSERT INTO crossword_puzzles (puzzle_date, title, entries) VALUES
 ('YYYY-MM-DD', 'Crossword #N', '[...]'::jsonb);
+
+-- Anagram
+INSERT INTO anagram_puzzles (puzzle_date, words) VALUES
+('YYYY-MM-DD', '[...]'::jsonb);
 \`\`\`
 
 IMPORTANT:
@@ -173,6 +211,8 @@ IMPORTANT:
 - Each crossword MUST have exactly 12 entries
 - correctIndex must be 0-3 and match the correct option
 - Crossword answers MUST be A-Z only, no spaces/hyphens
+- Each anagram MUST have exactly 5 words, each 5-7 letters
+- Scrambled letters must be a valid permutation of the answer (same letters, different order)
 - Double-check that news references are factually accurate
 - Make questions interesting and varied in difficulty`;
 }
@@ -208,6 +248,7 @@ export default function AdminPage() {
       const allDates = [
         ...json.trivia.map((p) => p.puzzle_date),
         ...json.crosswords.map((p) => p.puzzle_date),
+        ...json.anagram.map((p) => p.puzzle_date),
       ];
       if (allDates.length > 0) {
         const latest = allDates.sort().pop()!;
@@ -284,19 +325,25 @@ export default function AdminPage() {
   const upcomingClusters = data?.clusters.filter((p) => p.puzzle_date >= today) ?? [];
   const upcomingFramed = data?.framed.filter((p) => p.puzzle_date >= today) ?? [];
   const upcomingHeardle = data?.heardle.filter((p) => p.puzzle_date >= today) ?? [];
+  const upcomingAnagram = data?.anagram.filter((p) => p.puzzle_date >= today) ?? [];
+  const upcomingWordLadder = data?.wordLadder.filter((p) => p.puzzle_date >= today) ?? [];
 
   const latestTrivia = upcomingTrivia[upcomingTrivia.length - 1]?.puzzle_date;
   const latestCrossword = upcomingCrosswords[upcomingCrosswords.length - 1]?.puzzle_date;
   const latestClusters = upcomingClusters[upcomingClusters.length - 1]?.puzzle_date;
   const latestFramed = upcomingFramed[upcomingFramed.length - 1]?.puzzle_date;
   const latestHeardle = upcomingHeardle[upcomingHeardle.length - 1]?.puzzle_date;
+  const latestAnagram = upcomingAnagram[upcomingAnagram.length - 1]?.puzzle_date;
+  const latestWordLadder = upcomingWordLadder[upcomingWordLadder.length - 1]?.puzzle_date;
 
   const triviaBuffer = latestTrivia ? daysLeftNum(latestTrivia) : 0;
   const crosswordBuffer = latestCrossword ? daysLeftNum(latestCrossword) : 0;
   const framedBuffer = latestFramed ? daysLeftNum(latestFramed) : 0;
   const heardleBuffer = latestHeardle ? daysLeftNum(latestHeardle) : 0;
+  const anagramBuffer = latestAnagram ? daysLeftNum(latestAnagram) : 0;
+  const wordLadderBuffer = latestWordLadder ? daysLeftNum(latestWordLadder) : 0;
 
-  const needsAttention = triviaBuffer <= 2 || crosswordBuffer <= 2 || framedBuffer <= 2 || heardleBuffer <= 2;
+  const needsAttention = triviaBuffer <= 2 || crosswordBuffer <= 2 || framedBuffer <= 2 || heardleBuffer <= 2 || anagramBuffer <= 2 || wordLadderBuffer <= 2;
 
   // ── Date edit controls ────────────────────────────────────────────────
   function DateControl({ id, date, type }: { id: string; date: string; type: string }) {
@@ -390,7 +437,7 @@ export default function AdminPage() {
       <div className="border-b border-border">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex gap-1">
-            {(["overview", "trivia", "crossword", "clusters", "framed", "heardle", "prompt"] as Tab[]).map((t) => (
+            {(["overview", "trivia", "crossword", "clusters", "framed", "heardle", "anagram", "word-ladder", "prompt"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -400,7 +447,7 @@ export default function AdminPage() {
                     : "border-transparent text-text-muted hover:text-text-secondary"
                 }`}
               >
-                {t === "prompt" ? "Generate Puzzles" : t}
+                {t === "prompt" ? "Generate Puzzles" : t === "word-ladder" ? "Word Ladder" : t}
               </button>
             ))}
           </div>
@@ -437,6 +484,8 @@ export default function AdminPage() {
                         {crosswordBuffer <= 2 && `Crossword: ${crosswordBuffer} days remaining. `}
                         {framedBuffer <= 2 && `Framed: ${framedBuffer} days remaining. `}
                         {heardleBuffer <= 2 && `Heardle: ${heardleBuffer} days remaining. `}
+                        {anagramBuffer <= 2 && `Anagram: ${anagramBuffer} days remaining. `}
+                        {wordLadderBuffer <= 2 && `Word Ladder: ${wordLadderBuffer} days remaining. `}
                         Switch to the &quot;Generate Puzzles&quot; tab to create more.
                       </p>
                     </div>
@@ -444,7 +493,7 @@ export default function AdminPage() {
                 )}
 
                 {/* Stats grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                   <StatCard
                     label="Trivia"
                     count={data!.trivia.length}
@@ -485,6 +534,22 @@ export default function AdminPage() {
                     color="purple"
                     buffer={heardleBuffer}
                   />
+                  <StatCard
+                    label="Anagram"
+                    count={data!.anagram.length}
+                    upcoming={upcomingAnagram.length}
+                    lastDate={latestAnagram}
+                    color="teal"
+                    buffer={anagramBuffer}
+                  />
+                  <StatCard
+                    label="Word Ladder"
+                    count={data!.wordLadder.length}
+                    upcoming={upcomingWordLadder.length}
+                    lastDate={latestWordLadder}
+                    color="teal"
+                    buffer={wordLadderBuffer}
+                  />
                 </div>
 
                 {/* Timeline */}
@@ -500,6 +565,8 @@ export default function AdminPage() {
                           <th className="px-4 py-3 font-medium">Clusters</th>
                           <th className="px-4 py-3 font-medium">Framed</th>
                           <th className="px-4 py-3 font-medium">Heardle</th>
+                          <th className="px-4 py-3 font-medium">Anagram</th>
+                          <th className="px-4 py-3 font-medium">Word Ladder</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -530,6 +597,12 @@ export default function AdminPage() {
                             </td>
                             <td className="px-4 py-3">
                               <StatusDot ok={row.hasHeardle} />
+                            </td>
+                            <td className="px-4 py-3">
+                              <StatusDot ok={row.hasAnagram} />
+                            </td>
+                            <td className="px-4 py-3">
+                              <StatusDot ok={row.hasWordLadder} />
                             </td>
                           </tr>
                         ))}
@@ -722,6 +795,65 @@ export default function AdminPage() {
               />
             )}
 
+            {/* ── Anagram Tab ──────────────────────────────────────── */}
+            {tab === "anagram" && (
+              <PuzzleList
+                title="Anagram Puzzles"
+                items={data!.anagram}
+                renderItem={(p: AnagramPuzzle) => (
+                  <div key={p.id} className={`rounded-xl border border-border-light p-4 ${isPast(p.puzzle_date) ? "opacity-60" : ""}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <DateControl id={p.id} date={p.puzzle_date} type="anagram" />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-text-dim">{p.words.length} words</span>
+                        <DeleteButton id={p.id} type="anagram" label={`Anagram ${p.puzzle_date}`} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {p.words.map((w, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm">
+                          <span className="font-mono text-xs text-text-dim">{i + 1}.</span>
+                          <span className="font-semibold text-teal tracking-wide">{w.scrambled}</span>
+                          <span className="text-text-muted">&rarr;</span>
+                          <span className="font-semibold text-text-primary">{w.word}</span>
+                          <span className="text-xs text-text-dim">({w.hint})</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              />
+            )}
+
+            {/* ── Word Ladder Tab ────────────────────────────────────── */}
+            {tab === "word-ladder" && (
+              <PuzzleList
+                title="Word Ladder Puzzles"
+                items={data!.wordLadder}
+                renderItem={(p: WordLadderPuzzle) => (
+                  <div key={p.id} className={`rounded-xl border border-border-light p-4 ${isPast(p.puzzle_date) ? "opacity-60" : ""}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <DateControl id={p.id} date={p.puzzle_date} type="word-ladder" />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-mono font-semibold text-teal">
+                          {p.start_word?.toUpperCase()} &rarr; {p.end_word?.toUpperCase()}
+                        </span>
+                        <span className="text-xs text-text-dim">
+                          {p.solution ? `${p.solution.length - 2} steps` : ""}
+                        </span>
+                        <DeleteButton id={p.id} type="word-ladder" label={`Word Ladder ${p.puzzle_date}`} />
+                      </div>
+                    </div>
+                    {p.solution && (
+                      <div className="text-xs text-text-muted font-mono">
+                        {p.solution.map((w: string) => w.toUpperCase()).join(" → ")}
+                      </div>
+                    )}
+                  </div>
+                )}
+              />
+            )}
+
             {/* ── Prompt Generator Tab ──────────────────────────────── */}
             {tab === "prompt" && (
               <div className="space-y-6">
@@ -891,8 +1023,10 @@ function buildTimeline(data: PuzzleData) {
   const clustersDates = new Set(data.clusters.map((p) => p.puzzle_date));
   const framedDates = new Set(data.framed.map((p) => p.puzzle_date));
   const heardleDates = new Set(data.heardle.map((p) => p.puzzle_date));
+  const anagramDates = new Set(data.anagram.map((p) => p.puzzle_date));
+  const wordLadderDates = new Set(data.wordLadder.map((p) => p.puzzle_date));
 
-  const allDates = new Set([...triviaDates, ...crosswordDates, ...clustersDates, ...framedDates, ...heardleDates]);
+  const allDates = new Set([...triviaDates, ...crosswordDates, ...clustersDates, ...framedDates, ...heardleDates, ...anagramDates, ...wordLadderDates]);
 
   // Show from earliest puzzle to latest
   const sorted = [...allDates].sort();
@@ -900,7 +1034,7 @@ function buildTimeline(data: PuzzleData) {
   const minDate = sorted[0] && sorted[0] < today ? sorted[0] : today;
   const maxDate = sorted[sorted.length - 1] ?? new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10);
 
-  const result: { date: string; hasTrivia: boolean; hasCrossword: boolean; hasClusters: boolean; hasFramed: boolean; hasHeardle: boolean }[] = [];
+  const result: { date: string; hasTrivia: boolean; hasCrossword: boolean; hasClusters: boolean; hasFramed: boolean; hasHeardle: boolean; hasAnagram: boolean; hasWordLadder: boolean }[] = [];
   const d = new Date(minDate + "T00:00:00");
   const end = new Date(maxDate + "T00:00:00");
 
@@ -913,6 +1047,8 @@ function buildTimeline(data: PuzzleData) {
       hasClusters: clustersDates.has(ds),
       hasFramed: framedDates.has(ds),
       hasHeardle: heardleDates.has(ds),
+      hasAnagram: anagramDates.has(ds),
+      hasWordLadder: wordLadderDates.has(ds),
     });
     d.setDate(d.getDate() + 1);
   }

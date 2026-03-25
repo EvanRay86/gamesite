@@ -361,6 +361,61 @@ function MathlerPreview() {
   );
 }
 
+/* ─── Word Ladder Mini Preview ────────────────────────────────────────── */
+
+function WordLadderPreview() {
+  const words = ["COLD", "CORD", "CARD", "WARD", "WARM"];
+  return (
+    <div className="mb-4 flex flex-col items-center gap-1">
+      {words.map((word, wi) => (
+        <div key={wi} className="flex items-center gap-1">
+          {wi > 0 && <span className="text-text-dim text-[8px] absolute -mt-3">↓</span>}
+          <div className="flex gap-0.5">
+            {word.split("").map((ch, ci) => {
+              const prev = wi > 0 ? words[wi - 1] : null;
+              const changed = prev && prev[ci] !== ch;
+              return (
+                <div
+                  key={ci}
+                  className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded ${
+                    wi === 0
+                      ? "bg-teal/10 text-teal"
+                      : wi === words.length - 1
+                        ? "bg-amber/10 text-amber"
+                        : changed
+                          ? "bg-teal/10 text-teal"
+                          : "bg-gray-100 text-text-secondary"
+                  }`}
+                >
+                  {ch}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Anagram Mini Preview ────────────────────────────────────────────── */
+
+function AnagramPreview() {
+  const letters = ["L", "E", "N", "T", "A", "P"];
+  return (
+    <div className="mb-4 flex justify-center gap-1.5">
+      {letters.map((ch, i) => (
+        <div
+          key={i}
+          className="w-8 h-10 flex items-center justify-center rounded-lg bg-teal/10 text-teal text-sm font-bold"
+        >
+          {ch}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ─── Image-based Previews ────────────────────────────────────────────── */
 
 function HeardlePreview() {
@@ -447,10 +502,12 @@ function GamePreview({ slug }: { slug: string }) {
     case "crossword": return <CrosswordPreview />;
     case "geo-guess": return <GeoGuessPreview />;
     case "mathler": return <MathlerPreview />;
+    case "word-ladder": return <WordLadderPreview />;
     case "heardle": return <HeardlePreview />;
     case "framed": return <FramedPreview />;
     case "slime-volleyball": return <SlimePreview />;
     case "koala-clicker": return <KoalaPreview />;
+    case "anagram": return <AnagramPreview />;
     default: return null;
   }
 }

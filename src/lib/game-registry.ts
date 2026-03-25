@@ -168,6 +168,24 @@ export const games: Game[] = [
     color: "purple",
   },
 
+  {
+    slug: "word-ladder",
+    name: "Word Ladder",
+    description:
+      "Change one letter at a time to transform the start word into the target word.",
+    category: "daily",
+    color: "teal",
+  },
+
+  {
+    slug: "anagram",
+    name: "Anagram Scramble",
+    description:
+      "Unscramble five jumbled words before the clock runs out.",
+    category: "daily",
+    color: "teal",
+  },
+
   // ── Arcade Games ─────────────────────────────────────────────────────────
 
   {
@@ -184,6 +202,16 @@ export const games: Game[] = [
     name: "Koala Clicker",
     description:
       "Click the koala, collect eucalyptus leaves, and build the ultimate koala colony.",
+    category: "arcade",
+    color: "green",
+    creditCost: 0,
+  },
+
+  {
+    slug: "snake-arena",
+    name: "Snake Arena",
+    description:
+      "Eat, grow, and devour other players in this multiplayer snake battle.",
     category: "arcade",
     color: "green",
     creditCost: 0,
