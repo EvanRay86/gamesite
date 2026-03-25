@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import HeardleGame from "@/components/HeardleGame";
 import {
@@ -39,6 +40,14 @@ export default async function HeardleVariantPage({
   return (
     <main>
       <HeardleGame puzzle={puzzle} variant={variant} />
+      <div className="flex justify-center py-6">
+        <Link
+          href="/daily/heardle/archive"
+          className="text-text-muted text-sm hover:text-coral transition-colors no-underline"
+        >
+          Play past puzzles &rarr;
+        </Link>
+      </div>
     </main>
   );
 }

@@ -19,9 +19,10 @@ export async function POST(req: NextRequest) {
       count: frames.length,
     });
   } catch (err) {
-    console.error("Frame extraction failed:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Frame extraction failed:", message, err);
     return NextResponse.json(
-      { error: "Extraction failed. Check yt-dlp and ffmpeg." },
+      { error: `Extraction failed: ${message}` },
       { status: 500 },
     );
   }

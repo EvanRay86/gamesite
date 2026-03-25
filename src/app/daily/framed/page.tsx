@@ -1,3 +1,4 @@
+import Link from "next/link";
 import FramedGame from "@/components/FramedGame";
 import { getFramedPuzzleAsync, getTodayDate } from "@/lib/framed-puzzles";
 
@@ -15,6 +16,14 @@ export default async function FramedPage() {
   return (
     <main>
       <FramedGame puzzle={puzzle} variant="all" />
+      <div className="flex justify-center py-6">
+        <Link
+          href="/daily/framed/archive"
+          className="text-text-muted text-sm hover:text-coral transition-colors no-underline"
+        >
+          Play past puzzles &rarr;
+        </Link>
+      </div>
     </main>
   );
 }

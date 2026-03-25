@@ -308,6 +308,21 @@ function dateToDayNumber(date: string): number {
   return Math.floor(d.getTime() / 86_400_000);
 }
 
+export async function getHeardleArchiveDates(): Promise<{ puzzle_date: string }[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("heardle_puzzles")
+    .select("puzzle_date")
+    .eq("variant", "all")
+    .lte("puzzle_date", getTodayDate())
+    .order("puzzle_date", { ascending: false });
+
+  if (error || !data) return [];
+  return data;
+}
+
 /** All variant slugs that have at least one puzzle. */
 export function getAvailableVariants(): string[] {
   const set = new Set(seedPuzzles.map((p) => p.variant));

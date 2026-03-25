@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ClusterGame from "@/components/ClusterGame";
 import { getPuzzleByDate, getTodayDate, getFallbackPuzzle } from "@/lib/puzzles";
 
@@ -14,6 +15,14 @@ export default async function ClusterPage() {
   return (
     <main>
       <ClusterGame puzzle={puzzle} />
+      <div className="flex justify-center py-6">
+        <Link
+          href="/daily/cluster/archive"
+          className="text-text-muted text-sm hover:text-coral transition-colors no-underline"
+        >
+          Play past puzzles &rarr;
+        </Link>
+      </div>
     </main>
   );
 }

@@ -57,6 +57,20 @@ export async function generateAndStorePuzzle(
   };
 }
 
+export async function getTriviaArchiveDates(): Promise<{ puzzle_date: string }[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("trivia_puzzles")
+    .select("puzzle_date")
+    .lte("puzzle_date", getTodayDate())
+    .order("puzzle_date", { ascending: false });
+
+  if (error || !data) return [];
+  return data;
+}
+
 export function getFallbackTriviaPuzzle(date: string): TriviaPuzzle {
   const epoch = new Date("2024-01-01").getTime();
   const target = new Date(date).getTime();

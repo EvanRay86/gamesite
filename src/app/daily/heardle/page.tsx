@@ -1,3 +1,4 @@
+import Link from "next/link";
 import HeardleGame from "@/components/HeardleGame";
 import { getHeardlePuzzleAsync, getTodayDate } from "@/lib/heardle-puzzles";
 
@@ -15,6 +16,14 @@ export default async function HeardlePage() {
   return (
     <main>
       <HeardleGame puzzle={puzzle} variant="all" />
+      <div className="flex justify-center py-6">
+        <Link
+          href="/daily/heardle/archive"
+          className="text-text-muted text-sm hover:text-coral transition-colors no-underline"
+        >
+          Play past puzzles &rarr;
+        </Link>
+      </div>
     </main>
   );
 }

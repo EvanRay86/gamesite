@@ -1,3 +1,4 @@
+import Link from "next/link";
 import TriviaGame from "@/components/TriviaGame";
 import {
   getTriviaPuzzleByDate,
@@ -32,6 +33,14 @@ export default async function TriviaPage() {
   return (
     <main>
       <TriviaGame puzzle={puzzle} />
+      <div className="flex justify-center py-6">
+        <Link
+          href="/daily/daily-trivia/archive"
+          className="text-text-muted text-sm hover:text-coral transition-colors no-underline"
+        >
+          Play past puzzles &rarr;
+        </Link>
+      </div>
     </main>
   );
 }

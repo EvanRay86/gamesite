@@ -17,9 +17,10 @@ export async function POST(req: NextRequest) {
       durationSeconds,
     });
   } catch (err) {
-    console.error("Audio extraction failed:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Audio extraction failed:", message, err);
     return NextResponse.json(
-      { error: "Audio extraction failed. Check yt-dlp and ffmpeg." },
+      { error: `Audio extraction failed: ${message}` },
       { status: 500 },
     );
   }

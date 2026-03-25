@@ -1,0 +1,57 @@
+import { NextResponse } from "next/server";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getSupabase } from "@/lib/supabase";
+
+/** GET /api/admin/puzzles — fetch ALL puzzles (bypasses RLS) for the admin panel */
+export async function GET() {
+  const supabase = getSupabaseAdmin() ?? getSupabase();
+  if (!supabase) {
+    return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
+  }
+
+  // Fetch all trivia puzzles
+  const { data: trivia, error: triviaErr } = await supabase
+    .from("trivia_puzzles")
+    .select("id, puzzle_date, questions, created_at")
+    .order("puzzle_date", { ascending: true });
+
+  // Fetch all crossword puzzles
+  const { data: crosswords, error: crosswordErr } = await supabase
+    .from("crossword_puzzles")
+    .select("id, puzzle_date, title, entries, created_at")
+    .order("puzzle_date", { ascending: true });
+
+  // Fetch all cluster puzzles
+  const { data: clusters, error: clustersErr } = await supabase
+    .from("puzzles")
+    .select("id, puzzle_date, groups, created_at")
+    .order("puzzle_date", { ascending: true });
+
+  // Fetch framed puzzles (table may not exist yet — fail gracefully)
+  const { data: framed } = await supabase
+    .from("framed_puzzles")
+    .select("id, puzzle_date, title, year, variant, movie_slug, frames, created_at")
+    .order("puzzle_date", { ascending: true });
+
+  // Fetch heardle puzzles (table may not exist yet — fail gracefully)
+  const { data: heardle } = await supabase
+    .from("heardle_puzzles")
+    .select("id, puzzle_date, title, artist, year, variant, song_slug, created_at")
+    .order("puzzle_date", { ascending: true });
+
+  if (triviaErr || crosswordErr || clustersErr) {
+    return NextResponse.json(
+      { error: "Failed to fetch puzzles", details: { triviaErr, crosswordErr, clustersErr } },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({
+    trivia: trivia ?? [],
+    crosswords: crosswords ?? [],
+    clusters: clusters ?? [],
+    framed: framed ?? [],
+    heardle: heardle ?? [],
+    fetchedAt: new Date().toISOString(),
+  });
+}

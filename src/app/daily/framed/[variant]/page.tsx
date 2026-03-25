@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import FramedGame from "@/components/FramedGame";
 import {
@@ -44,6 +45,14 @@ export default async function FramedVariantPage({
   return (
     <main>
       <FramedGame puzzle={puzzle} variant={variant} />
+      <div className="flex justify-center py-6">
+        <Link
+          href="/daily/framed/archive"
+          className="text-text-muted text-sm hover:text-coral transition-colors no-underline"
+        >
+          Play past puzzles &rarr;
+        </Link>
+      </div>
     </main>
   );
 }
