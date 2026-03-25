@@ -19,6 +19,7 @@ export interface Game {
   category: GameCategory;
   color: GameColor;
   comingSoon?: boolean;
+  featured?: boolean;
   variants?: GameVariant[];
   /** Credits required to play (arcade games only). 0 = free. */
   creditCost?: number;
@@ -138,6 +139,7 @@ export const games: Game[] = [
       "A daily crossword puzzle built from today's headlines and pop culture.",
     category: "daily",
     color: "amber",
+    featured: true,
   },
 
   {
@@ -201,6 +203,11 @@ export const games: Game[] = [
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/** The featured game, if any. */
+export function getFeaturedGame(): Game | undefined {
+  return games.find((g) => g.featured && !g.comingSoon);
+}
 
 /** All daily-category games. */
 export function getDailyGames(): Game[] {

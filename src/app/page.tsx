@@ -3,6 +3,7 @@ import Image from "next/image";
 import {
   getDailyGames,
   getArcadeGames,
+  getFeaturedGame,
   type Game,
   type GameColor,
 } from "@/lib/game-registry";
@@ -71,7 +72,10 @@ const hoverTextMap: Record<GameColor, string> = {
 };
 
 export default function HomePage() {
-  const dailyGames = getDailyGames().filter((g) => !g.comingSoon);
+  const featuredGame = getFeaturedGame();
+  const dailyGames = getDailyGames().filter(
+    (g) => !g.comingSoon && !g.featured,
+  );
   const arcadeGames = getArcadeGames().filter((g) => !g.comingSoon);
 
   const allGames = [...getDailyGames(), ...getArcadeGames()];
@@ -106,8 +110,18 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Featured Game ──────────────────────────────────────────────── */}
+      {featuredGame && (
+        <section className="w-full max-w-[640px] mb-14 animate-[fade-up_0.5s_ease_0.3s_forwards] opacity-0">
+          <h2 className="text-xl font-bold text-text-primary mb-5">
+            Featured
+          </h2>
+          <FeaturedCard game={featuredGame} />
+        </section>
+      )}
+
       {/* ── Today's Puzzles ──────────────────────────────────────────────── */}
-      <section id="daily" className="w-full max-w-[960px] mb-14 animate-[fade-up_0.5s_ease_0.3s_forwards] opacity-0">
+      <section id="daily" className="w-full max-w-[640px] mb-14 animate-[fade-up_0.5s_ease_0.35s_forwards] opacity-0">
         <div className="flex items-baseline justify-between mb-5">
           <h2 className="text-xl font-bold text-text-primary">
             Today&apos;s Puzzles
@@ -120,20 +134,15 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {dailyGames.map((game, i) => (
-            <div
-              key={game.slug}
-              className={dailyGames.length % 2 === 1 && i === dailyGames.length - 1 ? "sm:col-span-2" : ""}
-            >
-              <DailyCard game={game} />
-            </div>
+        <div className="flex flex-col gap-5">
+          {dailyGames.map((game) => (
+            <DailyCard key={game.slug} game={game} />
           ))}
         </div>
       </section>
 
       {/* ── Arcade ───────────────────────────────────────────────────────── */}
-      <section id="arcade" className="w-full max-w-[960px] mb-14 animate-[fade-up_0.5s_ease_0.4s_forwards] opacity-0">
+      <section id="arcade" className="w-full max-w-[640px] mb-14 animate-[fade-up_0.5s_ease_0.4s_forwards] opacity-0">
         <div className="flex items-baseline justify-between mb-5">
           <h2 className="text-xl font-bold text-text-primary">Arcade</h2>
           <Link
@@ -144,7 +153,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="flex flex-col gap-5">
           {arcadeGames.map((game) => (
             <ArcadeCard key={game.slug} game={game} />
           ))}
@@ -152,7 +161,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Coming Soon ──────────────────────────────────────────────────── */}
-      <section className="w-full max-w-[960px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
+      <section className="w-full max-w-[640px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
         <div className="bg-white rounded-2xl border border-border-light p-8 text-center shadow-sm">
           <h2 className="text-lg font-bold text-text-primary mb-4">
             More games on the way
@@ -171,7 +180,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Subscription CTA ─────────────────────────────────────────────── */}
-      <section className="w-full max-w-[960px] mb-14 animate-[fade-up_0.5s_ease_0.55s_forwards] opacity-0">
+      <section className="w-full max-w-[640px] mb-14 animate-[fade-up_0.5s_ease_0.55s_forwards] opacity-0">
         <div className="relative rounded-2xl bg-gradient-to-br from-coral via-coral-dark to-amber p-8 sm:p-10 text-center text-white shadow-lg shadow-coral/20">
           <h2 className="text-2xl font-bold mb-2">
             Unlock the full experience
@@ -191,7 +200,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="w-full max-w-[960px] pt-6 pb-4 text-center animate-[fade-up_0.5s_ease_0.6s_forwards] opacity-0">
+      <footer className="w-full max-w-[640px] pt-6 pb-4 text-center animate-[fade-up_0.5s_ease_0.6s_forwards] opacity-0">
         <p className="text-text-muted text-sm">
           Built for quick breaks and long rivalries.
         </p>
@@ -261,20 +270,9 @@ function TriviaPreview() {
   );
 }
 
-/* ─── Slime Mini Preview ─────────────────────────────────────────────────── */
-
-function SlimePreview() {
-  return (
-    <div className="mb-4 rounded-xl overflow-hidden">
-      <Image src="/images/slime-volleyball.jpg" alt="Slime Volleyball" width={688} height={384} className="w-full h-auto" />
-    </div>
-  );
-}
-
 /* ─── Crossword Mini Preview ────────────────────────────────────────────── */
 
 function CrosswordPreview() {
-  // A small decorative crossword grid
   const mini = [
     [0, 0, 1, 1, 1, 1, 0],
     [0, 0, 1, 0, 0, 0, 0],
@@ -363,7 +361,7 @@ function MathlerPreview() {
   );
 }
 
-/* ─── Heardle Mini Preview ─────────────────────────────────────────────── */
+/* ─── Image-based Previews ────────────────────────────────────────────── */
 
 function HeardlePreview() {
   return (
@@ -373,8 +371,6 @@ function HeardlePreview() {
   );
 }
 
-/* ─── Framed Mini Preview ──────────────────────────────────────────────── */
-
 function FramedPreview() {
   return (
     <div className="mb-4 rounded-xl overflow-hidden">
@@ -383,7 +379,13 @@ function FramedPreview() {
   );
 }
 
-/* ─── Koala Clicker Mini Preview ───────────────────────────────────────── */
+function SlimePreview() {
+  return (
+    <div className="mb-4 rounded-xl overflow-hidden">
+      <Image src="/images/slime-volleyball.jpg" alt="Slime Volleyball" width={688} height={384} className="w-full h-auto" />
+    </div>
+  );
+}
 
 function KoalaPreview() {
   return (
@@ -393,17 +395,69 @@ function KoalaPreview() {
   );
 }
 
+/* ─── Featured Card ─────────────────────────────────────────────────────── */
+
+function FeaturedCard({ game }: { game: Game }) {
+  const href = game.category === "daily" ? `/daily/${game.slug}` : `/arcade/${game.slug}`;
+  return (
+    <Link
+      href={href}
+      className={`group relative block bg-white rounded-2xl border-2 ${borderColorMap[game.color]}
+                  ${hoverBorderMap[game.color]} ${hoverBgMap[game.color]}
+                  overflow-hidden shadow-sm hover:shadow-lg
+                  transition-all duration-200 no-underline cursor-pointer`}
+    >
+      {/* Color accent strip */}
+      <div className={`h-1.5 ${colorMap[game.color]}`} />
+
+      <div className="p-5">
+        {/* Preview */}
+        <GamePreview slug={game.slug} />
+
+        <div className="flex items-center gap-2 mb-1">
+          <span className={`text-[10px] font-bold uppercase tracking-wider ${textColorMap[game.color]}`}>
+            Featured
+          </span>
+        </div>
+        <h3 className={`text-xl font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
+          {game.name}
+        </h3>
+        <p className="text-text-dim text-sm mt-1 leading-relaxed">
+          {game.description}
+        </p>
+        <div className="flex items-center gap-2 mt-4">
+          <span
+            className={`text-sm font-semibold text-white ${colorMap[game.color]} rounded-full px-5 py-1.5
+                        group-hover:shadow-md transition-all duration-200`}
+          >
+            Play now
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/* ─── Game Preview Router ───────────────────────────────────────────────── */
+
+function GamePreview({ slug }: { slug: string }) {
+  switch (slug) {
+    case "cluster": return <ClusterPreview />;
+    case "daily-trivia": return <TriviaPreview />;
+    case "crossword": return <CrosswordPreview />;
+    case "geo-guess": return <GeoGuessPreview />;
+    case "mathler": return <MathlerPreview />;
+    case "heardle": return <HeardlePreview />;
+    case "framed": return <FramedPreview />;
+    case "slime-volleyball": return <SlimePreview />;
+    case "koala-clicker": return <KoalaPreview />;
+    default: return null;
+  }
+}
+
 /* ─── Card Components ────────────────────────────────────────────────────── */
 
 function DailyCard({ game }: { game: Game }) {
-  const isCluster = game.slug === "cluster";
-  const isTrivia = game.slug === "daily-trivia";
-  const isCrossword = game.slug === "crossword";
-  const isGeoGuess = game.slug === "geo-guess";
-  const isMathler = game.slug === "mathler";
-  const isHeardle = game.slug === "heardle";
-  const isFramed = game.slug === "framed";
-
   return (
     <Link
       href={`/daily/${game.slug}`}
@@ -415,14 +469,7 @@ function DailyCard({ game }: { game: Game }) {
       {/* Color accent strip */}
       <div className={`absolute top-0 left-6 right-6 h-1 ${colorMap[game.color]} rounded-b-full`} />
 
-      {/* Preview */}
-      {isCluster && <ClusterPreview />}
-      {isHeardle && <HeardlePreview />}
-      {isTrivia && <TriviaPreview />}
-      {isCrossword && <CrosswordPreview />}
-      {isGeoGuess && <GeoGuessPreview />}
-      {isMathler && <MathlerPreview />}
-      {isFramed && <FramedPreview />}
+      <GamePreview slug={game.slug} />
 
       <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
         {game.name}
@@ -443,9 +490,6 @@ function DailyCard({ game }: { game: Game }) {
 }
 
 function ArcadeCard({ game }: { game: Game }) {
-  const isSlime = game.slug === "slime-volleyball";
-  const isKoala = game.slug === "koala-clicker";
-
   return (
     <Link
       href={`/arcade/${game.slug}`}
@@ -457,8 +501,7 @@ function ArcadeCard({ game }: { game: Game }) {
       {/* Color accent strip */}
       <div className={`absolute top-0 left-6 right-6 h-1 ${colorMap[game.color]} rounded-b-full`} />
 
-      {isSlime && <SlimePreview />}
-      {isKoala && <KoalaPreview />}
+      <GamePreview slug={game.slug} />
 
       <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
         {game.name}
