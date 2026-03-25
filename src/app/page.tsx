@@ -120,8 +120,13 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {dailyGames.map((game) => (
-            <DailyCard key={game.slug} game={game} />
+          {dailyGames.map((game, i) => (
+            <div
+              key={game.slug}
+              className={dailyGames.length % 2 === 1 && i === dailyGames.length - 1 ? "sm:col-span-2" : ""}
+            >
+              <DailyCard game={game} />
+            </div>
           ))}
         </div>
       </section>
@@ -367,6 +372,83 @@ function MathlerPreview() {
   );
 }
 
+/* ─── Heardle Mini Preview ─────────────────────────────────────────────── */
+
+function HeardlePreview() {
+  const bars = [3, 5, 8, 6, 10, 7, 4, 9, 6, 11, 8, 5, 7, 10, 6, 9, 4, 8, 12, 7, 5, 10, 8, 6];
+  return (
+    <div className="mb-4 rounded-lg bg-purple/5 border border-purple/20 p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-6 h-6 rounded-full bg-purple flex items-center justify-center">
+          <span className="text-white text-[10px]">&#9654;</span>
+        </div>
+        <div className="flex-1 h-1 bg-purple/20 rounded-full overflow-hidden">
+          <div className="h-full w-1/3 bg-purple rounded-full" />
+        </div>
+        <span className="text-[10px] font-bold text-purple tabular-nums">0:01</span>
+      </div>
+      <div className="flex items-end justify-center gap-[2px] h-8">
+        {bars.map((h, i) => (
+          <div
+            key={i}
+            className={`w-1 rounded-full ${i < 8 ? "bg-purple" : "bg-purple/25"}`}
+            style={{ height: `${h * 2.5}px` }}
+          />
+        ))}
+      </div>
+      <div className="flex gap-1 mt-2">
+        <div className="h-1.5 flex-1 rounded-full bg-red-400" />
+        <div className="h-1.5 flex-1 rounded-full bg-red-400" />
+        <div className="h-1.5 flex-1 rounded-full bg-amber" />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Framed Mini Preview ──────────────────────────────────────────────── */
+
+function FramedPreview() {
+  return (
+    <div className="mb-4 rounded-lg bg-green/5 border border-green/20 p-3">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-green">Frame 2 of 6</span>
+        <span className="text-[10px] font-bold text-text-dim">🎬</span>
+      </div>
+      <div className="relative w-full h-16 rounded bg-gradient-to-br from-green/20 via-green/10 to-amber/10 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center opacity-20">
+          <div className="w-12 h-8 border-2 border-green rounded" />
+        </div>
+        <span className="text-2xl">🎞️</span>
+      </div>
+      <div className="flex gap-1 mt-2">
+        <div className="h-1.5 flex-1 rounded-full bg-red-400" />
+        <div className="h-1.5 flex-1 rounded-full bg-green" />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Koala Clicker Mini Preview ───────────────────────────────────────── */
+
+function KoalaPreview() {
+  return (
+    <div className="relative h-20 mb-4 flex flex-col items-center justify-center">
+      <span className="text-4xl mb-1">🐨</span>
+      <div className="flex items-center gap-1">
+        <span className="text-[10px]">🍃</span>
+        <span className="text-[11px] font-bold text-green tabular-nums">1,247</span>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Card Components ────────────────────────────────────────────────────── */
 
 function DailyCard({ game }: { game: Game }) {
@@ -375,6 +457,8 @@ function DailyCard({ game }: { game: Game }) {
   const isCrossword = game.slug === "crossword";
   const isGeoGuess = game.slug === "geo-guess";
   const isMathler = game.slug === "mathler";
+  const isHeardle = game.slug === "heardle";
+  const isFramed = game.slug === "framed";
 
   return (
     <Link
@@ -389,10 +473,12 @@ function DailyCard({ game }: { game: Game }) {
 
       {/* Preview */}
       {isCluster && <ClusterPreview />}
+      {isHeardle && <HeardlePreview />}
       {isTrivia && <TriviaPreview />}
       {isCrossword && <CrosswordPreview />}
       {isGeoGuess && <GeoGuessPreview />}
       {isMathler && <MathlerPreview />}
+      {isFramed && <FramedPreview />}
 
       <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
         {game.name}
@@ -414,6 +500,7 @@ function DailyCard({ game }: { game: Game }) {
 
 function ArcadeCard({ game }: { game: Game }) {
   const isSlime = game.slug === "slime-volleyball";
+  const isKoala = game.slug === "koala-clicker";
 
   return (
     <Link
@@ -427,6 +514,7 @@ function ArcadeCard({ game }: { game: Game }) {
       <div className={`absolute top-0 left-6 right-6 h-1 ${colorMap[game.color]} rounded-b-full`} />
 
       {isSlime && <SlimePreview />}
+      {isKoala && <KoalaPreview />}
 
       <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
         {game.name}
