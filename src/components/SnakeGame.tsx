@@ -192,8 +192,12 @@ export default function SnakeGame() {
       addPlayer(state, lp.playerId, lp.name);
     }
 
+    // Track tick timing for interpolation
+    let lastTickTime = performance.now();
+
     // Game tick (host runs physics)
     tickIntervalRef.current = setInterval(() => {
+      lastTickTime = performance.now();
       const gs = gameStateRef.current;
       tickGame(gs);
 
@@ -207,7 +211,7 @@ export default function SnakeGame() {
       }
     }, TICK_MS);
 
-    // Render loop (60fps)
+    // Render loop (60fps with interpolation)
     const render = () => {
       const canvas = canvasRef.current;
       if (!canvas) {
@@ -223,12 +227,17 @@ export default function SnakeGame() {
         canvas.height = h;
       }
 
+      // Calculate interpolation progress (0..1 between ticks)
+      const elapsed = performance.now() - lastTickTime;
+      const renderT = Math.min(1, elapsed / TICK_MS);
+
       renderSnakeGame(
         ctx,
         gameStateRef.current,
         roomInfoRef.current?.playerId || "",
         w,
-        h
+        h,
+        renderT
       );
       loopRef.current = requestAnimationFrame(render);
     };
@@ -238,6 +247,19 @@ export default function SnakeGame() {
 
   // ── Start game loop (client only) ──────────────────────
   const startGameAsClient = useCallback(() => {
+    let lastStateTime = performance.now();
+
+    // Track when we receive new state for interpolation
+    const origOnGameState = channelRef.current?.onGameState;
+    if (channelRef.current) {
+      const prevHandler = channelRef.current.onGameState;
+      channelRef.current.onGameState = (serialized) => {
+        lastStateTime = performance.now();
+        if (prevHandler) prevHandler(serialized);
+        else gameStateRef.current = deserializeState(serialized);
+      };
+    }
+
     const render = () => {
       const canvas = canvasRef.current;
       if (!canvas) {
@@ -253,12 +275,16 @@ export default function SnakeGame() {
         canvas.height = h;
       }
 
+      const elapsed = performance.now() - lastStateTime;
+      const renderT = Math.min(1, elapsed / TICK_MS);
+
       renderSnakeGame(
         ctx,
         gameStateRef.current,
         roomInfoRef.current?.playerId || "",
         w,
-        h
+        h,
+        renderT
       );
 
       if (gameStateRef.current.gameOver) {
