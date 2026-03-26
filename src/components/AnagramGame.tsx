@@ -275,9 +275,9 @@ export default function AnagramGame({ puzzle }: { puzzle: AnagramPuzzle }) {
             </span>
           </div>
 
-          {/* Scrambled letters */}
+          {/* Letters — show scrambled while playing, solved word when revealed */}
           <div className="flex justify-center gap-2 my-6">
-            {currentWord.scrambled.split("").map((letter, i) => (
+            {(revealed ? currentWord.word.split("") : currentWord.scrambled.split("")).map((letter, i) => (
               <div
                 key={i}
                 className={`w-12 h-14 sm:w-14 sm:h-16 rounded-xl border-2 flex items-center justify-center
@@ -296,15 +296,6 @@ export default function AnagramGame({ puzzle }: { puzzle: AnagramPuzzle }) {
             ))}
           </div>
 
-          {/* Revealed answer */}
-          {revealed && !results[current]?.solved && (
-            <div className="text-center mb-4">
-              <p className="text-sm text-text-dim">The answer was</p>
-              <p className="text-xl font-bold tracking-wider text-text-primary">
-                {currentWord.word}
-              </p>
-            </div>
-          )}
 
           {/* Input or next button */}
           {revealed ? (
