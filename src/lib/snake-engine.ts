@@ -50,6 +50,7 @@ export interface SnakePlayer {
   respawnTimer: number;
   colorIndex: number;
   name: string;
+  isBot?: boolean;
 }
 
 export interface FoodItem {
@@ -118,6 +119,137 @@ export function addPlayer(
 
 export function removePlayer(state: SnakeGameState, playerId: string): void {
   delete state.players[playerId];
+}
+
+// ── Bot system ─────────────────────────────────────────────
+const BOT_NAMES = [
+  "Slinky", "Viper", "Noodle", "Zigzag", "Fang", "Slick",
+  "Cobra", "Pretzel", "Wiggles", "Scales", "Blitz", "Dash",
+  "Sizzle", "Turbo", "Pixel", "Glitch", "Nova", "Bolt",
+  "Jinx", "Fury",
+];
+
+export const BOT_COUNT = 5; // bots per game
+
+export function addBots(state: SnakeGameState, count: number = BOT_COUNT): void {
+  const usedNames = new Set(Object.values(state.players).map((p) => p.name));
+  const availableNames = BOT_NAMES.filter((n) => !usedNames.has(n));
+
+  for (let i = 0; i < count; i++) {
+    const botId = `bot-${i}-${Math.random().toString(36).slice(2, 6)}`;
+    const name = availableNames[i % availableNames.length] || `Bot${i + 1}`;
+    addPlayer(state, botId, name);
+    state.players[botId].isBot = true;
+  }
+}
+
+/** Run AI for all bots — call once per tick on the host before tickGame. */
+export function updateBots(state: SnakeGameState): void {
+  for (const player of Object.values(state.players)) {
+    if (!player.isBot || !player.alive || player.segments.length === 0) continue;
+    const dir = botChooseDirection(state, player);
+    if (dir !== null && dir !== OPPOSITE[player.direction]) {
+      player.nextDirection = dir;
+    }
+  }
+}
+
+function botChooseDirection(state: SnakeGameState, bot: SnakePlayer): Direction | null {
+  const head = bot.segments[0];
+
+  // Build danger set: all body cells (including own) and other snake heads
+  const danger = new Set<string>();
+  for (const p of Object.values(state.players)) {
+    if (!p.alive) continue;
+    for (let i = 1; i < p.segments.length; i++) {
+      danger.add(`${p.segments[i].x},${p.segments[i].y}`);
+    }
+    // Avoid other snake heads (head-to-head collision)
+    if (p.id !== bot.id) {
+      danger.add(`${p.segments[0].x},${p.segments[0].y}`);
+      // Also avoid the cell the other snake is about to move into
+      const otherHead = p.segments[0];
+      const nextX = ((otherHead.x + DX[p.direction]) % state.gridW + state.gridW) % state.gridW;
+      const nextY = ((otherHead.y + DY[p.direction]) % state.gridH + state.gridH) % state.gridH;
+      danger.add(`${nextX},${nextY}`);
+    }
+  }
+
+  // Score each possible direction
+  const directions: Direction[] = [DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT];
+  let bestDir: Direction = bot.direction;
+  let bestScore = -Infinity;
+
+  for (const dir of directions) {
+    // Can't reverse
+    if (dir === OPPOSITE[bot.direction]) continue;
+
+    const nx = ((head.x + DX[dir]) % state.gridW + state.gridW) % state.gridW;
+    const ny = ((head.y + DY[dir]) % state.gridH + state.gridH) % state.gridH;
+    const key = `${nx},${ny}`;
+
+    // Immediate death — skip
+    if (danger.has(key)) continue;
+
+    let score = 0;
+
+    // Look ahead 2 cells for danger (avoid dead ends)
+    const nx2 = ((nx + DX[dir]) % state.gridW + state.gridW) % state.gridW;
+    const ny2 = ((ny + DY[dir]) % state.gridH + state.gridH) % state.gridH;
+    if (danger.has(`${nx2},${ny2}`)) score -= 5;
+
+    // Check how many safe exits from the next cell
+    let exits = 0;
+    for (const d2 of directions) {
+      const ex = ((nx + DX[d2]) % state.gridW + state.gridW) % state.gridW;
+      const ey = ((ny + DY[d2]) % state.gridH + state.gridH) % state.gridH;
+      if (!danger.has(`${ex},${ey}`)) exits++;
+    }
+    score += exits * 2;
+
+    // Find nearest food and chase it
+    let nearestFoodDist = Infinity;
+    for (const food of state.food) {
+      const d = wrappedDist(nx, ny, food.x, food.y, state.gridW, state.gridH);
+      if (d < nearestFoodDist) nearestFoodDist = d;
+    }
+    // Closer to food = better (invert distance, cap at 30)
+    score += Math.max(0, 30 - nearestFoodDist) * 0.5;
+
+    // Prefer continuing straight (slight bias to avoid jittery movement)
+    if (dir === bot.direction) score += 1;
+
+    // Slight randomness so bots aren't perfectly predictable
+    score += Math.random() * 2;
+
+    // Hunt smaller snakes nearby (aggressive behavior)
+    for (const other of Object.values(state.players)) {
+      if (other.id === bot.id || !other.alive || other.segments.length === 0) continue;
+      const dist = wrappedDist(nx, ny, other.segments[0].x, other.segments[0].y, state.gridW, state.gridH);
+      if (dist < 8 && bot.segments.length > other.segments.length + 2) {
+        // We're bigger — chase them
+        score += (8 - dist) * 0.8;
+      } else if (dist < 6 && bot.segments.length < other.segments.length - 2) {
+        // They're bigger — run away
+        score -= (6 - dist) * 1.5;
+      }
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestDir = dir;
+    }
+  }
+
+  return bestDir;
+}
+
+function wrappedDist(x1: number, y1: number, x2: number, y2: number, gw: number, gh: number): number {
+  let dx = Math.abs(x2 - x1);
+  let dy = Math.abs(y2 - y1);
+  if (dx > gw / 2) dx = gw - dx;
+  if (dy > gh / 2) dy = gh - dy;
+  return dx + dy; // Manhattan distance
 }
 
 // ── Input ──────────────────────────────────────────────────
@@ -360,6 +492,7 @@ export interface SerializedSnakeState {
       rt: number; // respawnTimer
       ci: number; // colorIndex
       n: string; // name
+      b?: number; // isBot 0/1
     }
   >;
   f: number[]; // flat [x,y,value, x,y,value, ...]
@@ -383,6 +516,7 @@ export function serializeState(state: SnakeGameState): SerializedSnakeState {
       rt: player.respawnTimer,
       ci: player.colorIndex,
       n: player.name,
+      b: player.isBot ? 1 : undefined,
     };
   }
 
@@ -417,6 +551,7 @@ export function deserializeState(data: SerializedSnakeState): SnakeGameState {
       respawnTimer: pd.rt,
       colorIndex: pd.ci,
       name: pd.n,
+      isBot: pd.b === 1,
     };
   }
 

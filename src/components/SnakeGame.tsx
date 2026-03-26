@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   createSnakeGame,
   addPlayer,
+  addBots,
+  updateBots,
   removePlayer,
   setPlayerDirection,
   tickGame,
@@ -192,6 +194,9 @@ export default function SnakeGame() {
       addPlayer(state, lp.playerId, lp.name);
     }
 
+    // Add bots to fill the arena
+    addBots(state);
+
     // Track tick timing for interpolation
     let lastTickTime = performance.now();
 
@@ -199,6 +204,7 @@ export default function SnakeGame() {
     tickIntervalRef.current = setInterval(() => {
       lastTickTime = performance.now();
       const gs = gameStateRef.current;
+      updateBots(gs); // Run bot AI before physics
       tickGame(gs);
 
       // Broadcast state every tick
