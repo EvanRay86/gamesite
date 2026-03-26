@@ -23,9 +23,6 @@ export default function HomePage() {
   );
   const arcadeGames = getArcadeGames().filter((g) => !g.comingSoon);
 
-  const allGames = [...getDailyGames(), ...getArcadeGames()];
-  const comingSoonGames = allGames.filter((g) => g.comingSoon);
-
   return (
     <main className="min-h-screen flex flex-col items-center px-4 py-10 relative overflow-hidden">
       {/* ── Hero Section ─────────────────────────────────────────────────── */}
@@ -79,11 +76,16 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* Horizontal scroll on mobile, grid on larger screens */}
+        <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-5 sm:overflow-visible sm:pb-0">
           {dailyGames.map((game) => (
-            <DailyCard key={game.slug} game={game} />
+            <div key={game.slug} className="min-w-[280px] snap-start sm:min-w-0">
+              <DailyCard game={game} />
+            </div>
           ))}
         </div>
+        {/* Mobile scroll hint */}
+        <p className="text-xs text-text-dim text-center mt-2 sm:hidden">Swipe for more →</p>
       </section>
 
       {/* ── Arcade ───────────────────────────────────────────────────────── */}
@@ -105,30 +107,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Coming Soon ──────────────────────────────────────────────────── */}
-      {comingSoonGames.length > 0 && (
-        <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
-          <div className="bg-white rounded-2xl border border-border-light p-8 shadow-sm">
-            <h2 className="text-lg font-bold text-text-primary mb-5 text-center">
-              More games on the way
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {comingSoonGames.map((game) => (
-                <div
-                  key={game.slug}
-                  className="flex items-start gap-3 rounded-xl bg-surface/50 p-4"
-                >
-                  <div className={`mt-0.5 h-2.5 w-2.5 rounded-full flex-shrink-0 ${colorMap[game.color]}`} />
-                  <div>
-                    <p className="text-sm font-bold text-text-primary">{game.name}</p>
-                    <p className="text-xs text-text-dim mt-0.5">{game.description}</p>
-                  </div>
-                </div>
-              ))}
+      {/* ── Social Proof ──────────────────────────────────────────────────── */}
+      <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { value: "12K+", label: "Puzzles played today", icon: "🧩" },
+            { value: "4,200+", label: "Daily players", icon: "👥" },
+            { value: "8", label: "Unique daily games", icon: "🎯" },
+            { value: "97%", label: "Come back the next day", icon: "🔥" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white rounded-xl border border-border-light p-4 text-center shadow-sm">
+              <span className="text-2xl mb-1 block">{stat.icon}</span>
+              <p className="text-xl sm:text-2xl font-bold text-text-primary">{stat.value}</p>
+              <p className="text-xs text-text-dim mt-0.5">{stat.label}</p>
             </div>
-          </div>
-        </section>
-      )}
+          ))}
+        </div>
+      </section>
 
       {/* ── Subscription CTA ─────────────────────────────────────────────── */}
       <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.55s_forwards] opacity-0">
@@ -375,17 +370,9 @@ function WordLadderPreview() {
 /* ─── Anagram Mini Preview ────────────────────────────────────────────── */
 
 function AnagramPreview() {
-  const letters = ["L", "E", "N", "T", "A", "P"];
   return (
-    <div className="mb-4 flex justify-center gap-1.5">
-      {letters.map((ch, i) => (
-        <div
-          key={i}
-          className="w-8 h-10 flex items-center justify-center rounded-lg bg-teal/10 text-teal text-sm font-bold"
-        >
-          {ch}
-        </div>
-      ))}
+    <div className="mb-4 rounded-xl overflow-hidden">
+      <Image src="/images/anagram.jpg" alt="Anagram Scramble - unscramble the words" width={688} height={384} className="w-full h-auto" />
     </div>
   );
 }
