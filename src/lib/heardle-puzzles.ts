@@ -314,3 +314,28 @@ export function getAvailableVariants(): string[] {
   const set = new Set(seedPuzzles.map((p) => p.variant));
   return Array.from(set);
 }
+
+/**
+ * Get distinct puzzle dates from Supabase for the archive page.
+ * Returns an array of { puzzle_date } objects sorted newest-first.
+ */
+export async function getHeardleArchiveDates(): Promise<
+  { puzzle_date: string }[]
+> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from("heardle_puzzles")
+      .select("puzzle_date")
+      .eq("variant", "all")
+      .order("puzzle_date", { ascending: false })
+      .limit(90);
+
+    if (error || !data) return [];
+    return data as { puzzle_date: string }[];
+  } catch {
+    return [];
+  }
+}
