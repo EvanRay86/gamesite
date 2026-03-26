@@ -10,6 +10,7 @@ const TABLE_MAP: Record<string, string> = {
   heardle: "heardle_puzzles",
   anagram: "anagram_puzzles",
   "word-ladder": "word_ladder_puzzles",
+  "emoji-word": "emoji_word_puzzles",
 };
 
 function getTable(type: string): string | null {

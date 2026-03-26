@@ -42,12 +42,11 @@ export const games: Game[] = [
   },
 
   {
-    slug: "wordle",
-    name: "Wordle",
-    description: "Six guesses to find the five-letter word.",
+    slug: "hexle",
+    name: "Hexle",
+    description: "Seven guesses to crack the six-letter gaming word.",
     category: "daily",
-    color: "green",
-    comingSoon: true,
+    color: "amber",
   },
 
   {
@@ -182,6 +181,42 @@ export const games: Game[] = [
     name: "Anagram Scramble",
     description:
       "Unscramble five jumbled words before the clock runs out.",
+    category: "daily",
+    color: "teal",
+  },
+
+  {
+    slug: "emoji-word",
+    name: "Emoji Decoder",
+    description:
+      "Guess the word or phrase from emoji clues — five rounds that get progressively harder.",
+    category: "daily",
+    color: "amber",
+  },
+
+  {
+    slug: "top-5",
+    name: "Top 5",
+    description:
+      "Rank five items in the correct order. How well do you know your facts?",
+    category: "daily",
+    color: "amber",
+  },
+
+  {
+    slug: "quotable",
+    name: "Quotable",
+    description:
+      "Guess who said the famous quote as words are progressively revealed.",
+    category: "daily",
+    color: "purple",
+  },
+
+  {
+    slug: "timeline",
+    name: "Timeline",
+    description:
+      "Put five historical events in chronological order. Three attempts to get it right.",
     category: "daily",
     color: "teal",
   },

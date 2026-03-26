@@ -51,6 +51,30 @@ export async function GET() {
     .select("id, puzzle_date, start_word, end_word, solution, created_at")
     .order("puzzle_date", { ascending: true });
 
+  // Fetch emoji word puzzles (table may not exist yet — fail gracefully)
+  const { data: emojiWord } = await supabase
+    .from("emoji_word_puzzles")
+    .select("id, puzzle_date, rounds, created_at")
+    .order("puzzle_date", { ascending: true });
+
+  // Fetch top 5 puzzles (table may not exist yet — fail gracefully)
+  const { data: top5 } = await supabase
+    .from("top5_puzzles")
+    .select("id, puzzle_date, category, items, unit, created_at")
+    .order("puzzle_date", { ascending: true });
+
+  // Fetch quotable puzzles (table may not exist yet — fail gracefully)
+  const { data: quotable } = await supabase
+    .from("quotable_puzzles")
+    .select("id, puzzle_date, quote, attribution, hint, options, created_at")
+    .order("puzzle_date", { ascending: true });
+
+  // Fetch timeline puzzles (table may not exist yet — fail gracefully)
+  const { data: timeline } = await supabase
+    .from("timeline_puzzles")
+    .select("id, puzzle_date, events, created_at")
+    .order("puzzle_date", { ascending: true });
+
   if (triviaErr || crosswordErr || clustersErr) {
     return NextResponse.json(
       { error: "Failed to fetch puzzles", details: { triviaErr, crosswordErr, clustersErr } },
@@ -66,6 +90,10 @@ export async function GET() {
     heardle: heardle ?? [],
     anagram: anagram ?? [],
     wordLadder: wordLadder ?? [],
+    emojiWord: emojiWord ?? [],
+    top5: top5 ?? [],
+    quotable: quotable ?? [],
+    timeline: timeline ?? [],
     fetchedAt: new Date().toISOString(),
   });
 }

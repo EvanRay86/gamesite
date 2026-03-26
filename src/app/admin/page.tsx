@@ -65,6 +65,13 @@ interface WordLadderPuzzle {
   created_at: string;
 }
 
+interface EmojiWordPuzzle {
+  id: string;
+  puzzle_date: string;
+  rounds: { emojis: string; answer: string; hint?: string; difficulty: number }[];
+  created_at: string;
+}
+
 interface PuzzleData {
   trivia: TriviaPuzzle[];
   crosswords: CrosswordPuzzle[];
@@ -73,10 +80,11 @@ interface PuzzleData {
   heardle: HeardlePuzzle[];
   anagram: AnagramPuzzle[];
   wordLadder: WordLadderPuzzle[];
+  emojiWord: EmojiWordPuzzle[];
   fetchedAt: string;
 }
 
-type Tab = "overview" | "trivia" | "crossword" | "clusters" | "framed" | "heardle" | "anagram" | "word-ladder" | "prompt";
+type Tab = "overview" | "trivia" | "crossword" | "clusters" | "framed" | "heardle" | "anagram" | "word-ladder" | "emoji-word" | "prompt";
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
 
@@ -189,6 +197,29 @@ Format per date:
 }
 \`\`\`
 
+## 4. EMOJI DECODER (5 rounds per date, progressive difficulty)
+- 5 rounds per puzzle, one for each difficulty level (1-5)
+- Round 1 (Easy): Simple, obvious emoji-to-word (e.g. 🌞🌻 = SUNFLOWER)
+- Round 2 (Medium): Slightly less obvious, include a hint (e.g. 🐸👑💋 = FROG PRINCE)
+- Round 3 (Tricky): Requires thinking, cultural reference (e.g. 👑🦁 = LION KING)
+- Round 4 (Hard): Abstract connections needed (e.g. 🧊🏔️💀 = TITANIC)
+- Round 5 (Expert): Very abstract, movies/books/phrases (e.g. 🌀😵🐰⏰ = ALICE IN WONDERLAND)
+- Answers are UPPERCASE, can be single words or phrases
+- Include a hint for rounds 2-5 (short, under 50 characters, not too obvious)
+- Use diverse, creative emoji combinations
+- No duplicate answers across dates
+
+Format per date:
+\`\`\`json
+{
+  "puzzle_date": "YYYY-MM-DD",
+  "rounds": [
+    { "emojis": "🌞🌻", "answer": "SUNFLOWER", "difficulty": 1 },
+    { "emojis": "🐸👑💋", "answer": "FROG PRINCE", "hint": "A fairy tale transformation", "difficulty": 2 }
+  ]
+}
+\`\`\`
+
 ---
 
 After generating, provide the SQL INSERT statements to run in Supabase SQL editor:
@@ -205,6 +236,10 @@ INSERT INTO crossword_puzzles (puzzle_date, title, entries) VALUES
 -- Anagram
 INSERT INTO anagram_puzzles (puzzle_date, words) VALUES
 ('YYYY-MM-DD', '[...]'::jsonb);
+
+-- Emoji Decoder
+INSERT INTO emoji_word_puzzles (puzzle_date, rounds) VALUES
+('YYYY-MM-DD', '[...]'::jsonb);
 \`\`\`
 
 IMPORTANT:
@@ -215,7 +250,10 @@ IMPORTANT:
 - Each anagram MUST have exactly 5 words: first 3 words are 5 letters, 4th word is 6 letters, 5th word is 7 letters
 - Scrambled letters must be a valid permutation of the answer (same letters, different order)
 - Double-check that news references are factually accurate
-- Make questions interesting and varied in difficulty`;
+- Make questions interesting and varied in difficulty
+- Each emoji decoder puzzle MUST have exactly 5 rounds (difficulty 1-5)
+- Emoji decoder answers should be fun, recognizable words/phrases
+- Include hints for emoji decoder rounds 2-5`;
 }
 
 /* ── Component ─────────────────────────────────────────────────────────── */
@@ -328,6 +366,7 @@ export default function AdminPage() {
   const upcomingHeardle = data?.heardle.filter((p) => p.puzzle_date >= today) ?? [];
   const upcomingAnagram = data?.anagram.filter((p) => p.puzzle_date >= today) ?? [];
   const upcomingWordLadder = data?.wordLadder.filter((p) => p.puzzle_date >= today) ?? [];
+  const upcomingEmojiWord = data?.emojiWord.filter((p) => p.puzzle_date >= today) ?? [];
 
   const latestTrivia = upcomingTrivia[upcomingTrivia.length - 1]?.puzzle_date;
   const latestCrossword = upcomingCrosswords[upcomingCrosswords.length - 1]?.puzzle_date;
@@ -336,6 +375,7 @@ export default function AdminPage() {
   const latestHeardle = upcomingHeardle[upcomingHeardle.length - 1]?.puzzle_date;
   const latestAnagram = upcomingAnagram[upcomingAnagram.length - 1]?.puzzle_date;
   const latestWordLadder = upcomingWordLadder[upcomingWordLadder.length - 1]?.puzzle_date;
+  const latestEmojiWord = upcomingEmojiWord[upcomingEmojiWord.length - 1]?.puzzle_date;
 
   const triviaBuffer = latestTrivia ? daysLeftNum(latestTrivia) : 0;
   const crosswordBuffer = latestCrossword ? daysLeftNum(latestCrossword) : 0;
@@ -343,8 +383,9 @@ export default function AdminPage() {
   const heardleBuffer = latestHeardle ? daysLeftNum(latestHeardle) : 0;
   const anagramBuffer = latestAnagram ? daysLeftNum(latestAnagram) : 0;
   const wordLadderBuffer = latestWordLadder ? daysLeftNum(latestWordLadder) : 0;
+  const emojiWordBuffer = latestEmojiWord ? daysLeftNum(latestEmojiWord) : 0;
 
-  const needsAttention = triviaBuffer <= 2 || crosswordBuffer <= 2 || framedBuffer <= 2 || heardleBuffer <= 2 || anagramBuffer <= 2 || wordLadderBuffer <= 2;
+  const needsAttention = triviaBuffer <= 2 || crosswordBuffer <= 2 || framedBuffer <= 2 || heardleBuffer <= 2 || anagramBuffer <= 2 || wordLadderBuffer <= 2 || emojiWordBuffer <= 2;
 
   // ── Date edit controls ────────────────────────────────────────────────
   function DateControl({ id, date, type }: { id: string; date: string; type: string }) {
@@ -438,7 +479,7 @@ export default function AdminPage() {
       <div className="border-b border-border">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex gap-1">
-            {(["overview", "trivia", "crossword", "clusters", "framed", "heardle", "anagram", "word-ladder", "prompt"] as Tab[]).map((t) => (
+            {(["overview", "trivia", "crossword", "clusters", "framed", "heardle", "anagram", "word-ladder", "emoji-word", "prompt"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -448,7 +489,7 @@ export default function AdminPage() {
                     : "border-transparent text-text-muted hover:text-text-secondary"
                 }`}
               >
-                {t === "prompt" ? "Generate Puzzles" : t === "word-ladder" ? "Word Ladder" : t}
+                {t === "prompt" ? "Generate Puzzles" : t === "word-ladder" ? "Word Ladder" : t === "emoji-word" ? "Emoji Decoder" : t}
               </button>
             ))}
           </div>
@@ -487,6 +528,7 @@ export default function AdminPage() {
                         {heardleBuffer <= 2 && `Heardle: ${heardleBuffer} days remaining. `}
                         {anagramBuffer <= 2 && `Anagram: ${anagramBuffer} days remaining. `}
                         {wordLadderBuffer <= 2 && `Word Ladder: ${wordLadderBuffer} days remaining. `}
+                        {emojiWordBuffer <= 2 && `Emoji Decoder: ${emojiWordBuffer} days remaining. `}
                         Switch to the &quot;Generate Puzzles&quot; tab to create more.
                       </p>
                     </div>
@@ -551,6 +593,14 @@ export default function AdminPage() {
                     color="teal"
                     buffer={wordLadderBuffer}
                   />
+                  <StatCard
+                    label="Emoji Decoder"
+                    count={data!.emojiWord.length}
+                    upcoming={upcomingEmojiWord.length}
+                    lastDate={latestEmojiWord}
+                    color="amber"
+                    buffer={emojiWordBuffer}
+                  />
                 </div>
 
                 {/* Timeline */}
@@ -568,6 +618,7 @@ export default function AdminPage() {
                           <th className="px-4 py-3 font-medium">Heardle</th>
                           <th className="px-4 py-3 font-medium">Anagram</th>
                           <th className="px-4 py-3 font-medium">Word Ladder</th>
+                          <th className="px-4 py-3 font-medium">Emoji Decoder</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -604,6 +655,9 @@ export default function AdminPage() {
                             </td>
                             <td className="px-4 py-3">
                               <StatusDot ok={row.hasWordLadder} />
+                            </td>
+                            <td className="px-4 py-3">
+                              <StatusDot ok={row.hasEmojiWord} />
                             </td>
                           </tr>
                         ))}
@@ -826,6 +880,42 @@ export default function AdminPage() {
               />
             )}
 
+            {/* ── Emoji Decoder Tab ─────────────────────────────────── */}
+            {tab === "emoji-word" && (
+              <PuzzleList
+                title="Emoji Decoder Puzzles"
+                items={data!.emojiWord}
+                renderItem={(p: EmojiWordPuzzle) => (
+                  <div key={p.id} className={`rounded-xl border border-border-light p-4 ${isPast(p.puzzle_date) ? "opacity-60" : ""}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <DateControl id={p.id} date={p.puzzle_date} type="emoji-word" />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-text-dim">{p.rounds.length} rounds</span>
+                        <DeleteButton id={p.id} type="emoji-word" label={`Emoji Decoder ${p.puzzle_date}`} />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {p.rounds.map((r, i) => (
+                        <div key={i} className="flex items-center gap-3 text-sm">
+                          <span
+                            className="text-xs px-2 py-0.5 rounded-full text-white font-medium"
+                            style={{
+                              backgroundColor: ["", "#22C55E", "#4ECDC4", "#F7B731", "#FF6B6B", "#A855F7"][r.difficulty],
+                            }}
+                          >
+                            {["", "Easy", "Medium", "Tricky", "Hard", "Expert"][r.difficulty]}
+                          </span>
+                          <span className="text-lg">{r.emojis}</span>
+                          <span className="font-semibold text-text-primary">{r.answer}</span>
+                          {r.hint && <span className="text-xs text-text-dim">({r.hint})</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              />
+            )}
+
             {/* ── Word Ladder Tab ────────────────────────────────────── */}
             {tab === "word-ladder" && (
               <PuzzleList
@@ -1026,8 +1116,9 @@ function buildTimeline(data: PuzzleData) {
   const heardleDates = new Set(data.heardle.map((p) => p.puzzle_date));
   const anagramDates = new Set(data.anagram.map((p) => p.puzzle_date));
   const wordLadderDates = new Set(data.wordLadder.map((p) => p.puzzle_date));
+  const emojiWordDates = new Set(data.emojiWord.map((p) => p.puzzle_date));
 
-  const allDates = new Set([...triviaDates, ...crosswordDates, ...clustersDates, ...framedDates, ...heardleDates, ...anagramDates, ...wordLadderDates]);
+  const allDates = new Set([...triviaDates, ...crosswordDates, ...clustersDates, ...framedDates, ...heardleDates, ...anagramDates, ...wordLadderDates, ...emojiWordDates]);
 
   // Show from earliest puzzle to latest
   const sorted = [...allDates].sort();
@@ -1035,7 +1126,7 @@ function buildTimeline(data: PuzzleData) {
   const minDate = sorted[0] && sorted[0] < today ? sorted[0] : today;
   const maxDate = sorted[sorted.length - 1] ?? new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10);
 
-  const result: { date: string; hasTrivia: boolean; hasCrossword: boolean; hasClusters: boolean; hasFramed: boolean; hasHeardle: boolean; hasAnagram: boolean; hasWordLadder: boolean }[] = [];
+  const result: { date: string; hasTrivia: boolean; hasCrossword: boolean; hasClusters: boolean; hasFramed: boolean; hasHeardle: boolean; hasAnagram: boolean; hasWordLadder: boolean; hasEmojiWord: boolean }[] = [];
   const d = new Date(minDate + "T00:00:00");
   const end = new Date(maxDate + "T00:00:00");
 
@@ -1050,6 +1141,7 @@ function buildTimeline(data: PuzzleData) {
       hasHeardle: heardleDates.has(ds),
       hasAnagram: anagramDates.has(ds),
       hasWordLadder: wordLadderDates.has(ds),
+      hasEmojiWord: emojiWordDates.has(ds),
     });
     d.setDate(d.getDate() + 1);
   }
