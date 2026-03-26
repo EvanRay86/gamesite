@@ -5,71 +5,16 @@ import {
   getArcadeGames,
   getFeaturedGame,
   type Game,
-  type GameColor,
 } from "@/lib/game-registry";
-
-const colorMap: Record<GameColor, string> = {
-  coral: "bg-coral",
-  teal: "bg-teal",
-  sky: "bg-sky",
-  amber: "bg-amber",
-  purple: "bg-purple",
-  green: "bg-green",
-};
-
-const textColorMap: Record<GameColor, string> = {
-  coral: "text-coral",
-  teal: "text-teal",
-  sky: "text-sky",
-  amber: "text-amber",
-  purple: "text-purple",
-  green: "text-green",
-};
-
-const bgLightMap: Record<GameColor, string> = {
-  coral: "bg-coral/10",
-  teal: "bg-teal/10",
-  sky: "bg-sky/10",
-  amber: "bg-amber/10",
-  purple: "bg-purple/10",
-  green: "bg-green/10",
-};
-
-const hoverBgMap: Record<GameColor, string> = {
-  coral: "hover:bg-[#fff5f5]",
-  teal: "hover:bg-[#f0fdfb]",
-  sky: "hover:bg-[#f0f9ff]",
-  amber: "hover:bg-[#fffbeb]",
-  purple: "hover:bg-[#faf5ff]",
-  green: "hover:bg-[#f0fdf4]",
-};
-
-const borderColorMap: Record<GameColor, string> = {
-  coral: "border-coral/30",
-  teal: "border-teal/30",
-  sky: "border-sky/30",
-  amber: "border-amber/30",
-  purple: "border-purple/30",
-  green: "border-green/30",
-};
-
-const hoverBorderMap: Record<GameColor, string> = {
-  coral: "hover:border-coral",
-  teal: "hover:border-teal",
-  sky: "hover:border-sky",
-  amber: "hover:border-amber",
-  purple: "hover:border-purple",
-  green: "hover:border-green",
-};
-
-const hoverTextMap: Record<GameColor, string> = {
-  coral: "group-hover:text-coral",
-  teal: "group-hover:text-teal",
-  sky: "group-hover:text-sky",
-  amber: "group-hover:text-amber",
-  purple: "group-hover:text-purple",
-  green: "group-hover:text-green",
-};
+import {
+  colorBg as colorMap,
+  colorText as textColorMap,
+  colorBgLight as bgLightMap,
+  hoverBgSubtle as hoverBgMap,
+  borderColor as borderColorMap,
+  hoverBorder as hoverBorderMap,
+  hoverText as hoverTextMap,
+} from "@/lib/color-maps";
 
 export default function HomePage() {
   const featuredGame = getFeaturedGame();
@@ -161,23 +106,29 @@ export default function HomePage() {
       </section>
 
       {/* ── Coming Soon ──────────────────────────────────────────────────── */}
-      <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
-        <div className="bg-white rounded-2xl border border-border-light p-8 text-center shadow-sm">
-          <h2 className="text-lg font-bold text-text-primary mb-4">
-            More games on the way
-          </h2>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {comingSoonGames.map((game) => (
-              <span
-                key={game.slug}
-                className={`${bgLightMap[game.color]} ${textColorMap[game.color]} text-sm font-semibold rounded-full px-4 py-1.5`}
-              >
-                {game.name}
-              </span>
-            ))}
+      {comingSoonGames.length > 0 && (
+        <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
+          <div className="bg-white rounded-2xl border border-border-light p-8 shadow-sm">
+            <h2 className="text-lg font-bold text-text-primary mb-5 text-center">
+              More games on the way
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {comingSoonGames.map((game) => (
+                <div
+                  key={game.slug}
+                  className="flex items-start gap-3 rounded-xl bg-surface/50 p-4"
+                >
+                  <div className={`mt-0.5 h-2.5 w-2.5 rounded-full flex-shrink-0 ${colorMap[game.color]}`} />
+                  <div>
+                    <p className="text-sm font-bold text-text-primary">{game.name}</p>
+                    <p className="text-xs text-text-dim mt-0.5">{game.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Subscription CTA ─────────────────────────────────────────────── */}
       <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.55s_forwards] opacity-0">
@@ -200,10 +151,32 @@ export default function HomePage() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="w-full max-w-[1120px] pt-6 pb-4 text-center animate-[fade-up_0.5s_ease_0.6s_forwards] opacity-0">
-        <p className="text-text-muted text-sm">
-          Built for quick breaks and long rivalries.
-        </p>
+      <footer className="w-full max-w-[1120px] pt-6 pb-8 animate-[fade-up_0.5s_ease_0.6s_forwards] opacity-0">
+        <div className="border-t border-border-light pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-text-muted text-sm">
+            Built for quick breaks and long rivalries.
+          </p>
+          <nav className="flex items-center gap-5">
+            <Link href="/daily" className="text-sm text-text-dim hover:text-text-primary transition-colors no-underline">
+              Daily Puzzles
+            </Link>
+            <Link href="/arcade" className="text-sm text-text-dim hover:text-text-primary transition-colors no-underline">
+              Arcade
+            </Link>
+            <Link href="/subscribe" className="text-sm text-text-dim hover:text-text-primary transition-colors no-underline">
+              Subscribe
+            </Link>
+          </nav>
+        </div>
+        <div className="mt-4 flex items-center justify-center gap-4">
+          <Link href="/privacy" className="text-xs text-text-dim hover:text-text-muted transition-colors no-underline">
+            Privacy Policy
+          </Link>
+          <span className="text-text-dim text-xs">&middot;</span>
+          <Link href="/terms" className="text-xs text-text-dim hover:text-text-muted transition-colors no-underline">
+            Terms of Service
+          </Link>
+        </div>
       </footer>
     </main>
   );

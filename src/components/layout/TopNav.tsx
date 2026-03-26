@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 const navLinks = [
   { label: "Daily", href: "/daily", color: "text-coral" },
   { label: "Arcade", href: "/arcade", color: "text-teal" },
-  { label: "Admin", href: "/admin", color: "text-amber" },
 ];
 
 export default function TopNav() {

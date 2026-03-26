@@ -1,30 +1,13 @@
 import Link from "next/link";
-import { getArcadeGames, type Game, type GameColor } from "@/lib/game-registry";
-
-const colorBg: Record<GameColor, string> = {
-  coral: "bg-coral", teal: "bg-teal", sky: "bg-sky",
-  amber: "bg-amber", purple: "bg-purple", green: "bg-green",
-};
-const colorText: Record<GameColor, string> = {
-  coral: "text-coral", teal: "text-teal", sky: "text-sky",
-  amber: "text-amber", purple: "text-purple", green: "text-green",
-};
-const colorBgLight: Record<GameColor, string> = {
-  coral: "bg-coral/10", teal: "bg-teal/10", sky: "bg-sky/10",
-  amber: "bg-amber/10", purple: "bg-purple/10", green: "bg-green/10",
-};
-const borderColor: Record<GameColor, string> = {
-  coral: "border-coral/30", teal: "border-teal/30", sky: "border-sky/30",
-  amber: "border-amber/30", purple: "border-purple/30", green: "border-green/30",
-};
-const hoverBorder: Record<GameColor, string> = {
-  coral: "hover:border-coral", teal: "hover:border-teal", sky: "hover:border-sky",
-  amber: "hover:border-amber", purple: "hover:border-purple", green: "hover:border-green",
-};
-const hoverBg: Record<GameColor, string> = {
-  coral: "hover:bg-coral/5", teal: "hover:bg-teal/5", sky: "hover:bg-sky/5",
-  amber: "hover:bg-amber/5", purple: "hover:bg-purple/5", green: "hover:bg-green/5",
-};
+import { getArcadeGames, type Game } from "@/lib/game-registry";
+import {
+  colorBg,
+  colorText,
+  colorBgLight,
+  borderColor,
+  hoverBorder,
+  hoverBg,
+} from "@/lib/color-maps";
 
 function GameCard({ game }: { game: Game }) {
   const inner = (
@@ -43,16 +26,13 @@ function GameCard({ game }: { game: Game }) {
 
         <p className="text-sm text-text-dim leading-relaxed">{game.description}</p>
 
-        <div className="flex items-center gap-2 mt-4">
-          <span className={`text-xs font-semibold ${colorText[game.color]} ${colorBgLight[game.color]} rounded-full px-3 py-1`}>
-            {game.creditCost === 0 ? "Free to play" : `${game.creditCost} credits`}
-          </span>
-          {!game.comingSoon && (
+        {!game.comingSoon && (
+          <div className="flex items-center gap-2 mt-4">
             <span className={`text-xs font-semibold ${colorText[game.color]} ${colorBgLight[game.color]} rounded-full px-3 py-1`}>
-              Play now
+              Play now{game.creditCost === 0 ? " — Free" : ""}
             </span>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -78,7 +58,10 @@ function GameCard({ game }: { game: Game }) {
 }
 
 export default function ArcadePage() {
-  const games = getArcadeGames();
+  const allGames = getArcadeGames();
+  const activeGames = allGames.filter((g) => !g.comingSoon);
+  const comingSoonGames = allGames.filter((g) => g.comingSoon);
+  const games = [...activeGames, ...comingSoonGames];
 
   return (
     <div className="mx-auto max-w-[960px] px-4 py-10">

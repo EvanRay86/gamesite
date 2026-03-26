@@ -1,30 +1,13 @@
 import Link from "next/link";
-import { getDailyGames, type Game, type GameColor } from "@/lib/game-registry";
-
-const colorBg: Record<GameColor, string> = {
-  coral: "bg-coral", teal: "bg-teal", sky: "bg-sky",
-  amber: "bg-amber", purple: "bg-purple", green: "bg-green",
-};
-const colorText: Record<GameColor, string> = {
-  coral: "text-coral", teal: "text-teal", sky: "text-sky",
-  amber: "text-amber", purple: "text-purple", green: "text-green",
-};
-const colorBgLight: Record<GameColor, string> = {
-  coral: "bg-coral/10", teal: "bg-teal/10", sky: "bg-sky/10",
-  amber: "bg-amber/10", purple: "bg-purple/10", green: "bg-green/10",
-};
-const borderColor: Record<GameColor, string> = {
-  coral: "border-coral/30", teal: "border-teal/30", sky: "border-sky/30",
-  amber: "border-amber/30", purple: "border-purple/30", green: "border-green/30",
-};
-const hoverBorder: Record<GameColor, string> = {
-  coral: "hover:border-coral", teal: "hover:border-teal", sky: "hover:border-sky",
-  amber: "hover:border-amber", purple: "hover:border-purple", green: "hover:border-green",
-};
-const hoverBg: Record<GameColor, string> = {
-  coral: "hover:bg-coral/5", teal: "hover:bg-teal/5", sky: "hover:bg-sky/5",
-  amber: "hover:bg-amber/5", purple: "hover:bg-purple/5", green: "hover:bg-green/5",
-};
+import { getDailyGames, type Game } from "@/lib/game-registry";
+import {
+  colorBg,
+  colorText,
+  colorBgLight,
+  borderColor,
+  hoverBorder,
+  hoverBg,
+} from "@/lib/color-maps";
 
 function GameCard({ game }: { game: Game }) {
   const inner = (
@@ -49,7 +32,11 @@ function GameCard({ game }: { game: Game }) {
             {game.variants.map((v) => (
               <span
                 key={v.slug}
-                className={`rounded-full ${colorBgLight[game.color]} ${colorText[game.color]} px-2.5 py-0.5 text-xs font-medium`}
+                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  v.comingSoon
+                    ? "bg-surface text-text-dim border border-dashed border-border-light"
+                    : `${colorBgLight[game.color]} ${colorText[game.color]}`
+                }`}
               >
                 {v.name}
               </span>
@@ -70,7 +57,7 @@ function GameCard({ game }: { game: Game }) {
 
   if (game.comingSoon) {
     return (
-      <div className={`bg-white rounded-2xl border-2 border-border-light opacity-50 shadow-sm`}>
+      <div className="bg-white rounded-2xl border-2 border-border-light opacity-50 shadow-sm">
         {inner}
       </div>
     );
@@ -89,7 +76,10 @@ function GameCard({ game }: { game: Game }) {
 }
 
 export default function DailyPage() {
-  const games = getDailyGames();
+  const allGames = getDailyGames();
+  const activeGames = allGames.filter((g) => !g.comingSoon);
+  const comingSoonGames = allGames.filter((g) => g.comingSoon);
+  const games = [...activeGames, ...comingSoonGames];
 
   return (
     <div className="mx-auto max-w-[960px] px-4 py-10">
