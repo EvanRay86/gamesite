@@ -72,6 +72,32 @@ interface EmojiWordPuzzle {
   created_at: string;
 }
 
+interface Top5Puzzle {
+  id: string;
+  puzzle_date: string;
+  category: string;
+  items: { name: string; value: string | number }[];
+  unit?: string;
+  created_at: string;
+}
+
+interface QuotablePuzzle {
+  id: string;
+  puzzle_date: string;
+  quote: string;
+  attribution: string;
+  hint?: string;
+  options: string[];
+  created_at: string;
+}
+
+interface TimelinePuzzle {
+  id: string;
+  puzzle_date: string;
+  events: { description: string; year: number }[];
+  created_at: string;
+}
+
 interface PuzzleData {
   trivia: TriviaPuzzle[];
   crosswords: CrosswordPuzzle[];
@@ -81,10 +107,13 @@ interface PuzzleData {
   anagram: AnagramPuzzle[];
   wordLadder: WordLadderPuzzle[];
   emojiWord: EmojiWordPuzzle[];
+  top5: Top5Puzzle[];
+  quotable: QuotablePuzzle[];
+  timeline: TimelinePuzzle[];
   fetchedAt: string;
 }
 
-type Tab = "overview" | "trivia" | "crossword" | "clusters" | "framed" | "heardle" | "anagram" | "word-ladder" | "emoji-word" | "prompt";
+type Tab = "overview" | "trivia" | "crossword" | "clusters" | "framed" | "heardle" | "anagram" | "word-ladder" | "emoji-word" | "top-5" | "quotable" | "timeline" | "prompt";
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
 
@@ -220,6 +249,68 @@ Format per date:
 }
 \`\`\`
 
+## 5. TOP 5 (5 items per date)
+- Each puzzle has a category (e.g., "Most populated US states") and exactly 5 items ranked in correct order (#1 highest to #5 lowest)
+- Each item has a name and a display value (with units)
+- Categories should be diverse: geography, science, sports, pop culture, history, nature, etc.
+- Items should be well-known enough that players have a chance, but not trivially obvious ordering
+- Avoid categories where the ordering is common knowledge to everyone
+
+Format per date:
+\`\`\`json
+{
+  "puzzle_date": "YYYY-MM-DD",
+  "category": "Most populated U.S. states",
+  "items": [
+    { "name": "California", "value": "39.0M" },
+    { "name": "Texas", "value": "30.5M" },
+    { "name": "Florida", "value": "22.6M" },
+    { "name": "New York", "value": "19.6M" },
+    { "name": "Pennsylvania", "value": "12.9M" }
+  ]
+}
+\`\`\`
+
+## 6. QUOTABLE (1 quote per date)
+- A famous, well-known quote with its attribution (person who said it)
+- Include a one-word hint about the speaker's profession/role
+- Include 10 plausible autocomplete options (people in the same field), with the correct answer included
+- Quotes should be recognizable but not too easy — avoid the most overused quotes
+- Mix categories: scientists, leaders, authors, entertainers, athletes, etc.
+
+Format per date:
+\`\`\`json
+{
+  "puzzle_date": "YYYY-MM-DD",
+  "quote": "The only way to do great work is to love what you do.",
+  "attribution": "Steve Jobs",
+  "hint": "Tech visionary",
+  "options": ["Steve Jobs", "Bill Gates", "Elon Musk", "Jeff Bezos", "Mark Zuckerberg", "Larry Page", "Tim Cook", "Satya Nadella", "Jack Dorsey", "Steve Wozniak"]
+}
+\`\`\`
+
+## 7. TIMELINE (5 events per date)
+- 5 historical/cultural events that players must put in chronological order
+- Events should be from a cohesive theme (space, music, movies, inventions, sports, etc.)
+- Each event has a short description and the year it occurred
+- Events must be listed in correct chronological order (earliest to latest)
+- Years should be spread apart enough to be distinguishable but close enough to be challenging
+- Use well-known events that most people would recognize
+
+Format per date:
+\`\`\`json
+{
+  "puzzle_date": "YYYY-MM-DD",
+  "events": [
+    { "description": "Sputnik, the first satellite, is launched", "year": 1957 },
+    { "description": "First humans walk on the Moon", "year": 1969 },
+    { "description": "First Space Shuttle mission launches", "year": 1981 },
+    { "description": "International Space Station receives first crew", "year": 2000 },
+    { "description": "SpaceX sends first crew to the ISS", "year": 2020 }
+  ]
+}
+\`\`\`
+
 ---
 
 After generating, provide the SQL INSERT statements to run in Supabase SQL editor:
@@ -240,6 +331,18 @@ INSERT INTO anagram_puzzles (puzzle_date, words) VALUES
 -- Emoji Decoder
 INSERT INTO emoji_word_puzzles (puzzle_date, rounds) VALUES
 ('YYYY-MM-DD', '[...]'::jsonb);
+
+-- Top 5
+INSERT INTO top5_puzzles (puzzle_date, category, items) VALUES
+('YYYY-MM-DD', 'Category Name', '[{"name":"...","value":"..."},...]'::jsonb);
+
+-- Quotable
+INSERT INTO quotable_puzzles (puzzle_date, quote, attribution, hint, options) VALUES
+('YYYY-MM-DD', 'The quote text...', 'Speaker Name', 'Hint', '["Option1","Option2",...]'::jsonb);
+
+-- Timeline
+INSERT INTO timeline_puzzles (puzzle_date, events) VALUES
+('YYYY-MM-DD', '[{"description":"...","year":1957},...]'::jsonb);
 \`\`\`
 
 IMPORTANT:
@@ -253,7 +356,12 @@ IMPORTANT:
 - Make questions interesting and varied in difficulty
 - Each emoji decoder puzzle MUST have exactly 5 rounds (difficulty 1-5)
 - Emoji decoder answers should be fun, recognizable words/phrases
-- Include hints for emoji decoder rounds 2-5`;
+- Include hints for emoji decoder rounds 2-5
+- Each Top 5 puzzle MUST have exactly 5 items in correct ranked order with display values
+- Top 5 items array is stored in the correct order (#1 first, #5 last) — the game shuffles them
+- Quotable options MUST include the correct attribution as one of the 10 options
+- Timeline events MUST be listed in chronological order (earliest year first)
+- Each timeline puzzle MUST have exactly 5 events with accurate years`;
 }
 
 /* ── Component ─────────────────────────────────────────────────────────── */
@@ -288,6 +396,9 @@ export default function AdminPage() {
         ...json.trivia.map((p) => p.puzzle_date),
         ...json.crosswords.map((p) => p.puzzle_date),
         ...json.anagram.map((p) => p.puzzle_date),
+        ...json.top5.map((p) => p.puzzle_date),
+        ...json.quotable.map((p) => p.puzzle_date),
+        ...json.timeline.map((p) => p.puzzle_date),
       ];
       if (allDates.length > 0) {
         const latest = allDates.sort().pop()!;
@@ -367,6 +478,9 @@ export default function AdminPage() {
   const upcomingAnagram = data?.anagram.filter((p) => p.puzzle_date >= today) ?? [];
   const upcomingWordLadder = data?.wordLadder.filter((p) => p.puzzle_date >= today) ?? [];
   const upcomingEmojiWord = data?.emojiWord.filter((p) => p.puzzle_date >= today) ?? [];
+  const upcomingTop5 = data?.top5.filter((p) => p.puzzle_date >= today) ?? [];
+  const upcomingQuotable = data?.quotable.filter((p) => p.puzzle_date >= today) ?? [];
+  const upcomingTimeline = data?.timeline.filter((p) => p.puzzle_date >= today) ?? [];
 
   const latestTrivia = upcomingTrivia[upcomingTrivia.length - 1]?.puzzle_date;
   const latestCrossword = upcomingCrosswords[upcomingCrosswords.length - 1]?.puzzle_date;
@@ -376,6 +490,9 @@ export default function AdminPage() {
   const latestAnagram = upcomingAnagram[upcomingAnagram.length - 1]?.puzzle_date;
   const latestWordLadder = upcomingWordLadder[upcomingWordLadder.length - 1]?.puzzle_date;
   const latestEmojiWord = upcomingEmojiWord[upcomingEmojiWord.length - 1]?.puzzle_date;
+  const latestTop5 = upcomingTop5[upcomingTop5.length - 1]?.puzzle_date;
+  const latestQuotable = upcomingQuotable[upcomingQuotable.length - 1]?.puzzle_date;
+  const latestTimeline = upcomingTimeline[upcomingTimeline.length - 1]?.puzzle_date;
 
   const triviaBuffer = latestTrivia ? daysLeftNum(latestTrivia) : 0;
   const crosswordBuffer = latestCrossword ? daysLeftNum(latestCrossword) : 0;
@@ -384,8 +501,11 @@ export default function AdminPage() {
   const anagramBuffer = latestAnagram ? daysLeftNum(latestAnagram) : 0;
   const wordLadderBuffer = latestWordLadder ? daysLeftNum(latestWordLadder) : 0;
   const emojiWordBuffer = latestEmojiWord ? daysLeftNum(latestEmojiWord) : 0;
+  const top5Buffer = latestTop5 ? daysLeftNum(latestTop5) : 0;
+  const quotableBuffer = latestQuotable ? daysLeftNum(latestQuotable) : 0;
+  const timelineBuffer = latestTimeline ? daysLeftNum(latestTimeline) : 0;
 
-  const needsAttention = triviaBuffer <= 2 || crosswordBuffer <= 2 || framedBuffer <= 2 || heardleBuffer <= 2 || anagramBuffer <= 2 || wordLadderBuffer <= 2 || emojiWordBuffer <= 2;
+  const needsAttention = triviaBuffer <= 2 || crosswordBuffer <= 2 || framedBuffer <= 2 || heardleBuffer <= 2 || anagramBuffer <= 2 || wordLadderBuffer <= 2 || emojiWordBuffer <= 2 || top5Buffer <= 2 || quotableBuffer <= 2 || timelineBuffer <= 2;
 
   // ── Date edit controls ────────────────────────────────────────────────
   function DateControl({ id, date, type }: { id: string; date: string; type: string }) {
@@ -479,7 +599,7 @@ export default function AdminPage() {
       <div className="border-b border-border">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex gap-1">
-            {(["overview", "trivia", "crossword", "clusters", "framed", "heardle", "anagram", "word-ladder", "emoji-word", "prompt"] as Tab[]).map((t) => (
+            {(["overview", "trivia", "crossword", "clusters", "framed", "heardle", "anagram", "word-ladder", "emoji-word", "top-5", "quotable", "timeline", "prompt"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -489,7 +609,7 @@ export default function AdminPage() {
                     : "border-transparent text-text-muted hover:text-text-secondary"
                 }`}
               >
-                {t === "prompt" ? "Generate Puzzles" : t === "word-ladder" ? "Word Ladder" : t === "emoji-word" ? "Emoji Decoder" : t}
+                {t === "prompt" ? "Generate Puzzles" : t === "word-ladder" ? "Word Ladder" : t === "emoji-word" ? "Emoji Decoder" : t === "top-5" ? "Top 5" : t}
               </button>
             ))}
           </div>
@@ -529,6 +649,9 @@ export default function AdminPage() {
                         {anagramBuffer <= 2 && `Anagram: ${anagramBuffer} days remaining. `}
                         {wordLadderBuffer <= 2 && `Word Ladder: ${wordLadderBuffer} days remaining. `}
                         {emojiWordBuffer <= 2 && `Emoji Decoder: ${emojiWordBuffer} days remaining. `}
+                        {top5Buffer <= 2 && `Top 5: ${top5Buffer} days remaining. `}
+                        {quotableBuffer <= 2 && `Quotable: ${quotableBuffer} days remaining. `}
+                        {timelineBuffer <= 2 && `Timeline: ${timelineBuffer} days remaining. `}
                         Switch to the &quot;Generate Puzzles&quot; tab to create more.
                       </p>
                     </div>
@@ -601,6 +724,30 @@ export default function AdminPage() {
                     color="amber"
                     buffer={emojiWordBuffer}
                   />
+                  <StatCard
+                    label="Top 5"
+                    count={data!.top5.length}
+                    upcoming={upcomingTop5.length}
+                    lastDate={latestTop5}
+                    color="amber"
+                    buffer={top5Buffer}
+                  />
+                  <StatCard
+                    label="Quotable"
+                    count={data!.quotable.length}
+                    upcoming={upcomingQuotable.length}
+                    lastDate={latestQuotable}
+                    color="purple"
+                    buffer={quotableBuffer}
+                  />
+                  <StatCard
+                    label="Timeline"
+                    count={data!.timeline.length}
+                    upcoming={upcomingTimeline.length}
+                    lastDate={latestTimeline}
+                    color="teal"
+                    buffer={timelineBuffer}
+                  />
                 </div>
 
                 {/* Timeline */}
@@ -619,6 +766,9 @@ export default function AdminPage() {
                           <th className="px-4 py-3 font-medium">Anagram</th>
                           <th className="px-4 py-3 font-medium">Word Ladder</th>
                           <th className="px-4 py-3 font-medium">Emoji Decoder</th>
+                          <th className="px-4 py-3 font-medium">Top 5</th>
+                          <th className="px-4 py-3 font-medium">Quotable</th>
+                          <th className="px-4 py-3 font-medium">Timeline</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -658,6 +808,15 @@ export default function AdminPage() {
                             </td>
                             <td className="px-4 py-3">
                               <StatusDot ok={row.hasEmojiWord} />
+                            </td>
+                            <td className="px-4 py-3">
+                              <StatusDot ok={row.hasTop5} />
+                            </td>
+                            <td className="px-4 py-3">
+                              <StatusDot ok={row.hasQuotable} />
+                            </td>
+                            <td className="px-4 py-3">
+                              <StatusDot ok={row.hasTimeline} />
                             </td>
                           </tr>
                         ))}
@@ -945,6 +1104,98 @@ export default function AdminPage() {
               />
             )}
 
+            {/* ── Top 5 Tab ────────────────────────────────────────── */}
+            {tab === "top-5" && (
+              <PuzzleList
+                title="Top 5 Puzzles"
+                items={data!.top5}
+                renderItem={(p: Top5Puzzle) => (
+                  <div key={p.id} className={`rounded-xl border border-border-light p-4 ${isPast(p.puzzle_date) ? "opacity-60" : ""}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <DateControl id={p.id} date={p.puzzle_date} type="top-5" />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-text-dim">{p.category}</span>
+                        <DeleteButton id={p.id} type="top-5" label={`Top 5 ${p.puzzle_date}`} />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      {p.items.map((item, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm">
+                          <span className="text-xs font-bold text-amber w-5">{i + 1}.</span>
+                          <span className="font-semibold text-text-primary">{item.name}</span>
+                          <span className="text-text-dim text-xs">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              />
+            )}
+
+            {/* ── Quotable Tab ──────────────────────────────────────── */}
+            {tab === "quotable" && (
+              <PuzzleList
+                title="Quotable Puzzles"
+                items={data!.quotable}
+                renderItem={(p: QuotablePuzzle) => (
+                  <div key={p.id} className={`rounded-xl border border-border-light p-4 ${isPast(p.puzzle_date) ? "opacity-60" : ""}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <DateControl id={p.id} date={p.puzzle_date} type="quotable" />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-purple">{p.attribution}</span>
+                        <DeleteButton id={p.id} type="quotable" label={`Quotable ${p.puzzle_date}`} />
+                      </div>
+                    </div>
+                    <p className="text-sm text-text-secondary italic mb-2">
+                      &ldquo;{p.quote.length > 120 ? p.quote.slice(0, 120) + "..." : p.quote}&rdquo;
+                    </p>
+                    {p.hint && <span className="text-xs text-text-dim">Hint: {p.hint}</span>}
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {p.options.map((opt, i) => (
+                        <span
+                          key={i}
+                          className={`text-xs px-2 py-0.5 rounded ${
+                            opt === p.attribution
+                              ? "bg-green/10 text-green font-medium"
+                              : "bg-surface text-text-muted"
+                          }`}
+                        >
+                          {opt}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              />
+            )}
+
+            {/* ── Timeline Tab ──────────────────────────────────────── */}
+            {tab === "timeline" && (
+              <PuzzleList
+                title="Timeline Puzzles"
+                items={data!.timeline}
+                renderItem={(p: TimelinePuzzle) => (
+                  <div key={p.id} className={`rounded-xl border border-border-light p-4 ${isPast(p.puzzle_date) ? "opacity-60" : ""}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <DateControl id={p.id} date={p.puzzle_date} type="timeline" />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-text-dim">{p.events.length} events</span>
+                        <DeleteButton id={p.id} type="timeline" label={`Timeline ${p.puzzle_date}`} />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      {p.events.map((e, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm">
+                          <span className="font-bold text-teal text-xs w-12">{e.year}</span>
+                          <span className="text-text-secondary">{e.description}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              />
+            )}
+
             {/* ── Prompt Generator Tab ──────────────────────────────── */}
             {tab === "prompt" && (
               <div className="space-y-6">
@@ -1117,8 +1368,11 @@ function buildTimeline(data: PuzzleData) {
   const anagramDates = new Set(data.anagram.map((p) => p.puzzle_date));
   const wordLadderDates = new Set(data.wordLadder.map((p) => p.puzzle_date));
   const emojiWordDates = new Set(data.emojiWord.map((p) => p.puzzle_date));
+  const top5Dates = new Set(data.top5.map((p) => p.puzzle_date));
+  const quotableDates = new Set(data.quotable.map((p) => p.puzzle_date));
+  const timelineDates = new Set(data.timeline.map((p) => p.puzzle_date));
 
-  const allDates = new Set([...triviaDates, ...crosswordDates, ...clustersDates, ...framedDates, ...heardleDates, ...anagramDates, ...wordLadderDates, ...emojiWordDates]);
+  const allDates = new Set([...triviaDates, ...crosswordDates, ...clustersDates, ...framedDates, ...heardleDates, ...anagramDates, ...wordLadderDates, ...emojiWordDates, ...top5Dates, ...quotableDates, ...timelineDates]);
 
   // Show from earliest puzzle to latest
   const sorted = [...allDates].sort();
@@ -1126,7 +1380,7 @@ function buildTimeline(data: PuzzleData) {
   const minDate = sorted[0] && sorted[0] < today ? sorted[0] : today;
   const maxDate = sorted[sorted.length - 1] ?? new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10);
 
-  const result: { date: string; hasTrivia: boolean; hasCrossword: boolean; hasClusters: boolean; hasFramed: boolean; hasHeardle: boolean; hasAnagram: boolean; hasWordLadder: boolean; hasEmojiWord: boolean }[] = [];
+  const result: { date: string; hasTrivia: boolean; hasCrossword: boolean; hasClusters: boolean; hasFramed: boolean; hasHeardle: boolean; hasAnagram: boolean; hasWordLadder: boolean; hasEmojiWord: boolean; hasTop5: boolean; hasQuotable: boolean; hasTimeline: boolean }[] = [];
   const d = new Date(minDate + "T00:00:00");
   const end = new Date(maxDate + "T00:00:00");
 
@@ -1142,6 +1396,9 @@ function buildTimeline(data: PuzzleData) {
       hasAnagram: anagramDates.has(ds),
       hasWordLadder: wordLadderDates.has(ds),
       hasEmojiWord: emojiWordDates.has(ds),
+      hasTop5: top5Dates.has(ds),
+      hasQuotable: quotableDates.has(ds),
+      hasTimeline: timelineDates.has(ds),
     });
     d.setDate(d.getDate() + 1);
   }

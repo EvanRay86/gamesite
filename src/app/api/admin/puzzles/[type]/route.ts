@@ -11,6 +11,9 @@ const TABLE_MAP: Record<string, string> = {
   anagram: "anagram_puzzles",
   "word-ladder": "word_ladder_puzzles",
   "emoji-word": "emoji_word_puzzles",
+  "top-5": "top5_puzzles",
+  quotable: "quotable_puzzles",
+  timeline: "timeline_puzzles",
 };
 
 function getTable(type: string): string | null {
