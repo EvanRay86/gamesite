@@ -4,10 +4,39 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { songBank, CLIP_DURATIONS, type HeardlePuzzle } from "@/lib/heardle-puzzles";
 
 const MAX_GUESSES = 6;
+const SC_WIDGET_API = "https://w.soundcloud.com/player/api.js";
 
 interface Props {
   puzzle: HeardlePuzzle;
   variant?: string;
+}
+
+// SoundCloud Widget API types
+interface SCWidget {
+  bind(event: string, callback: (...args: unknown[]) => void): void;
+  unbind(event: string): void;
+  play(): void;
+  pause(): void;
+  seekTo(ms: number): void;
+  getPosition(callback: (pos: number) => void): void;
+  getDuration(callback: (dur: number) => void): void;
+}
+
+interface SCWidgetStatic {
+  (iframe: HTMLIFrameElement): SCWidget;
+  Events: {
+    READY: string;
+    PLAY: string;
+    PAUSE: string;
+    PLAY_PROGRESS: string;
+    FINISH: string;
+  };
+}
+
+declare global {
+  interface Window {
+    SC?: { Widget: SCWidgetStatic };
+  }
 }
 
 export default function HeardleGame({ puzzle, variant }: Props) {
@@ -21,8 +50,10 @@ export default function HeardleGame({ puzzle, variant }: Props) {
   const [copied, setCopied] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playProgress, setPlayProgress] = useState(0);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [widgetReady, setWidgetReady] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const widgetRef = useRef<SCWidget | null>(null);
+  const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -30,10 +61,63 @@ export default function HeardleGame({ puzzle, variant }: Props) {
     setTimeout(() => setFadeIn(true), 100);
   }, []);
 
-  // Clean up interval on unmount
+  // Load SoundCloud Widget API script
+  useEffect(() => {
+    if (document.querySelector(`script[src="${SC_WIDGET_API}"]`)) return;
+    const script = document.createElement("script");
+    script.src = SC_WIDGET_API;
+    script.async = true;
+    document.head.appendChild(script);
+  }, []);
+
+  // Initialize widget once iframe and API are both loaded
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const initWidget = () => {
+      if (!window.SC?.Widget) return;
+      const widget = window.SC.Widget(iframe);
+      widgetRef.current = widget;
+
+      widget.bind(window.SC.Widget.Events.READY, () => {
+        setWidgetReady(true);
+      });
+
+      widget.bind(window.SC.Widget.Events.PLAY_PROGRESS, ((...args: unknown[]) => {
+        const data = args[0] as { currentPosition: number; relativePosition: number };
+        const posSeconds = data.currentPosition / 1000;
+        setPlayProgress(posSeconds);
+      }));
+
+      widget.bind(window.SC.Widget.Events.PAUSE, () => {
+        setIsPlaying(false);
+      });
+
+      widget.bind(window.SC.Widget.Events.FINISH, () => {
+        setIsPlaying(false);
+        setPlayProgress(0);
+      });
+    };
+
+    // Wait for SC API to be available
+    if (window.SC?.Widget) {
+      initWidget();
+    } else {
+      const check = setInterval(() => {
+        if (window.SC?.Widget) {
+          clearInterval(check);
+          initWidget();
+        }
+      }, 100);
+      return () => clearInterval(check);
+    }
+  }, [showSplash]);
+
+  // Cleanup stop timer on unmount
   useEffect(() => {
     return () => {
-      if (progressInterval.current) clearInterval(progressInterval.current);
+      if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
     };
   }, []);
 
@@ -65,40 +149,41 @@ export default function HeardleGame({ puzzle, variant }: Props) {
   }, []);
 
   const stopAudio = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
-    audio.currentTime = 0;
+    const widget = widgetRef.current;
+    if (!widget) return;
+    widget.pause();
+    widget.seekTo(0);
     setIsPlaying(false);
     setPlayProgress(0);
-    if (progressInterval.current) {
-      clearInterval(progressInterval.current);
-      progressInterval.current = null;
+    if (stopTimerRef.current) {
+      clearTimeout(stopTimerRef.current);
+      stopTimerRef.current = null;
     }
   }, []);
 
   const playClip = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const widget = widgetRef.current;
+    if (!widget || !widgetReady) return;
 
     stopAudio();
-    audio.currentTime = 0;
+    widget.seekTo(0);
 
     const maxTime = gameState !== "playing" ? fullDuration : currentDuration;
 
-    audio.play().then(() => {
+    // Small delay to let seekTo settle before playing
+    setTimeout(() => {
+      widget.play();
       setIsPlaying(true);
-      progressInterval.current = setInterval(() => {
-        if (audio.currentTime >= maxTime) {
-          stopAudio();
-        } else {
-          setPlayProgress(audio.currentTime);
-        }
-      }, 50);
-    }).catch(() => {
-      // Autoplay blocked — user needs to interact first
-    });
-  }, [currentDuration, fullDuration, gameState, stopAudio]);
+
+      // Schedule pause after clip duration
+      stopTimerRef.current = setTimeout(() => {
+        widget.pause();
+        widget.seekTo(0);
+        setIsPlaying(false);
+        setPlayProgress(0);
+      }, maxTime * 1000);
+    }, 50);
+  }, [currentDuration, fullDuration, gameState, stopAudio, widgetReady]);
 
   const formatAnswer = (p: HeardlePuzzle) => `${p.title} – ${p.artist}`;
 
@@ -185,6 +270,9 @@ export default function HeardleGame({ puzzle, variant }: Props) {
 
   const isFinished = gameState !== "playing";
 
+  // Build SoundCloud embed URL
+  const scEmbedUrl = `https://w.soundcloud.com/player/?url=${encodeURIComponent(puzzle.soundcloudUrl)}&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false&hide_related=true&visual=false&start_track=0&callback=true`;
+
   // Splash screen
   if (showSplash) {
     return (
@@ -247,8 +335,16 @@ export default function HeardleGame({ puzzle, variant }: Props) {
     <div
       className={`flex min-h-[80vh] flex-col items-center px-4 py-8 transition-opacity duration-500 ${fadeIn ? "opacity-100" : "opacity-0"}`}
     >
-      {/* Hidden audio element */}
-      <audio ref={audioRef} src={puzzle.audioUrl} preload="auto" />
+      {/* Hidden SoundCloud widget iframe */}
+      <iframe
+        ref={iframeRef}
+        src={scEmbedUrl}
+        width="0"
+        height="0"
+        allow="autoplay"
+        className="absolute opacity-0 pointer-events-none"
+        title="SoundCloud Player"
+      />
 
       <div className="w-full max-w-lg">
         {/* Header */}
@@ -327,10 +423,13 @@ export default function HeardleGame({ puzzle, variant }: Props) {
           {/* Play button */}
           <button
             onClick={isPlaying ? stopAudio : playClip}
+            disabled={!widgetReady}
             className="w-full flex items-center justify-center gap-2 bg-purple text-white font-bold
-                       rounded-full py-3 text-sm hover:opacity-90 transition-opacity"
+                       rounded-full py-3 text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {isPlaying ? (
+            {!widgetReady ? (
+              "Loading audio..."
+            ) : isPlaying ? (
               <>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                   <rect x="3" y="2" width="4" height="12" rx="1" />

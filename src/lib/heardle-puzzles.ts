@@ -11,8 +11,8 @@ export interface HeardlePuzzle {
   artist: string;
   /** Release year */
   year: number;
-  /** Audio clip URL (single file, playback duration controlled by game) */
-  audioUrl: string;
+  /** SoundCloud track URL, e.g. "https://soundcloud.com/artist/track" */
+  soundcloudUrl: string;
 }
 
 /**
@@ -23,6 +23,7 @@ export const CLIP_DURATIONS = [1, 2, 4, 7, 11, 16];
 
 // ---------------------------------------------------------------------------
 // Seed data — hardcoded puzzles so the game is playable immediately.
+// Uses real SoundCloud track URLs.
 // ---------------------------------------------------------------------------
 
 const seedPuzzles: HeardlePuzzle[] = [
@@ -33,7 +34,7 @@ const seedPuzzles: HeardlePuzzle[] = [
     title: "Bohemian Rhapsody",
     artist: "Queen",
     year: 1975,
-    audioUrl: "/heardle/bohemian-rhapsody/clip.mp3",
+    soundcloudUrl: "https://soundcloud.com/queen-official/bohemian-rhapsody-1",
   },
   {
     date: "2026-03-25",
@@ -41,7 +42,7 @@ const seedPuzzles: HeardlePuzzle[] = [
     title: "Billie Jean",
     artist: "Michael Jackson",
     year: 1982,
-    audioUrl: "/heardle/billie-jean/clip.mp3",
+    soundcloudUrl: "https://soundcloud.com/michaeljackson/billie-jean",
   },
   {
     date: "2026-03-26",
@@ -49,7 +50,7 @@ const seedPuzzles: HeardlePuzzle[] = [
     title: "Smells Like Teen Spirit",
     artist: "Nirvana",
     year: 1991,
-    audioUrl: "/heardle/smells-like-teen-spirit/clip.mp3",
+    soundcloudUrl: "https://soundcloud.com/nirvana/smells-like-teen-spirit",
   },
 
   // ── Pop variant ───────────────────────────────────────────────────────
@@ -59,7 +60,7 @@ const seedPuzzles: HeardlePuzzle[] = [
     title: "Blinding Lights",
     artist: "The Weeknd",
     year: 2019,
-    audioUrl: "/heardle/blinding-lights/clip.mp3",
+    soundcloudUrl: "https://soundcloud.com/theweeknd/blinding-lights",
   },
 
   // ── Rock variant ──────────────────────────────────────────────────────
@@ -69,7 +70,7 @@ const seedPuzzles: HeardlePuzzle[] = [
     title: "Back in Black",
     artist: "AC/DC",
     year: 1980,
-    audioUrl: "/heardle/back-in-black/clip.mp3",
+    soundcloudUrl: "https://soundcloud.com/acdc/back-in-black",
   },
 
   // ── Hip-Hop variant ───────────────────────────────────────────────────
@@ -79,7 +80,7 @@ const seedPuzzles: HeardlePuzzle[] = [
     title: "Lose Yourself",
     artist: "Eminem",
     year: 2002,
-    audioUrl: "/heardle/lose-yourself/clip.mp3",
+    soundcloudUrl: "https://soundcloud.com/eminem/lose-yourself-soundtrack",
   },
 
   // ── 2000s variant ─────────────────────────────────────────────────────
@@ -89,7 +90,7 @@ const seedPuzzles: HeardlePuzzle[] = [
     title: "Mr. Brightside",
     artist: "The Killers",
     year: 2003,
-    audioUrl: "/heardle/mr-brightside/clip.mp3",
+    soundcloudUrl: "https://soundcloud.com/thekillers/mr-brightside",
   },
 
   // ── Country variant ───────────────────────────────────────────────────
@@ -99,7 +100,7 @@ const seedPuzzles: HeardlePuzzle[] = [
     title: "Jolene",
     artist: "Dolly Parton",
     year: 1973,
-    audioUrl: "/heardle/jolene/clip.mp3",
+    soundcloudUrl: "https://soundcloud.com/dolly-parton/jolene",
   },
 
   // ── R&B variant ───────────────────────────────────────────────────────
@@ -109,7 +110,7 @@ const seedPuzzles: HeardlePuzzle[] = [
     title: "No Scrubs",
     artist: "TLC",
     year: 1999,
-    audioUrl: "/heardle/no-scrubs/clip.mp3",
+    soundcloudUrl: "https://soundcloud.com/tlc-music/no-scrubs",
   },
 ];
 
@@ -255,7 +256,7 @@ async function getFromSupabase(
       title: data.title,
       artist: data.artist,
       year: data.year,
-      audioUrl: data.audio_url,
+      soundcloudUrl: data.soundcloud_url,
     };
   } catch {
     return null;
@@ -306,21 +307,6 @@ export function getHeardlePuzzle(
 function dateToDayNumber(date: string): number {
   const d = new Date(date + "T00:00:00Z");
   return Math.floor(d.getTime() / 86_400_000);
-}
-
-export async function getHeardleArchiveDates(): Promise<{ puzzle_date: string }[]> {
-  const supabase = getSupabase();
-  if (!supabase) return [];
-
-  const { data, error } = await supabase
-    .from("heardle_puzzles")
-    .select("puzzle_date")
-    .eq("variant", "all")
-    .lte("puzzle_date", getTodayDate())
-    .order("puzzle_date", { ascending: false });
-
-  if (error || !data) return [];
-  return data;
 }
 
 /** All variant slugs that have at least one puzzle. */
