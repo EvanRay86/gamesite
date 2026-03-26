@@ -173,10 +173,11 @@ Format per date:
 \`\`\`
 
 ## 3. ANAGRAM SCRAMBLE (5 words per date)
-- 5 words, each 5-7 letters long
+- 5 words per puzzle with specific lengths: words 1-3 are 5 letters, word 4 is 6 letters, word 5 is 7 letters
 - Mix of categories: animals, science, geography, food, music, sports, etc.
 - Each word has a scrambled version (shuffle the letters so it's not trivially obvious)
 - Each word has a one-word category hint
+- Difficulty ramps up: easy 5-letter words first, harder 6 and 7-letter words last
 
 Format per date:
 \`\`\`json
@@ -211,7 +212,7 @@ IMPORTANT:
 - Each crossword MUST have exactly 12 entries
 - correctIndex must be 0-3 and match the correct option
 - Crossword answers MUST be A-Z only, no spaces/hyphens
-- Each anagram MUST have exactly 5 words, each 5-7 letters
+- Each anagram MUST have exactly 5 words: first 3 words are 5 letters, 4th word is 6 letters, 5th word is 7 letters
 - Scrambled letters must be a valid permutation of the answer (same letters, different order)
 - Double-check that news references are factually accurate
 - Make questions interesting and varied in difficulty`;
