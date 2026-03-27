@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Serif_Display, Outfit } from "next/font/google";
 import TopNav from "@/components/layout/TopNav";
 import CookieBanner from "@/components/CookieBanner";
+import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
 const dmSerifDisplay = DM_Serif_Display({
@@ -59,9 +60,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${dmSerifDisplay.variable} ${outfit.variable}`}>
       <body className="font-body antialiased">
-        <TopNav />
-        {children}
-        <CookieBanner />
+        <AuthProvider>
+          <TopNav />
+          {children}
+          <CookieBanner />
+        </AuthProvider>
       </body>
     </html>
   );
