@@ -36,7 +36,7 @@ export async function GET() {
   // Fetch heardle puzzles (table may not exist yet — fail gracefully)
   const { data: heardle } = await supabase
     .from("heardle_puzzles")
-    .select("id, puzzle_date, title, artist, year, variant, song_slug, created_at")
+    .select("id, puzzle_date, title, artist, year, variant, soundcloud_url, created_at")
     .order("puzzle_date", { ascending: true });
 
   // Fetch anagram puzzles (table may not exist yet — fail gracefully)
