@@ -75,6 +75,12 @@ export async function GET() {
     .select("id, puzzle_date, events, created_at")
     .order("puzzle_date", { ascending: true });
 
+  // Fetch hexle puzzles (table may not exist yet — fail gracefully)
+  const { data: hexle } = await supabase
+    .from("hexle_puzzles")
+    .select("id, puzzle_date, word, created_at")
+    .order("puzzle_date", { ascending: true });
+
   if (triviaErr || crosswordErr || clustersErr) {
     return NextResponse.json(
       { error: "Failed to fetch puzzles", details: { triviaErr, crosswordErr, clustersErr } },
@@ -94,6 +100,7 @@ export async function GET() {
     top5: top5 ?? [],
     quotable: quotable ?? [],
     timeline: timeline ?? [],
+    hexle: hexle ?? [],
     fetchedAt: new Date().toISOString(),
   });
 }

@@ -126,6 +126,19 @@
   50% { filter: drop-shadow(0 0 20px rgba(247,183,49,1)); transform: scale(1.1) rotate(5deg); }
 }
 
+@keyframes hexle-flip {
+  0% { transform: rotateX(0); }
+  45% { transform: rotateX(90deg); }
+  55% { transform: rotateX(90deg); }
+  100% { transform: rotateX(0); }
+}
+
+@keyframes hexle-bounce {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-20px); }
+  60% { transform: translateY(-10px); }
+}
+
 body {
   background: #ffffff;
   min-height: 100vh;
