@@ -98,6 +98,13 @@ interface TimelinePuzzle {
   created_at: string;
 }
 
+interface HexlePuzzle {
+  id: string;
+  puzzle_date: string;
+  word: string;
+  created_at: string;
+}
+
 interface PuzzleData {
   trivia: TriviaPuzzle[];
   crosswords: CrosswordPuzzle[];
@@ -110,10 +117,11 @@ interface PuzzleData {
   top5: Top5Puzzle[];
   quotable: QuotablePuzzle[];
   timeline: TimelinePuzzle[];
+  hexle: HexlePuzzle[];
   fetchedAt: string;
 }
 
-type Tab = "overview" | "trivia" | "crossword" | "clusters" | "framed" | "heardle" | "anagram" | "word-ladder" | "emoji-word" | "top-5" | "quotable" | "timeline" | "prompt";
+type Tab = "overview" | "trivia" | "crossword" | "clusters" | "framed" | "heardle" | "anagram" | "word-ladder" | "emoji-word" | "top-5" | "quotable" | "timeline" | "hexle" | "prompt";
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
 
@@ -399,6 +407,7 @@ export default function AdminPage() {
         ...json.top5.map((p) => p.puzzle_date),
         ...json.quotable.map((p) => p.puzzle_date),
         ...json.timeline.map((p) => p.puzzle_date),
+        ...json.hexle.map((p) => p.puzzle_date),
       ];
       if (allDates.length > 0) {
         const latest = allDates.sort().pop()!;
@@ -481,6 +490,7 @@ export default function AdminPage() {
   const upcomingTop5 = data?.top5.filter((p) => p.puzzle_date >= today) ?? [];
   const upcomingQuotable = data?.quotable.filter((p) => p.puzzle_date >= today) ?? [];
   const upcomingTimeline = data?.timeline.filter((p) => p.puzzle_date >= today) ?? [];
+  const upcomingHexle = data?.hexle.filter((p) => p.puzzle_date >= today) ?? [];
 
   const latestTrivia = upcomingTrivia[upcomingTrivia.length - 1]?.puzzle_date;
   const latestCrossword = upcomingCrosswords[upcomingCrosswords.length - 1]?.puzzle_date;
@@ -493,6 +503,7 @@ export default function AdminPage() {
   const latestTop5 = upcomingTop5[upcomingTop5.length - 1]?.puzzle_date;
   const latestQuotable = upcomingQuotable[upcomingQuotable.length - 1]?.puzzle_date;
   const latestTimeline = upcomingTimeline[upcomingTimeline.length - 1]?.puzzle_date;
+  const latestHexle = upcomingHexle[upcomingHexle.length - 1]?.puzzle_date;
 
   const triviaBuffer = latestTrivia ? daysLeftNum(latestTrivia) : 0;
   const crosswordBuffer = latestCrossword ? daysLeftNum(latestCrossword) : 0;
@@ -504,8 +515,9 @@ export default function AdminPage() {
   const top5Buffer = latestTop5 ? daysLeftNum(latestTop5) : 0;
   const quotableBuffer = latestQuotable ? daysLeftNum(latestQuotable) : 0;
   const timelineBuffer = latestTimeline ? daysLeftNum(latestTimeline) : 0;
+  const hexleBuffer = latestHexle ? daysLeftNum(latestHexle) : 0;
 
-  const needsAttention = triviaBuffer <= 2 || crosswordBuffer <= 2 || framedBuffer <= 2 || heardleBuffer <= 2 || anagramBuffer <= 2 || wordLadderBuffer <= 2 || emojiWordBuffer <= 2 || top5Buffer <= 2 || quotableBuffer <= 2 || timelineBuffer <= 2;
+  const needsAttention = triviaBuffer <= 2 || crosswordBuffer <= 2 || framedBuffer <= 2 || heardleBuffer <= 2 || anagramBuffer <= 2 || wordLadderBuffer <= 2 || emojiWordBuffer <= 2 || top5Buffer <= 2 || quotableBuffer <= 2 || timelineBuffer <= 2 || hexleBuffer <= 2;
 
   // ── Date edit controls ────────────────────────────────────────────────
   function DateControl({ id, date, type }: { id: string; date: string; type: string }) {
@@ -599,7 +611,7 @@ export default function AdminPage() {
       <div className="border-b border-border">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex gap-1">
-            {(["overview", "trivia", "crossword", "clusters", "framed", "heardle", "anagram", "word-ladder", "emoji-word", "top-5", "quotable", "timeline", "prompt"] as Tab[]).map((t) => (
+            {(["overview", "trivia", "crossword", "clusters", "framed", "heardle", "anagram", "word-ladder", "emoji-word", "top-5", "quotable", "timeline", "hexle", "prompt"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -652,6 +664,7 @@ export default function AdminPage() {
                         {top5Buffer <= 2 && `Top 5: ${top5Buffer} days remaining. `}
                         {quotableBuffer <= 2 && `Quotable: ${quotableBuffer} days remaining. `}
                         {timelineBuffer <= 2 && `Timeline: ${timelineBuffer} days remaining. `}
+                        {hexleBuffer <= 2 && `Hexle: ${hexleBuffer} days remaining. `}
                         Switch to the &quot;Generate Puzzles&quot; tab to create more.
                       </p>
                     </div>
@@ -748,6 +761,14 @@ export default function AdminPage() {
                     color="teal"
                     buffer={timelineBuffer}
                   />
+                  <StatCard
+                    label="Hexle"
+                    count={data!.hexle.length}
+                    upcoming={upcomingHexle.length}
+                    lastDate={latestHexle}
+                    color="amber"
+                    buffer={hexleBuffer}
+                  />
                 </div>
 
                 {/* Timeline */}
@@ -769,6 +790,7 @@ export default function AdminPage() {
                           <th className="px-4 py-3 font-medium">Top 5</th>
                           <th className="px-4 py-3 font-medium">Quotable</th>
                           <th className="px-4 py-3 font-medium">Timeline</th>
+                          <th className="px-4 py-3 font-medium">Hexle</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -817,6 +839,9 @@ export default function AdminPage() {
                             </td>
                             <td className="px-4 py-3">
                               <StatusDot ok={row.hasTimeline} />
+                            </td>
+                            <td className="px-4 py-3">
+                              <StatusDot ok={row.hasHexle} />
                             </td>
                           </tr>
                         ))}
@@ -1196,6 +1221,25 @@ export default function AdminPage() {
               />
             )}
 
+            {/* ── Hexle Tab ────────────────────────────────────────── */}
+            {tab === "hexle" && (
+              <PuzzleList
+                title="Hexle Puzzles"
+                items={data!.hexle}
+                renderItem={(p: HexlePuzzle) => (
+                  <div key={p.id} className={`rounded-xl border border-border-light p-4 ${isPast(p.puzzle_date) ? "opacity-60" : ""}`}>
+                    <div className="flex items-center justify-between">
+                      <DateControl id={p.id} date={p.puzzle_date} type="hexle" />
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-lg font-bold text-amber tracking-widest">{p.word}</span>
+                        <DeleteButton id={p.id} type="hexle" label={`Hexle ${p.puzzle_date}`} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              />
+            )}
+
             {/* ── Prompt Generator Tab ──────────────────────────────── */}
             {tab === "prompt" && (
               <div className="space-y-6">
@@ -1371,8 +1415,9 @@ function buildTimeline(data: PuzzleData) {
   const top5Dates = new Set(data.top5.map((p) => p.puzzle_date));
   const quotableDates = new Set(data.quotable.map((p) => p.puzzle_date));
   const timelineDates = new Set(data.timeline.map((p) => p.puzzle_date));
+  const hexleDates = new Set(data.hexle.map((p) => p.puzzle_date));
 
-  const allDates = new Set([...triviaDates, ...crosswordDates, ...clustersDates, ...framedDates, ...heardleDates, ...anagramDates, ...wordLadderDates, ...emojiWordDates, ...top5Dates, ...quotableDates, ...timelineDates]);
+  const allDates = new Set([...triviaDates, ...crosswordDates, ...clustersDates, ...framedDates, ...heardleDates, ...anagramDates, ...wordLadderDates, ...emojiWordDates, ...top5Dates, ...quotableDates, ...timelineDates, ...hexleDates]);
 
   // Show from earliest puzzle to latest
   const sorted = [...allDates].sort();
@@ -1380,7 +1425,7 @@ function buildTimeline(data: PuzzleData) {
   const minDate = sorted[0] && sorted[0] < today ? sorted[0] : today;
   const maxDate = sorted[sorted.length - 1] ?? new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10);
 
-  const result: { date: string; hasTrivia: boolean; hasCrossword: boolean; hasClusters: boolean; hasFramed: boolean; hasHeardle: boolean; hasAnagram: boolean; hasWordLadder: boolean; hasEmojiWord: boolean; hasTop5: boolean; hasQuotable: boolean; hasTimeline: boolean }[] = [];
+  const result: { date: string; hasTrivia: boolean; hasCrossword: boolean; hasClusters: boolean; hasFramed: boolean; hasHeardle: boolean; hasAnagram: boolean; hasWordLadder: boolean; hasEmojiWord: boolean; hasTop5: boolean; hasQuotable: boolean; hasTimeline: boolean; hasHexle: boolean }[] = [];
   const d = new Date(minDate + "T00:00:00");
   const end = new Date(maxDate + "T00:00:00");
 
@@ -1399,6 +1444,7 @@ function buildTimeline(data: PuzzleData) {
       hasTop5: top5Dates.has(ds),
       hasQuotable: quotableDates.has(ds),
       hasTimeline: timelineDates.has(ds),
+      hasHexle: hexleDates.has(ds),
     });
     d.setDate(d.getDate() + 1);
   }

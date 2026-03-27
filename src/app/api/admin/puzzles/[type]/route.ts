@@ -14,6 +14,7 @@ const TABLE_MAP: Record<string, string> = {
   "top-5": "top5_puzzles",
   quotable: "quotable_puzzles",
   timeline: "timeline_puzzles",
+  hexle: "hexle_puzzles",
 };
 
 function getTable(type: string): string | null {
