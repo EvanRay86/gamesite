@@ -253,6 +253,16 @@ export const games: Game[] = [
   },
 
   {
+    slug: "2048",
+    name: "2048",
+    description:
+      "Slide tiles, combine numbers, and reach the 2048 tile to win.",
+    category: "arcade",
+    color: "amber",
+    creditCost: 0,
+  },
+
+  {
     slug: "gem-crush",
     name: "Gem Crush",
     description: "Match gems, chain combos, and climb the leaderboard.",
