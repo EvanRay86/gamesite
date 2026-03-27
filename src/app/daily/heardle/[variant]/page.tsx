@@ -15,10 +15,17 @@ export function generateStaticParams() {
     .map((variant) => ({ variant }));
 }
 
-export function generateMetadata() {
+export function generateMetadata({
+  params,
+}: {
+  params: { variant: string };
+}) {
+  const label = params.variant
+    ? params.variant.charAt(0).toUpperCase() + params.variant.slice(1)
+    : "Heardle";
   return {
-    title: "Heardle — Gamesite",
-    description: "Name the song from its opening seconds.",
+    title: `Heardle ${label}`,
+    description: `Name the ${label.toLowerCase()} song from its opening seconds.`,
   };
 }
 
