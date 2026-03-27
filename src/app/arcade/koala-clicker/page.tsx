@@ -1,4 +1,5 @@
 import KoalaClicker from "@/components/KoalaClicker";
+import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = {
   title: "Koala Clicker — Arcade",
@@ -10,6 +11,7 @@ export default function KoalaClickerPage() {
   return (
     <main>
       <KoalaClicker />
+      <MoreArcadeGames currentSlug="koala-clicker" />
     </main>
   );
 }

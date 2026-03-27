@@ -1,4 +1,5 @@
 import SnakeGame from "@/components/SnakeGame";
+import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = {
   title: "Snake Arena — Multiplayer Snake",
@@ -10,6 +11,7 @@ export default function SnakeArenaPage() {
   return (
     <main>
       <SnakeGame />
+      <MoreArcadeGames currentSlug="snake-arena" />
     </main>
   );
 }

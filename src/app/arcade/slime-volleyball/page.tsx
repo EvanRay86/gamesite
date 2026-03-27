@@ -1,4 +1,5 @@
 import SlimeVolleyball from "@/components/SlimeVolleyball";
+import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = {
   title: "Slime Volleyball — Online Multiplayer",
@@ -9,6 +10,7 @@ export default function SlimePage() {
   return (
     <main>
       <SlimeVolleyball />
+      <MoreArcadeGames currentSlug="slime-volleyball" />
     </main>
   );
 }

@@ -112,7 +112,7 @@ export default function HomePage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { value: "14", label: "Daily puzzles", icon: "🧩" },
-            { value: "3", label: "Arcade games", icon: "🕹️" },
+            { value: "4", label: "Arcade games", icon: "🕹️" },
             { value: "Free", label: "No account needed", icon: "🎯" },
             { value: "Daily", label: "New puzzles every day", icon: "🔥" },
           ].map((stat) => (
@@ -546,6 +546,48 @@ function TimelinePreview() {
   );
 }
 
+/* ─── 2048 Mini Preview ────────────────────────────────────────────── */
+
+function Game2048Preview() {
+  const tiles = [
+    [2, 0, 4, 0],
+    [8, 16, 4, 2],
+    [32, 64, 8, 4],
+    [128, 256, 32, 16],
+  ];
+  const tileColor: Record<number, string> = {
+    0: "bg-stone-200/60",
+    2: "bg-stone-100 text-stone-600",
+    4: "bg-stone-200 text-stone-600",
+    8: "bg-orange-300 text-white",
+    16: "bg-orange-400 text-white",
+    32: "bg-orange-500 text-white",
+    64: "bg-red-400 text-white",
+    128: "bg-amber-300 text-white",
+    256: "bg-amber-400 text-white",
+  };
+  return (
+    <div className="mb-4 rounded-lg bg-amber/5 border border-amber/20 p-3">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-amber">
+          Score: 1,024
+        </span>
+        <span className="text-[10px] font-bold text-text-dim">Best: 4,096</span>
+      </div>
+      <div className="grid grid-cols-4 gap-1 bg-stone-300 rounded-md p-1">
+        {tiles.flat().map((v, i) => (
+          <div
+            key={i}
+            className={`${tileColor[v] ?? "bg-purple-500 text-white"} aspect-square flex items-center justify-center rounded text-[9px] font-bold`}
+          >
+            {v > 0 ? v : ""}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Image-based Previews ────────────────────────────────────────────── */
 
 function HeardlePreview() {
@@ -650,6 +692,7 @@ function GamePreview({ slug }: { slug: string }) {
     case "slime-volleyball": return <SlimePreview />;
     case "koala-clicker": return <KoalaPreview />;
     case "snake-arena": return <SnakePreview />;
+    case "2048": return <Game2048Preview />;
     case "anagram": return <AnagramPreview />;
     case "emoji-word": return <EmojiDecoderPreview />;
     case "top-5": return <Top5Preview />;
