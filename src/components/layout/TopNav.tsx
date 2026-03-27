@@ -45,19 +45,8 @@ export default function TopNav() {
           })}
         </div>
 
-        {/* Right: Log in + mobile hamburger */}
+        {/* Right: mobile hamburger */}
         <div className="flex items-center gap-3">
-          <Link
-            href="/subscribe"
-            className="hidden text-xs font-semibold text-coral bg-coral/10 rounded-full px-3 py-1.5
-                       hover:bg-coral/20 transition-colors no-underline md:block"
-          >
-            Subscribe
-          </Link>
-          <button className="hidden text-sm font-semibold text-text-muted transition-colors hover:text-text-primary md:block">
-            Log in
-          </button>
-
           {/* Mobile hamburger */}
           <button
             className="flex h-8 w-8 flex-col items-center justify-center gap-[5px] md:hidden"
@@ -107,19 +96,6 @@ export default function TopNav() {
               </Link>
             );
           })}
-          <Link
-            href="/subscribe"
-            onClick={closeMobileMenu}
-            className="rounded-lg px-3 py-2.5 text-sm font-semibold text-coral no-underline hover:bg-surface transition-colors"
-          >
-            Subscribe
-          </Link>
-          <button
-            onClick={closeMobileMenu}
-            className="rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-text-muted transition-colors hover:text-text-primary hover:bg-surface"
-          >
-            Log in
-          </button>
         </div>
       </div>
     </nav>

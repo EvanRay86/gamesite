@@ -18,12 +18,14 @@ export function generateStaticParams() {
 export function generateMetadata({
   params,
 }: {
-  params: Promise<{ variant: string }>;
+  params: { variant: string };
 }) {
-  // We need to handle this synchronously for the build
+  const label = params.variant
+    ? params.variant.charAt(0).toUpperCase() + params.variant.slice(1)
+    : "Framed";
   return {
-    title: "Framed — Gamesite",
-    description: "Guess the movie one frame at a time.",
+    title: `Framed ${label}`,
+    description: `Guess the ${label.toLowerCase()} movie one frame at a time.`,
   };
 }
 

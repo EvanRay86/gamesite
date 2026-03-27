@@ -111,10 +111,10 @@ export default function HomePage() {
       <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { value: "12K+", label: "Puzzles played today", icon: "🧩" },
-            { value: "4,200+", label: "Daily players", icon: "👥" },
-            { value: "8", label: "Unique daily games", icon: "🎯" },
-            { value: "97%", label: "Come back the next day", icon: "🔥" },
+            { value: "14", label: "Daily puzzles", icon: "🧩" },
+            { value: "3", label: "Arcade games", icon: "🕹️" },
+            { value: "Free", label: "No account needed", icon: "🎯" },
+            { value: "Daily", label: "New puzzles every day", icon: "🔥" },
           ].map((stat) => (
             <div key={stat.label} className="bg-white rounded-xl border border-border-light p-4 text-center shadow-sm">
               <span className="text-2xl mb-1 block">{stat.icon}</span>
@@ -122,26 +122,6 @@ export default function HomePage() {
               <p className="text-xs text-text-dim mt-0.5">{stat.label}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── Subscription CTA ─────────────────────────────────────────────── */}
-      <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.55s_forwards] opacity-0">
-        <div className="relative rounded-2xl bg-gradient-to-br from-coral via-coral-dark to-amber p-8 sm:p-10 text-center text-white shadow-lg shadow-coral/20">
-          <h2 className="text-2xl font-bold mb-2">
-            Never miss a puzzle
-          </h2>
-          <p className="text-white/80 text-sm max-w-md mx-auto mb-6">
-            Subscribe for $6/month to access 30 days of puzzle archives, earn
-            monthly arcade credits, and get early access to new games.
-          </p>
-          <Link
-            href="/subscribe"
-            className="inline-block bg-white text-coral font-bold rounded-full px-8 py-3 no-underline
-                       hover:shadow-lg hover:scale-105 transition-all duration-200"
-          >
-            Get started
-          </Link>
         </div>
       </section>
 
@@ -157,9 +137,6 @@ export default function HomePage() {
             </Link>
             <Link href="/arcade" className="text-sm text-text-dim hover:text-text-primary transition-colors no-underline">
               Arcade
-            </Link>
-            <Link href="/subscribe" className="text-sm text-text-dim hover:text-text-primary transition-colors no-underline">
-              Subscribe
             </Link>
           </nav>
         </div>
@@ -211,6 +188,33 @@ function ClusterPreview() {
             }`}
         >
           {word}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Hexle Mini Preview ─────────────────────────────────────────────────── */
+
+function HexlePreview() {
+  const guesses = [
+    { word: "RACING", colors: ["gray", "gray", "gray", "gray", "gray", "green"] },
+    { word: "PLAYED", colors: ["gray", "gray", "amber", "green", "green", "gray"] },
+    { word: "SCREEN", colors: ["green", "gray", "gray", "green", "green", "green"] },
+  ];
+  return (
+    <div className="mb-4 flex flex-col items-center gap-1">
+      {guesses.map((row, ri) => (
+        <div key={ri} className="flex gap-0.5">
+          {row.word.split("").map((ch, ci) => (
+            <div
+              key={ci}
+              className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded text-white
+                ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "amber" ? "bg-amber" : "bg-gray-400"}`}
+            >
+              {ch}
+            </div>
+          ))}
         </div>
       ))}
     </div>
@@ -470,6 +474,7 @@ function FeaturedCard({ game }: { game: Game }) {
 function GamePreview({ slug }: { slug: string }) {
   switch (slug) {
     case "cluster": return <ClusterPreview />;
+    case "hexle": return <HexlePreview />;
     case "daily-trivia": return <TriviaPreview />;
     case "crossword": return <CrosswordPreview />;
     case "geo-guess": return <GeoGuessPreview />;
