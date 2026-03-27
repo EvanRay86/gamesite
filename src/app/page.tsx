@@ -381,6 +381,171 @@ function AnagramPreview() {
   );
 }
 
+/* ─── Emoji Decoder Mini Preview ─────────────────────────────────────── */
+
+function EmojiDecoderPreview() {
+  const rounds = [
+    { emojis: "🎸🌟🎤", answer: "ROCKSTAR", solved: true },
+    { emojis: "🌊🏄‍♂️☀️", answer: "SURF", solved: true },
+    { emojis: "🏰👸🐉", answer: "???", solved: false },
+  ];
+  return (
+    <div className="mb-4 rounded-lg bg-amber/5 border border-amber/20 p-3">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-amber mb-2 block">
+        Round 3 of 5
+      </span>
+      <div className="flex flex-col gap-1.5">
+        {rounds.map((r, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <span className="text-base leading-none">{r.emojis}</span>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                r.solved
+                  ? "bg-green/10 text-green"
+                  : "bg-amber/10 text-amber"
+              }`}
+            >
+              {r.answer}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Top 5 Mini Preview ────────────────────────────────────────────── */
+
+function Top5Preview() {
+  const items = [
+    { rank: 1, label: "China", status: "correct" },
+    { rank: 2, label: "India", status: "correct" },
+    { rank: 3, label: "USA", status: "wrong" },
+    { rank: 4, label: "Indonesia", status: "pending" },
+    { rank: 5, label: "Brazil", status: "pending" },
+  ];
+  return (
+    <div className="mb-4 rounded-lg bg-amber/5 border border-amber/20 p-3">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-amber mb-2 block">
+        Most Populated Countries
+      </span>
+      <div className="flex flex-col gap-1">
+        {items.map((item) => (
+          <div key={item.rank} className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-text-dim w-3 text-right">
+              {item.rank}
+            </span>
+            <div
+              className={`flex-1 rounded px-2 py-1 text-[10px] font-medium text-center ${
+                item.status === "correct"
+                  ? "bg-green/10 text-green font-bold"
+                  : item.status === "wrong"
+                    ? "bg-coral/10 text-coral font-bold"
+                    : "bg-gray-100 text-text-secondary"
+              }`}
+            >
+              {item.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Quotable Mini Preview ─────────────────────────────────────────── */
+
+function QuotablePreview() {
+  const words = [
+    { text: "Be", revealed: true },
+    { text: "the", revealed: true },
+    { text: "change", revealed: true },
+    { text: "you", revealed: false },
+    { text: "wish", revealed: false },
+    { text: "to", revealed: true },
+    { text: "see", revealed: false },
+  ];
+  return (
+    <div className="mb-4 rounded-lg bg-purple/5 border border-purple/20 p-3">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-purple mb-2 block">
+        Who said it?
+      </span>
+      <div className="flex flex-wrap gap-1 mb-2">
+        {words.map((w, i) => (
+          <span
+            key={i}
+            className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
+              w.revealed
+                ? "text-text-primary"
+                : "bg-purple/10 text-purple/40"
+            }`}
+          >
+            {w.revealed ? w.text : "━━━"}
+          </span>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-1.5">
+        <div className="rounded bg-white border border-border-light px-2 py-1 text-[10px] font-medium text-text-secondary text-center">
+          Einstein
+        </div>
+        <div className="rounded bg-purple text-white px-2 py-1 text-[10px] font-bold text-center">
+          Gandhi
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Timeline Mini Preview ─────────────────────────────────────────── */
+
+function TimelinePreview() {
+  const events = [
+    { year: "1969", label: "Moon Landing", status: "correct" },
+    { year: "1989", label: "Berlin Wall Falls", status: "correct" },
+    { year: "????", label: "World Wide Web", status: "active" },
+    { year: "", label: "First iPhone", status: "pending" },
+    { year: "", label: "Mars Rover", status: "pending" },
+  ];
+  return (
+    <div className="mb-4 rounded-lg bg-teal/5 border border-teal/20 p-3">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-teal mb-2 block">
+        Put in order
+      </span>
+      <div className="flex flex-col gap-1">
+        {events.map((e, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <span className="text-[9px] font-bold text-text-dim w-7 text-right tabular-nums">
+              {e.year}
+            </span>
+            <div className="flex-1 h-0.5 relative">
+              <div
+                className={`absolute inset-0 rounded-full ${
+                  e.status === "correct"
+                    ? "bg-green"
+                    : e.status === "active"
+                      ? "bg-teal animate-pulse"
+                      : "bg-gray-200"
+                }`}
+              />
+            </div>
+            <span
+              className={`text-[10px] font-medium flex-shrink-0 ${
+                e.status === "correct"
+                  ? "text-green font-bold"
+                  : e.status === "active"
+                    ? "text-teal font-bold"
+                    : "text-text-dim"
+              }`}
+            >
+              {e.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Image-based Previews ────────────────────────────────────────────── */
 
 function HeardlePreview() {
@@ -486,6 +651,10 @@ function GamePreview({ slug }: { slug: string }) {
     case "koala-clicker": return <KoalaPreview />;
     case "snake-arena": return <SnakePreview />;
     case "anagram": return <AnagramPreview />;
+    case "emoji-word": return <EmojiDecoderPreview />;
+    case "top-5": return <Top5Preview />;
+    case "quotable": return <QuotablePreview />;
+    case "timeline": return <TimelinePreview />;
     default: return null;
   }
 }
