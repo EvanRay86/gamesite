@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import DailyLoginDashboard from "@/components/DailyLoginDashboard";
 
 export default function AccountPage() {
   return (
@@ -68,6 +69,9 @@ function AccountContent() {
             Payment successful! Your account has been updated.
           </div>
         )}
+
+        {/* Daily Login Rewards */}
+        <DailyLoginDashboard />
 
         {/* Profile info */}
         <div className="bg-surface border border-border rounded-2xl p-6 mb-6">
