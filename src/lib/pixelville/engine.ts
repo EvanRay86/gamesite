@@ -466,17 +466,11 @@ export class PixelVilleEngine {
     if (this.keys.has("d") || this.keys.has("arrowright")) dx += MOVE_SPEED;
 
     if (dx !== 0 || dy !== 0) {
-      // Try to move
-      const newPixelX = p.x * TILE + TILE / 2 + dx;
-      const newPixelY = p.y * TILE + TILE / 2 + dy;
-      const newTileX = Math.floor(newPixelX / TILE);
-      const newTileY = Math.floor(newPixelY / TILE);
+      // Move in tile-coordinate space (dx/dy are pixels, convert to tiles)
+      const newX = p.x + dx / TILE;
+      const newY = p.y + dy / TILE;
 
-      // Sub-tile movement: store position in pixels for smooth movement
-      const newX = newPixelX / TILE;
-      const newY = newPixelY / TILE;
-
-      // Check collision at the new tile
+      // Check collision at the target tile
       if (isWalkable(this.tileMap, Math.floor(newX), Math.floor(newY))) {
         p.x = Math.max(0.5, Math.min(this.tileMap.width - 0.5, newX));
         p.y = Math.max(0.5, Math.min(this.tileMap.height - 0.5, newY));
@@ -690,11 +684,19 @@ export class PixelVilleEngine {
     this.camX += (this.targetCamX - this.camX) * CAM_LERP;
     this.camY += (this.targetCamY - this.camY) * CAM_LERP;
 
-    // Clamp camera
-    const maxCamX = this.tileMap.width * TILE - canvas.width;
-    const maxCamY = this.tileMap.height * TILE - canvas.height;
-    this.camX = Math.max(0, Math.min(maxCamX, this.camX));
-    this.camY = Math.max(0, Math.min(maxCamY, this.camY));
+    // Clamp camera — center the map if it's smaller than the viewport
+    const mapPixelW = this.tileMap.width * TILE;
+    const mapPixelH = this.tileMap.height * TILE;
+    if (mapPixelW < canvas.width) {
+      this.camX = -(canvas.width - mapPixelW) / 2;
+    } else {
+      this.camX = Math.max(0, Math.min(mapPixelW - canvas.width, this.camX));
+    }
+    if (mapPixelH < canvas.height) {
+      this.camY = -(canvas.height - mapPixelH) / 2;
+    } else {
+      this.camY = Math.max(0, Math.min(mapPixelH - canvas.height, this.camY));
+    }
 
     // Round to prevent sub-pixel blur
     const drawX = Math.round(this.camX);
