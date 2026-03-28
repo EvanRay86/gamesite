@@ -7,5 +7,9 @@ export const metadata = {
 };
 
 export default function PixelVillePage() {
-  return <PixelVilleGame />;
+  return (
+    <div className="fixed inset-0 z-50 overflow-hidden">
+      <PixelVilleGame />
+    </div>
+  );
 }

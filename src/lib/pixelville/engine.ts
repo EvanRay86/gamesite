@@ -29,7 +29,7 @@ import type { SupabaseClient, RealtimeChannel } from "@supabase/supabase-js";
 // ---------------------------------------------------------------------------
 
 const TICK_MS = 100;       // Physics tick: 10 Hz
-const MOVE_SPEED = 6;      // Pixels per tick
+const MOVE_SPEED = 9;      // Pixels per tick
 const CHAT_BUBBLE_DURATION = 5000; // ms
 const CAM_LERP = 0.12;
 const STALE_PLAYER_MS = 3000;
