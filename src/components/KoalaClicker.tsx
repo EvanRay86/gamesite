@@ -186,7 +186,7 @@ const INITIAL_UPGRADES: Upgrade[] = [
     description: "Paws forged from crystallized eucalyptus essence.",
     baseCost: 25000000,
     lps: 0,
-    clickBonus: 50000,
+    clickBonus: 25000,
     owned: 0,
   },
   {
@@ -237,7 +237,7 @@ const INITIAL_UPGRADES: Upgrade[] = [
     description: "Transcendent paws that click across all realities at once.",
     baseCost: 50000000000,
     lps: 0,
-    clickBonus: 100000000,
+    clickBonus: 20000000,
     owned: 0,
   },
   {
@@ -1169,17 +1169,17 @@ export default function KoalaClicker() {
         {/* Stats */}
         <div className="mt-8 grid grid-cols-2 gap-4 text-center relative z-10">
           <div className={`rounded-xl px-4 py-3 border ${statCardBg}`}>
-            <div className={`text-lg font-bold tabular-nums ${textClass}`}>{formatNumber(lifetimeLeaves)}</div>
-            <div className={`text-xs ${subtextClass}`}>Lifetime leaves</div>
+            <div className={`text-lg font-bold tabular-nums ${textClass}`}>{formatNumber(totalLeaves)}</div>
+            <div className={`text-xs ${subtextClass}`}>Total earned</div>
             {prestigeLevel > 0 && (
-              <div className={`text-[10px] tabular-nums ${dimTextClass}`}>This run: {formatNumber(totalLeaves)}</div>
+              <div className={`text-[10px] tabular-nums ${dimTextClass}`}>Lifetime: {formatNumber(lifetimeLeaves)}</div>
             )}
           </div>
           <div className={`rounded-xl px-4 py-3 border ${statCardBg}`}>
-            <div className={`text-lg font-bold tabular-nums ${textClass}`}>{lifetimeClicks.toLocaleString()}</div>
-            <div className={`text-xs ${subtextClass}`}>Lifetime clicks</div>
+            <div className={`text-lg font-bold tabular-nums ${textClass}`}>{totalClicks.toLocaleString()}</div>
+            <div className={`text-xs ${subtextClass}`}>Total clicks</div>
             {prestigeLevel > 0 && (
-              <div className={`text-[10px] tabular-nums ${dimTextClass}`}>This run: {totalClicks.toLocaleString()}</div>
+              <div className={`text-[10px] tabular-nums ${dimTextClass}`}>Lifetime: {lifetimeClicks.toLocaleString()}</div>
             )}
           </div>
         </div>
@@ -1430,8 +1430,10 @@ export default function KoalaClicker() {
           {(() => {
             const nextEssenceTarget = essenceCount + 1;
             const leavesNeeded = lifetimeLeavesForEssence(nextEssenceTarget);
-            const progressFull = leavesNeeded > 0
-              ? Math.min(1, Math.max(0, lifetimeLeaves / leavesNeeded))
+            const prevThreshold = essenceCount > 0 ? lifetimeLeavesForEssence(essenceCount) : 0;
+            const rangeSize = leavesNeeded - prevThreshold;
+            const progressInRange = rangeSize > 0
+              ? Math.min(1, Math.max(0, (lifetimeLeaves - prevThreshold) / rangeSize))
               : 0;
             const remaining = Math.max(0, leavesNeeded - lifetimeLeaves);
             const afterNextMultiplier = getEssenceMultiplier(nextEssenceTarget) * achievementMultiplier;
@@ -1458,7 +1460,7 @@ export default function KoalaClicker() {
                         ? "bg-gradient-to-r from-purple-500 to-fuchsia-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]"
                         : "bg-gradient-to-r from-purple-600 to-purple-400"
                     }`}
-                    style={{ width: `${canAscend ? 100 : progressFull * 100}%` }}
+                    style={{ width: `${canAscend ? 100 : progressInRange * 100}%` }}
                   />
                 </div>
                 {getNextTitle(prestigeLevel) && (
