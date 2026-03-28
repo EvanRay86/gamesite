@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRecordFreePlay } from "@/components/FreePlaysGate";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -104,11 +105,8 @@ function randomBetween(a: number, b: number) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-interface MeteorMayhemProps {
-  onGameStart?: () => void;
-}
-
-export default function MeteorMayhem({ onGameStart }: MeteorMayhemProps) {
+export default function MeteorMayhem() {
+  const recordFreePlay = useRecordFreePlay();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<"menu" | "playing" | "over">("menu");
   const [score, setScore] = useState(0);
@@ -240,8 +238,8 @@ export default function MeteorMayhem({ onGameStart }: MeteorMayhemProps) {
     screenShakeRef.current = 0;
     setGameState("playing");
     stateRef.current = "playing";
-    onGameStart?.();
-  }, [onGameStart]);
+    recordFreePlay?.();
+  }, [recordFreePlay]);
 
   // Init stars
   useEffect(() => {

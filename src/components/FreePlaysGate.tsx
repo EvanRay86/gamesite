@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, type ReactNode } from "react";
-import CreditGate from "@/components/CreditGate";
+import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 const FREE_PLAYS_KEY = "meteor-mayhem-free-plays";
 const MAX_FREE_PLAYS = 5;
@@ -24,7 +25,7 @@ function incrementPlays() {
   try {
     const data = JSON.parse(localStorage.getItem(FREE_PLAYS_KEY) || "{}");
     data[key] = (data[key] ?? 0) + 1;
-    // Clean up old dates to avoid localStorage bloat
+    // Clean up old dates
     for (const k of Object.keys(data)) {
       if (k !== key) delete data[k];
     }
@@ -37,45 +38,188 @@ function incrementPlays() {
 interface FreePlaysGateProps {
   creditCost: number;
   gameSlug: string;
-  children: (onGameStart: () => void) => ReactNode;
+  children: ReactNode;
+  /** Called when a game starts during free play period */
+  onFreePlay?: () => void;
 }
 
 export default function FreePlaysGate({ creditCost, gameSlug, children }: FreePlaysGateProps) {
-  const [playsToday, setPlaysToday] = useState(() => getPlaysToday());
+  const { user, credits, loading, refreshProfile } = useAuth();
+  const [playsToday, setPlaysToday] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    return getPlaysToday();
+  });
+  const [unlocked, setUnlocked] = useState(false);
+  const [deducting, setDeducting] = useState(false);
+  const [error, setError] = useState("");
+
   const freePlaysLeft = Math.max(0, MAX_FREE_PLAYS - playsToday);
   const needsCredits = freePlaysLeft <= 0;
 
-  const handleGameStart = useCallback(() => {
+  const recordFreePlay = useCallback(() => {
     if (!needsCredits) {
       incrementPlays();
       setPlaysToday((p) => p + 1);
     }
   }, [needsCredits]);
 
+  // Free plays remaining — show game with banner
+  if (!needsCredits) {
+    return (
+      <div>
+        <div className="mx-auto max-w-[960px] px-4 pt-6">
+          <div className="rounded-xl px-4 py-2.5 text-center text-sm font-medium bg-green/10 text-green">
+            <strong>{freePlaysLeft}</strong> free play{freePlaysLeft !== 1 ? "s" : ""} remaining today
+          </div>
+        </div>
+        <FreePlaysContext.Provider value={recordFreePlay}>
+          {children}
+        </FreePlaysContext.Provider>
+      </div>
+    );
+  }
+
+  // ── Below: free plays exhausted, credit gate logic ──────────────────
+
+  // Already paid for this session
+  if (unlocked) {
+    return (
+      <div>
+        <div className="mx-auto max-w-[960px] px-4 pt-6">
+          <div className="rounded-xl px-4 py-2.5 text-center text-sm font-medium bg-amber/10 text-amber">
+            Free plays used up for today — using credits
+          </div>
+        </div>
+        {children}
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] text-text-muted">
+        Loading…
+      </div>
+    );
+  }
+
+  // Not logged in
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px] gap-4 text-center px-4">
+        <div className="mx-auto max-w-[960px] w-full mb-2">
+          <div className="rounded-xl px-4 py-2.5 text-center text-sm font-medium bg-amber/10 text-amber">
+            Free plays used up for today
+          </div>
+        </div>
+        <div className="text-4xl">🎮</div>
+        <h2 className="font-display text-xl text-text-primary">
+          Log in to keep playing
+        </h2>
+        <p className="text-text-muted text-sm max-w-sm">
+          This game costs {creditCost} credits to play. Log in or create an account to continue.
+        </p>
+        <Link
+          href={`/login?redirect=/arcade/${gameSlug}`}
+          className="rounded-full bg-teal px-6 py-2.5 text-sm font-bold text-white no-underline
+                     hover:bg-teal/90 transition-colors"
+        >
+          Log In
+        </Link>
+      </div>
+    );
+  }
+
+  // Insufficient credits
+  if (credits < creditCost) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px] gap-4 text-center px-4">
+        <div className="mx-auto max-w-[960px] w-full mb-2">
+          <div className="rounded-xl px-4 py-2.5 text-center text-sm font-medium bg-amber/10 text-amber">
+            Free plays used up for today
+          </div>
+        </div>
+        <div className="text-4xl">💰</div>
+        <h2 className="font-display text-xl text-text-primary">
+          Not enough credits
+        </h2>
+        <p className="text-text-muted text-sm max-w-sm">
+          This game costs {creditCost} credits. You have {credits}.
+        </p>
+        <Link
+          href="/subscribe"
+          className="rounded-full bg-amber px-6 py-2.5 text-sm font-bold text-white no-underline
+                     hover:bg-amber/90 transition-colors"
+        >
+          Buy Credits
+        </Link>
+      </div>
+    );
+  }
+
+  // Ready to pay with credits
+  const handlePlay = async () => {
+    setDeducting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/credits/deduct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameSlug }),
+      });
+      if (res.ok) {
+        setUnlocked(true);
+        await refreshProfile();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to deduct credits");
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setDeducting(false);
+    }
+  };
+
   return (
-    <div>
-      {/* Free plays banner */}
-      <div className="mx-auto max-w-[960px] px-4 pt-6">
-        <div className={`rounded-xl px-4 py-2.5 text-center text-sm font-medium ${
-          freePlaysLeft > 0
-            ? "bg-green/10 text-green"
-            : "bg-amber/10 text-amber"
-        }`}>
-          {freePlaysLeft > 0 ? (
-            <>🎮 <strong>{freePlaysLeft}</strong> free play{freePlaysLeft !== 1 ? "s" : ""} remaining today</>
-          ) : (
-            <>Free plays used up for today — credits required to keep playing</>
-          )}
+    <div className="flex flex-col items-center justify-center min-h-[300px] gap-4 text-center px-4">
+      <div className="mx-auto max-w-[960px] w-full mb-2">
+        <div className="rounded-xl px-4 py-2.5 text-center text-sm font-medium bg-amber/10 text-amber">
+          Free plays used up for today — credits required to keep playing
         </div>
       </div>
+      <div className="text-4xl">🎮</div>
+      <h2 className="font-display text-xl text-text-primary">
+        Ready to play?
+      </h2>
+      <p className="text-text-muted text-sm">
+        This game costs <strong className="text-amber">{creditCost} credits</strong>.
+        You have <strong>{credits}</strong>.
+      </p>
 
-      {needsCredits ? (
-        <CreditGate creditCost={creditCost} gameSlug={gameSlug}>
-          {children(handleGameStart)}
-        </CreditGate>
-      ) : (
-        children(handleGameStart)
+      {error && (
+        <div className="bg-coral/10 text-coral text-sm rounded-lg px-4 py-2">
+          {error}
+        </div>
       )}
+
+      <button
+        onClick={handlePlay}
+        disabled={deducting}
+        className="rounded-full bg-teal px-8 py-3 text-sm font-bold text-white
+                   hover:bg-teal/90 transition-colors disabled:opacity-50"
+      >
+        {deducting ? "Starting…" : `Play for ${creditCost} credits`}
+      </button>
     </div>
   );
+}
+
+// Context to let child game components record a free play on game start
+import { createContext, useContext } from "react";
+
+const FreePlaysContext = createContext<(() => void) | null>(null);
+
+export function useRecordFreePlay() {
+  return useContext(FreePlaysContext);
 }

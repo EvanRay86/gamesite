@@ -1,22 +1,8 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, Outfit } from "next/font/google";
 import TopNav from "@/components/layout/TopNav";
 import CookieBanner from "@/components/CookieBanner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
-
-const dmSerifDisplay = DM_Serif_Display({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-body",
-  display: "swap",
-});
 
 const siteUrl = "https://gamesite.app";
 
@@ -58,7 +44,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${dmSerifDisplay.variable} ${outfit.variable}`}>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@100..900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="font-body antialiased">
         <AuthProvider>
           <TopNav />

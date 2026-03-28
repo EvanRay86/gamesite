@@ -12,7 +12,7 @@ export default function MeteorMayhemPage() {
   return (
     <main>
       <FreePlaysGate creditCost={3} gameSlug="meteor-mayhem">
-        {(onGameStart) => <MeteorMayhem onGameStart={onGameStart} />}
+        <MeteorMayhem />
       </FreePlaysGate>
       <MoreArcadeGames currentSlug="meteor-mayhem" />
     </main>
