@@ -140,7 +140,10 @@ export default function MeteorMayhem() {
   const frameRef = useRef(0);
   const animRef = useRef<number>(0);
   const touchRef = useRef<{ x: number; y: number } | null>(null);
+  const firingRef = useRef(false);
+  const isMobileRef = useRef(false);
   const screenShakeRef = useRef(0);
+  const deathDelayRef = useRef(0);
 
   // Load best score
   useEffect(() => {
@@ -206,12 +209,14 @@ export default function MeteorMayhem() {
   const endGame = useCallback(() => {
     setGameState("over");
     stateRef.current = "over";
+    deathDelayRef.current = 120; // ~2 seconds at 60fps
     const best = Math.max(scoreRef.current, parseInt(localStorage.getItem(SAVE_KEY) || "0", 10));
     localStorage.setItem(SAVE_KEY, String(best));
     setBestScore(best);
   }, []);
 
   const startGame = useCallback(() => {
+    if (deathDelayRef.current > 0) return;
     scoreRef.current = 0;
     comboRef.current = 0;
     waveRef.current = 1;
@@ -257,7 +262,7 @@ export default function MeteorMayhem() {
     const onDown = (e: KeyboardEvent) => {
       keysRef.current.add(e.key);
       if (e.key === " " || e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault();
-      if (e.key === "Enter" && stateRef.current !== "playing") startGame();
+      if ((e.key === "Enter" || e.key === " ") && stateRef.current !== "playing") startGame();
     };
     const onUp = (e: KeyboardEvent) => keysRef.current.delete(e.key);
     window.addEventListener("keydown", onDown);
@@ -268,7 +273,7 @@ export default function MeteorMayhem() {
     };
   }, [startGame]);
 
-  // Touch input
+  // Touch input (canvas = move, fire button = shoot)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -283,12 +288,16 @@ export default function MeteorMayhem() {
 
     const onStart = (e: TouchEvent) => {
       e.preventDefault();
-      touchRef.current = getPos(e);
-      if (stateRef.current !== "playing") startGame();
+      isMobileRef.current = true;
+      if (stateRef.current !== "playing") {
+        startGame();
+      } else {
+        touchRef.current = getPos(e);
+      }
     };
     const onMove = (e: TouchEvent) => {
       e.preventDefault();
-      touchRef.current = getPos(e);
+      if (e.touches.length > 0) touchRef.current = getPos(e);
     };
     const onEnd = (e: TouchEvent) => {
       e.preventDefault();
@@ -326,6 +335,9 @@ export default function MeteorMayhem() {
       }
 
       if (stateRef.current !== "playing") {
+        // Tick death delay
+        if (deathDelayRef.current > 0) deathDelayRef.current--;
+
         // Draw idle screen
         ctx.fillStyle = "#0a0a1a";
         ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
@@ -386,16 +398,23 @@ export default function MeteorMayhem() {
 
           ctx.fillText(`Wave ${waveRef.current} • Max combo: ${comboRef.current}x`, CANVAS_W / 2, CANVAS_H / 2 + 45);
 
-          const pulse = 0.7 + 0.3 * Math.sin(frame * 0.06);
-          ctx.globalAlpha = pulse;
-          ctx.fillStyle = "#F7B731";
-          ctx.font = "bold 20px 'Outfit', sans-serif";
-          ctx.fillText("PLAY AGAIN", CANVAS_W / 2, CANVAS_H / 2 + 90);
-          ctx.globalAlpha = 1;
+          if (deathDelayRef.current > 0) {
+            // Show countdown
+            ctx.fillStyle = "rgba(255,255,255,0.3)";
+            ctx.font = "16px 'Outfit', sans-serif";
+            ctx.fillText("...", CANVAS_W / 2, CANVAS_H / 2 + 90);
+          } else {
+            const pulse = 0.7 + 0.3 * Math.sin(frame * 0.06);
+            ctx.globalAlpha = pulse;
+            ctx.fillStyle = "#F7B731";
+            ctx.font = "bold 20px 'Outfit', sans-serif";
+            ctx.fillText("PLAY AGAIN", CANVAS_W / 2, CANVAS_H / 2 + 90);
+            ctx.globalAlpha = 1;
 
-          ctx.fillStyle = "rgba(255,255,255,0.3)";
-          ctx.font = "12px 'Outfit', sans-serif";
-          ctx.fillText("Tap or press Enter", CANVAS_W / 2, CANVAS_H / 2 + 115);
+            ctx.fillStyle = "rgba(255,255,255,0.3)";
+            ctx.font = "12px 'Outfit', sans-serif";
+            ctx.fillText("Tap or press Enter", CANVAS_W / 2, CANVAS_H / 2 + 115);
+          }
         }
 
         return;
@@ -433,10 +452,11 @@ export default function MeteorMayhem() {
       if (ship.invincible > 0) ship.invincible--;
       if (screenShakeRef.current > 0) screenShakeRef.current--;
 
-      // Auto-fire
+      // Fire: auto on desktop, button-triggered on mobile
+      const shouldFire = isMobileRef.current ? firingRef.current : true;
       const interval = ship.rapidTimer > 0 ? RAPID_SHOOT_INTERVAL : SHOOT_INTERVAL;
       shootTimerRef.current++;
-      if (shootTimerRef.current >= interval) {
+      if (shouldFire && shootTimerRef.current >= interval) {
         shootTimerRef.current = 0;
         if (ship.spreadTimer > 0) {
           bulletsRef.current.push(
@@ -848,10 +868,30 @@ export default function MeteorMayhem() {
         />
       </div>
 
+      {/* Mobile fire button */}
+      <div className="flex justify-center mt-4 sm:hidden">
+        <button
+          onTouchStart={(e) => {
+            e.preventDefault();
+            firingRef.current = true;
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            firingRef.current = false;
+          }}
+          className="select-none active:scale-95 transition-transform
+                     w-20 h-20 rounded-full bg-coral text-white font-bold text-sm
+                     shadow-lg shadow-coral/30 border-2 border-coral/50
+                     flex items-center justify-center"
+        >
+          FIRE
+        </button>
+      </div>
+
       {/* Controls hint */}
       <div className="mt-4 text-center text-xs text-text-dim">
         <span className="hidden sm:inline">Arrow keys or WASD to move • Auto-fire enabled • Collect power-ups for shields, rapid fire &amp; spread shots</span>
-        <span className="sm:hidden">Tap &amp; drag to move • Auto-fire enabled</span>
+        <span className="sm:hidden">Drag on screen to move • Hold FIRE to shoot</span>
       </div>
     </div>
   );
