@@ -3,6 +3,8 @@
 @theme {
   --font-display: "DM Serif Display", serif;
   --font-body: "Outfit", sans-serif;
+  --font-grotesk: "Space Grotesk", sans-serif;
+  --font-syne: "Syne", sans-serif;
 
   --color-coral: #FF6B6B;
   --color-coral-dark: #e05555;

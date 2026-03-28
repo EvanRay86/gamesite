@@ -35,9 +35,16 @@ export default function TopNav() {
     <nav className="sticky top-0 z-50 w-full glass-nav shadow-sm">
       <div className="mx-auto flex h-12 max-w-7xl items-center justify-between px-4 md:h-14">
         {/* Left: Logo */}
-        <Link href="/" className="flex-shrink-0 no-underline">
-          <span className="bg-gradient-to-r from-coral via-amber to-teal bg-clip-text font-body text-2xl font-extrabold text-transparent">
-            Gamesite
+        <Link href="/" className="flex-shrink-0 no-underline flex items-center gap-2">
+          {/* Scrabble tile */}
+          <svg width="26" height="28" viewBox="0 0 26 28" fill="none" className="flex-shrink-0">
+            <rect x="0" y="0" width="26" height="26" rx="4" fill="#FF6B6B"/>
+            <rect x="1.5" y="1.5" width="23" height="23" rx="3" fill="#FF8E8E"/>
+            <text x="13" y="19" textAnchor="middle" fill="white" fontSize="17" fontWeight="800" fontFamily="Georgia, serif">G</text>
+            <text x="22" y="25.5" textAnchor="middle" fill="white" fontSize="6" fontWeight="600" fontFamily="Georgia, serif">2</text>
+          </svg>
+          <span className="flex items-baseline gap-1 leading-none">
+            <span className="text-[21px] text-text-primary tracking-tight" style={{fontFamily: "'Russo One', sans-serif"}}>gamesite</span><span className="text-[11px] font-bold text-coral tracking-widest uppercase" style={{fontFamily: "'Space Grotesk', sans-serif"}}>.app</span>
           </span>
         </Link>
 
