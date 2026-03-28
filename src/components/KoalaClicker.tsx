@@ -56,6 +56,7 @@ interface SaveData {
   prestigeLevel?: number;
   essenceCount?: number;
   lifetimeLeaves?: number;
+  lifetimeClicks?: number;
   // Achievements
   unlockedAchievements?: string[];
   // Golden leaf
@@ -376,6 +377,7 @@ function buildSaveData(
   prestigeLevel: number = 0,
   essenceCount: number = 0,
   lifetimeLeaves: number = 0,
+  lifetimeClicks: number = 0,
   unlockedAchievements: string[] = [],
   goldenLeavesClicked: number = 0,
 ): SaveData {
@@ -388,6 +390,7 @@ function buildSaveData(
     prestigeLevel,
     essenceCount,
     lifetimeLeaves,
+    lifetimeClicks,
     unlockedAchievements,
     goldenLeavesClicked,
   };
@@ -401,6 +404,7 @@ function applySave(save: SaveData): {
   prestigeLevel: number;
   essenceCount: number;
   lifetimeLeaves: number;
+  lifetimeClicks: number;
   unlockedAchievements: string[];
   goldenLeavesClicked: number;
 } {
@@ -426,6 +430,7 @@ function applySave(save: SaveData): {
     prestigeLevel: save.prestigeLevel || 0,
     essenceCount: save.essenceCount || 0,
     lifetimeLeaves: save.lifetimeLeaves || save.totalLeaves || 0,
+    lifetimeClicks: save.lifetimeClicks || save.totalClicks || 0,
     unlockedAchievements: save.unlockedAchievements || [],
     goldenLeavesClicked: save.goldenLeavesClicked || 0,
   };
@@ -494,6 +499,7 @@ export default function KoalaClicker() {
   const [prestigeLevel, setPrestigeLevel] = useState(0);
   const [essenceCount, setEssenceCount] = useState(0);
   const [lifetimeLeaves, setLifetimeLeaves] = useState(0);
+  const [lifetimeClicks, setLifetimeClicks] = useState(0);
   const [showPrestigeConfirm, setShowPrestigeConfirm] = useState(false);
   const [showAscendCelebration, setShowAscendCelebration] = useState<{
     essenceGained: number;
@@ -561,6 +567,7 @@ export default function KoalaClicker() {
         setPrestigeLevel(restored.prestigeLevel);
         setEssenceCount(restored.essenceCount);
         setLifetimeLeaves(restored.lifetimeLeaves);
+        setLifetimeClicks(restored.lifetimeClicks);
         setUnlockedAchievements(restored.unlockedAchievements);
         setGoldenLeavesClicked(restored.goldenLeavesClicked);
       }
@@ -572,14 +579,14 @@ export default function KoalaClicker() {
 
   // ── Save to localStorage ──────────────────────────────────────────
   const saveToLocal = useCallback(() => {
-    const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, unlockedAchievements, goldenLeavesClicked);
+    const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, lifetimeClicks, unlockedAchievements, goldenLeavesClicked);
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(save));
     } catch {
       // Storage full
     }
     return save;
-  }, [leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, unlockedAchievements, goldenLeavesClicked]);
+  }, [leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, lifetimeClicks, unlockedAchievements, goldenLeavesClicked]);
 
   // ── Save to cloud ─────────────────────────────────────────────────
   const saveToCloud = useCallback(
@@ -610,7 +617,7 @@ export default function KoalaClicker() {
   // Save on unmount
   useEffect(() => {
     const handleUnload = () => {
-      const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, unlockedAchievements, goldenLeavesClicked);
+      const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, lifetimeClicks, unlockedAchievements, goldenLeavesClicked);
       try {
         localStorage.setItem(SAVE_KEY, JSON.stringify(save));
       } catch {
@@ -633,7 +640,7 @@ export default function KoalaClicker() {
     };
     window.addEventListener("beforeunload", handleUnload);
     return () => window.removeEventListener("beforeunload", handleUnload);
-  }, [leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, unlockedAchievements, goldenLeavesClicked]);
+  }, [leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, lifetimeClicks, unlockedAchievements, goldenLeavesClicked]);
 
   // ── Production tick (10 times/sec) ──────────────────────────────────
   useEffect(() => {
@@ -643,6 +650,7 @@ export default function KoalaClicker() {
         const increment = leavesPerSecond / 10;
         setLeaves((l) => l + increment);
         setTotalLeaves((t) => t + increment);
+        setLifetimeLeaves((lt) => lt + increment);
       }, 100);
     }
     return () => {
@@ -655,7 +663,9 @@ export default function KoalaClicker() {
     (e: React.MouseEvent) => {
       setLeaves((l) => l + leavesPerClick);
       setTotalLeaves((t) => t + leavesPerClick);
+      setLifetimeLeaves((lt) => lt + leavesPerClick);
       setTotalClicks((c) => c + 1);
+      setLifetimeClicks((c) => c + 1);
 
       // Bounce animation
       setKoalaScale(1.15);
@@ -748,10 +758,7 @@ export default function KoalaClicker() {
     }
   }, [loaded, leaves, totalLeaves, totalClicks, leavesPerSecond, leavesPerClick, upgrades, prestigeLevel, essenceCount, unlockedAchievements]);
 
-  // ── Track lifetime leaves ──────────────────────────────────────────
-  useEffect(() => {
-    setLifetimeLeaves((prev) => Math.max(prev, totalLeaves));
-  }, [totalLeaves]);
+  // (lifetime leaves are tracked directly in the click handler and production tick)
 
   // ── Golden leaf random event ───────────────────────────────────────
   useEffect(() => {
@@ -779,6 +786,7 @@ export default function KoalaClicker() {
     const bonus = Math.max(1000, Math.floor(leavesPerSecond * 60 * 0.1));
     setLeaves((l) => l + bonus);
     setTotalLeaves((t) => t + bonus);
+    setLifetimeLeaves((lt) => lt + bonus);
     setGoldenLeavesClicked((g) => g + 1);
     setGoldenLeaf(null);
 
@@ -1161,12 +1169,18 @@ export default function KoalaClicker() {
         {/* Stats */}
         <div className="mt-8 grid grid-cols-2 gap-4 text-center relative z-10">
           <div className={`rounded-xl px-4 py-3 border ${statCardBg}`}>
-            <div className={`text-lg font-bold tabular-nums ${textClass}`}>{formatNumber(totalLeaves)}</div>
-            <div className={`text-xs ${subtextClass}`}>Total earned</div>
+            <div className={`text-lg font-bold tabular-nums ${textClass}`}>{formatNumber(lifetimeLeaves)}</div>
+            <div className={`text-xs ${subtextClass}`}>Lifetime leaves</div>
+            {prestigeLevel > 0 && (
+              <div className={`text-[10px] tabular-nums ${dimTextClass}`}>This run: {formatNumber(totalLeaves)}</div>
+            )}
           </div>
           <div className={`rounded-xl px-4 py-3 border ${statCardBg}`}>
-            <div className={`text-lg font-bold tabular-nums ${textClass}`}>{totalClicks.toLocaleString()}</div>
-            <div className={`text-xs ${subtextClass}`}>Total clicks</div>
+            <div className={`text-lg font-bold tabular-nums ${textClass}`}>{lifetimeClicks.toLocaleString()}</div>
+            <div className={`text-xs ${subtextClass}`}>Lifetime clicks</div>
+            {prestigeLevel > 0 && (
+              <div className={`text-[10px] tabular-nums ${dimTextClass}`}>This run: {totalClicks.toLocaleString()}</div>
+            )}
           </div>
         </div>
 
