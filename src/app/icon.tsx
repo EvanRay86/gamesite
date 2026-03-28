@@ -10,23 +10,41 @@ export default function Icon() {
         style={{
           width: 32,
           height: 32,
-          borderRadius: 8,
-          background: "linear-gradient(135deg, #FF6B6B 0%, #F7B731 50%, #4ECDC4 100%)",
+          borderRadius: 6,
+          background: "#FF6B6B",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          position: "relative",
         }}
       >
-        <span
+        {/* Inner highlight to mimic Scrabble tile bevel */}
+        <div
           style={{
-            fontSize: 20,
-            fontWeight: 800,
-            color: "white",
-            lineHeight: 1,
+            position: "absolute",
+            top: 2,
+            left: 2,
+            right: 2,
+            bottom: 2,
+            borderRadius: 4,
+            background: "#FF8E8E",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          G
-        </span>
+          <span
+            style={{
+              fontSize: 18,
+              fontWeight: 800,
+              color: "white",
+              lineHeight: 1,
+              fontFamily: "Georgia, serif",
+            }}
+          >
+            G
+          </span>
+        </div>
       </div>
     ),
     { ...size },
