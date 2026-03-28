@@ -1052,7 +1052,7 @@ export default function KoalaClicker() {
 
         {/* ── Prestige / Essence info bar ──────────────────────────── */}
         {(essenceCount > 0 || prestigeLevel > 0) && (
-          <div className={`absolute top-3 left-3 flex flex-col gap-1 rounded-lg px-3 py-1.5 text-xs ${isDark ? "bg-black/30" : "bg-white/60"} backdrop-blur z-20`}>
+          <div className={`absolute top-3 left-3 flex flex-col gap-1 rounded-lg px-3 py-1.5 text-xs ${isDark ? "bg-black/30" : hasForest ? "bg-black/40" : "bg-white/60"} backdrop-blur z-20`}>
             {getCurrentTitle(prestigeLevel) && (
               <div className={`font-bold ${textClass}`}>
                 {getCurrentTitle(prestigeLevel)!.emoji} {getCurrentTitle(prestigeLevel)!.title}
@@ -1073,7 +1073,7 @@ export default function KoalaClicker() {
         {/* ── Achievements button ──────────────────────────────────── */}
         <button
           onClick={() => setShowAchievements(!showAchievements)}
-          className={`absolute top-3 right-3 rounded-lg px-3 py-1.5 text-xs z-20 cursor-pointer ${isDark ? "bg-black/30 hover:bg-black/50" : "bg-white/60 hover:bg-white/80"} backdrop-blur transition-colors ${dimTextClass}`}
+          className={`absolute top-3 right-3 rounded-lg px-3 py-1.5 text-xs z-20 cursor-pointer ${isDark ? "bg-black/30 hover:bg-black/50" : hasForest ? "bg-black/40 hover:bg-black/50" : "bg-white/60 hover:bg-white/80"} backdrop-blur transition-colors ${dimTextClass}`}
         >
           🏆 {unlockedAchievements.length}/{ACHIEVEMENTS.length}
         </button>
@@ -1416,18 +1416,18 @@ export default function KoalaClicker() {
           {(() => {
             const nextEssenceTarget = essenceCount + 1;
             const leavesNeeded = lifetimeLeavesForEssence(nextEssenceTarget);
-            const prevThreshold = essenceCount > 0 ? lifetimeLeavesForEssence(essenceCount) : 0;
-            const progressInRange = leavesNeeded > prevThreshold
-              ? Math.min(1, Math.max(0, (lifetimeLeaves - prevThreshold) / (leavesNeeded - prevThreshold)))
+            const progressFull = leavesNeeded > 0
+              ? Math.min(1, Math.max(0, lifetimeLeaves / leavesNeeded))
               : 0;
+            const remaining = Math.max(0, leavesNeeded - lifetimeLeaves);
             const afterNextMultiplier = getEssenceMultiplier(nextEssenceTarget) * achievementMultiplier;
             return (
-              <div className={`mt-2 ${canAscend ? "" : ""}`}>
+              <div className="mt-2">
                 <div className="flex items-center justify-between text-[10px] mb-1">
                   <span className={headerSubClass}>
                     {canAscend
                       ? <span className="text-purple-400 font-bold">Ready to ascend!</span>
-                      : <>Next essence at <span className={`font-bold ${headerTextClass}`}>{formatNumber(leavesNeeded)}</span> lifetime leaves</>
+                      : <>{formatNumber(remaining)} leaves to next essence</>
                     }
                   </span>
                   <span className={headerSubClass}>
@@ -1444,14 +1444,9 @@ export default function KoalaClicker() {
                         ? "bg-gradient-to-r from-purple-500 to-fuchsia-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]"
                         : "bg-gradient-to-r from-purple-600 to-purple-400"
                     }`}
-                    style={{ width: `${canAscend ? 100 : progressInRange * 100}%` }}
+                    style={{ width: `${canAscend ? 100 : progressFull * 100}%` }}
                   />
                 </div>
-                {!canAscend && (
-                  <div className={`text-[9px] mt-0.5 ${headerSubClass} opacity-70`}>
-                    {formatNumber(lifetimeLeaves)} / {formatNumber(leavesNeeded)} lifetime leaves
-                  </div>
-                )}
                 {getNextTitle(prestigeLevel) && (
                   <div className={`text-[9px] mt-0.5 ${headerSubClass} opacity-60`}>
                     Next title: {getNextTitle(prestigeLevel)!.emoji} {getNextTitle(prestigeLevel)!.title} (ascension {getNextTitle(prestigeLevel)!.level})
