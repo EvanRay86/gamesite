@@ -330,6 +330,44 @@ function getEssenceMultiplier(essence: number): number {
   return Math.pow(1.02, essence);
 }
 
+/** Calculate how many lifetime leaves are needed to reach a given essence total */
+function lifetimeLeavesForEssence(essenceTarget: number): number {
+  // Inverse of: floor(sqrt(lifetime / 1e6)) = essenceTarget
+  return essenceTarget * essenceTarget * 1e6;
+}
+
+/** Koala titles unlocked by ascending — each ascension earns a new title */
+const KOALA_TITLES: { level: number; title: string; emoji: string }[] = [
+  { level: 1, title: "Awakened Koala", emoji: "🌱" },
+  { level: 2, title: "Enlightened Koala", emoji: "🌿" },
+  { level: 3, title: "Mystic Koala", emoji: "🔮" },
+  { level: 4, title: "Astral Koala", emoji: "🌙" },
+  { level: 5, title: "Celestial Koala", emoji: "⭐" },
+  { level: 7, title: "Ethereal Koala", emoji: "💫" },
+  { level: 10, title: "Transcendent Koala", emoji: "🌀" },
+  { level: 15, title: "Cosmic Koala", emoji: "🪐" },
+  { level: 20, title: "Infinite Koala", emoji: "♾️" },
+  { level: 25, title: "Eternal Koala", emoji: "👑" },
+  { level: 30, title: "Koala Beyond Time", emoji: "🌌" },
+  { level: 40, title: "Koala Singularity", emoji: "☀️" },
+  { level: 50, title: "The One True Koala", emoji: "🐨" },
+];
+
+function getCurrentTitle(prestigeLevel: number): { title: string; emoji: string } | null {
+  let best: (typeof KOALA_TITLES)[0] | null = null;
+  for (const t of KOALA_TITLES) {
+    if (prestigeLevel >= t.level) best = t;
+  }
+  return best;
+}
+
+function getNextTitle(prestigeLevel: number): { title: string; emoji: string; level: number } | null {
+  for (const t of KOALA_TITLES) {
+    if (prestigeLevel < t.level) return t;
+  }
+  return null;
+}
+
 function buildSaveData(
   leaves: number,
   totalLeaves: number,
@@ -457,6 +495,14 @@ export default function KoalaClicker() {
   const [essenceCount, setEssenceCount] = useState(0);
   const [lifetimeLeaves, setLifetimeLeaves] = useState(0);
   const [showPrestigeConfirm, setShowPrestigeConfirm] = useState(false);
+  const [showAscendCelebration, setShowAscendCelebration] = useState<{
+    essenceGained: number;
+    newTotal: number;
+    oldMultiplier: number;
+    newMultiplier: number;
+    newPrestigeLevel: number;
+    titleUnlocked: { title: string; emoji: string } | null;
+  } | null>(null);
   // Achievements
   const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
   const [showAchievements, setShowAchievements] = useState(false);
@@ -655,15 +701,35 @@ export default function KoalaClicker() {
 
   const doAscend = useCallback(() => {
     if (!canAscend) return;
-    setPrestigeLevel((p) => p + 1);
-    setEssenceCount((e) => e + essenceGain);
+    const newPrestige = prestigeLevel + 1;
+    const newEssence = essenceCount + essenceGain;
+    const oldMult = totalMultiplier;
+    const newMult = getEssenceMultiplier(newEssence) * achievementMultiplier;
+
+    // Check if a new title is unlocked by this ascension
+    const prevTitle = getCurrentTitle(prestigeLevel);
+    const nextTitle = getCurrentTitle(newPrestige);
+    const titleUnlocked = nextTitle && nextTitle !== prevTitle ? nextTitle : null;
+
+    setPrestigeLevel(newPrestige);
+    setEssenceCount(newEssence);
     // Reset progress but keep prestige stuff
     setLeaves(0);
     setTotalLeaves(0);
     setTotalClicks(0);
     setUpgrades(INITIAL_UPGRADES.map((u) => ({ ...u, owned: 0 })));
     setShowPrestigeConfirm(false);
-  }, [canAscend, essenceGain]);
+
+    // Show celebration
+    setShowAscendCelebration({
+      essenceGained: essenceGain,
+      newTotal: newEssence,
+      oldMultiplier: oldMult,
+      newMultiplier: newMult,
+      newPrestigeLevel: newPrestige,
+      titleUnlocked,
+    });
+  }, [canAscend, essenceGain, prestigeLevel, essenceCount, totalMultiplier, achievementMultiplier]);
 
   // ── Achievement checking ───────────────────────────────────────────
   useEffect(() => {
@@ -858,7 +924,7 @@ export default function KoalaClicker() {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b ${bgClass} flex flex-col lg:flex-row transition-colors duration-1000`}>
+    <div className={`h-[calc(100vh-3rem)] md:h-[calc(100vh-3.5rem)] bg-gradient-to-b ${bgClass} flex flex-col lg:flex-row transition-colors duration-1000 overflow-hidden`}>
       {/* ── Left Panel: Koala + Scene ──────────────────────────────────── */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden">
 
@@ -986,14 +1052,21 @@ export default function KoalaClicker() {
 
         {/* ── Prestige / Essence info bar ──────────────────────────── */}
         {(essenceCount > 0 || prestigeLevel > 0) && (
-          <div className={`absolute top-3 left-3 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs ${isDark ? "bg-black/30" : "bg-white/60"} backdrop-blur z-20`}>
-            <span className={dimTextClass}>Essence: <span className={`font-bold ${textClass}`}>{essenceCount}</span></span>
-            <span className={dimTextClass}>|</span>
-            <span className={dimTextClass}>x{totalMultiplier.toFixed(2)}</span>
-            {prestigeLevel > 0 && <>
+          <div className={`absolute top-3 left-3 flex flex-col gap-1 rounded-lg px-3 py-1.5 text-xs ${isDark ? "bg-black/30" : "bg-white/60"} backdrop-blur z-20`}>
+            {getCurrentTitle(prestigeLevel) && (
+              <div className={`font-bold ${textClass}`}>
+                {getCurrentTitle(prestigeLevel)!.emoji} {getCurrentTitle(prestigeLevel)!.title}
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <span className={dimTextClass}>Essence: <span className={`font-bold ${textClass}`}>{essenceCount}</span></span>
               <span className={dimTextClass}>|</span>
-              <span className={dimTextClass}>Ascensions: {prestigeLevel}</span>
-            </>}
+              <span className={dimTextClass}>x{totalMultiplier.toFixed(2)}</span>
+              {prestigeLevel > 0 && <>
+                <span className={dimTextClass}>|</span>
+                <span className={dimTextClass}>Ascensions: {prestigeLevel}</span>
+              </>}
+            </div>
           </div>
         )}
 
@@ -1166,27 +1239,145 @@ export default function KoalaClicker() {
           onClick={() => setShowPrestigeConfirm(false)}>
           <div className={`w-full max-w-sm rounded-2xl border-2 p-6 text-center ${
             isDark ? "bg-gray-900 border-purple-500/40 text-white" : "bg-white border-purple-300 text-gray-900"
-          }`} onClick={(e) => e.stopPropagation()}>
-            <div className="text-4xl mb-3">🔄</div>
-            <h3 className="text-xl font-bold mb-2">Ascend?</h3>
-            <p className={`text-sm mb-4 ${isDark ? "text-white/60" : "text-gray-600"}`}>
-              Reset all leaves and upgrades, but gain <span className="font-bold text-purple-400">+{essenceGain} Eucalyptus Essence</span>.
-              <br />Each essence permanently boosts all production by 2%.
-              <br />
-              <span className="text-xs opacity-70">
-                Current multiplier: x{totalMultiplier.toFixed(2)} → x{(getEssenceMultiplier(essenceCount + essenceGain) * achievementMultiplier).toFixed(2)}
-              </span>
+          }`} onClick={(e) => e.stopPropagation()}
+            style={{ animation: "koala-ascend-modal 0.3s ease-out" }}>
+            <div className="text-5xl mb-3">✨</div>
+            <h3 className="text-xl font-bold mb-1">Ready to Ascend</h3>
+            <p className={`text-xs mb-4 ${isDark ? "text-white/40" : "text-gray-400"}`}>
+              Your koala has gathered enough wisdom to transcend
             </p>
+
+            {/* What you gain */}
+            <div className={`rounded-xl p-3 mb-3 ${isDark ? "bg-purple-900/30 border border-purple-500/20" : "bg-purple-50 border border-purple-200"}`}>
+              <div className={`text-xs font-bold mb-2 ${isDark ? "text-purple-300" : "text-purple-700"}`}>What you gain</div>
+              <div className="flex items-center justify-center gap-4">
+                <div>
+                  <div className="text-2xl font-bold text-purple-400">+{essenceGain}</div>
+                  <div className={`text-[10px] ${isDark ? "text-white/40" : "text-gray-500"}`}>Essence</div>
+                </div>
+                <div className={`text-lg ${isDark ? "text-white/20" : "text-gray-300"}`}>→</div>
+                <div>
+                  <div className="text-lg font-bold">
+                    <span className={isDark ? "text-white/50" : "text-gray-400"}>x{totalMultiplier.toFixed(2)}</span>
+                    {" → "}
+                    <span className="text-purple-400">x{(getEssenceMultiplier(essenceCount + essenceGain) * achievementMultiplier).toFixed(2)}</span>
+                  </div>
+                  <div className={`text-[10px] ${isDark ? "text-white/40" : "text-gray-500"}`}>Production boost</div>
+                </div>
+              </div>
+              {(() => {
+                const nextT = getCurrentTitle(prestigeLevel + 1);
+                const prevT = getCurrentTitle(prestigeLevel);
+                if (nextT && nextT !== prevT) {
+                  return (
+                    <div className="mt-2 pt-2 border-t border-purple-500/20">
+                      <div className={`text-xs ${isDark ? "text-purple-300" : "text-purple-600"}`}>
+                        New title: <span className="font-bold">{nextT.emoji} {nextT.title}</span>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+
+            {/* What resets */}
+            <div className={`rounded-xl p-3 mb-4 ${isDark ? "bg-white/5 border border-white/10" : "bg-gray-50 border border-gray-200"}`}>
+              <div className={`text-xs mb-1 ${isDark ? "text-white/40" : "text-gray-500"}`}>Resets: leaves, upgrades, clicks</div>
+              <div className={`text-xs ${isDark ? "text-white/40" : "text-gray-500"}`}>Keeps: essence, achievements, titles, lifetime stats</div>
+            </div>
+
             <div className="flex gap-3 justify-center">
               <button onClick={() => setShowPrestigeConfirm(false)}
                 className={`px-4 py-2 rounded-lg cursor-pointer ${isDark ? "bg-white/10 hover:bg-white/20" : "bg-gray-100 hover:bg-gray-200"}`}>
-                Cancel
+                Not yet
               </button>
               <button onClick={doAscend}
-                className="px-4 py-2 rounded-lg cursor-pointer bg-purple-600 text-white hover:bg-purple-500 font-bold">
-                Ascend (+{essenceGain} Essence)
+                className="px-4 py-2 rounded-lg cursor-pointer bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white hover:from-purple-500 hover:to-fuchsia-500 font-bold shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                ✨ Ascend
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Ascend Celebration Overlay ──────────────────────────────────── */}
+      {showAscendCelebration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ animation: "koala-ascend-bg 3s ease-out forwards" }}>
+          {/* Particle burst */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {Array.from({ length: 40 }).map((_, i) => {
+              const angle = (i / 40) * Math.PI * 2;
+              const distance = 200 + Math.random() * 300;
+              const size = 8 + Math.random() * 16;
+              const emojis = ["✨", "🌟", "💜", "🍃", "⭐", "🔮", "💫"];
+              return (
+                <div
+                  key={`particle-${i}`}
+                  className="absolute text-lg"
+                  style={{
+                    left: "50%",
+                    top: "50%",
+                    fontSize: `${size}px`,
+                    animation: `koala-ascend-particle 1.5s ease-out ${i * 0.02}s forwards`,
+                    // CSS custom properties for the particle direction
+                    ["--px" as string]: `${Math.cos(angle) * distance}px`,
+                    ["--py" as string]: `${Math.sin(angle) * distance}px`,
+                  }}
+                >
+                  {emojis[i % emojis.length]}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Celebration card */}
+          <div className="relative z-10 w-full max-w-sm rounded-2xl border-2 border-purple-500/60 bg-gray-900/95 text-white p-6 text-center backdrop-blur-xl"
+            style={{ animation: "koala-ascend-card 0.6s ease-out 0.3s both" }}>
+            <div className="text-6xl mb-2" style={{ animation: "koala-ascend-glow 2s ease-in-out infinite" }}>✨</div>
+            <h2 className="text-2xl font-bold mb-1 bg-gradient-to-r from-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
+              Ascended!
+            </h2>
+            <p className="text-white/40 text-xs mb-4">Ascension #{showAscendCelebration.newPrestigeLevel}</p>
+
+            {/* Stats recap */}
+            <div className="space-y-3 mb-4">
+              <div className="rounded-xl bg-purple-900/40 border border-purple-500/30 p-3">
+                <div className="text-3xl font-bold text-purple-400">+{showAscendCelebration.essenceGained}</div>
+                <div className="text-xs text-white/50">Eucalyptus Essence earned</div>
+                <div className="text-xs text-white/30 mt-1">Total: {showAscendCelebration.newTotal} essence</div>
+              </div>
+
+              <div className="rounded-xl bg-fuchsia-900/30 border border-fuchsia-500/20 p-3">
+                <div className="text-lg font-bold">
+                  <span className="text-white/40">x{showAscendCelebration.oldMultiplier.toFixed(2)}</span>
+                  <span className="text-white/20 mx-2">→</span>
+                  <span className="text-fuchsia-400">x{showAscendCelebration.newMultiplier.toFixed(2)}</span>
+                </div>
+                <div className="text-xs text-white/50">Production multiplier</div>
+                <div className="text-xs text-emerald-400 mt-1">
+                  +{(((showAscendCelebration.newMultiplier / showAscendCelebration.oldMultiplier) - 1) * 100).toFixed(1)}% faster than before!
+                </div>
+              </div>
+
+              {showAscendCelebration.titleUnlocked && (
+                <div className="rounded-xl bg-amber-900/30 border border-amber-500/30 p-3"
+                  style={{ animation: "koala-ascend-title 0.5s ease-out 1s both" }}>
+                  <div className="text-xs text-amber-400 font-bold mb-1">New Title Unlocked!</div>
+                  <div className="text-xl">
+                    {showAscendCelebration.titleUnlocked.emoji} <span className="font-bold text-amber-300">{showAscendCelebration.titleUnlocked.title}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowAscendCelebration(null)}
+              className="px-6 py-2.5 rounded-lg cursor-pointer bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white hover:from-purple-500 hover:to-fuchsia-500 font-bold shadow-[0_0_30px_rgba(168,85,247,0.5)] transition-all"
+            >
+              Continue your journey
+            </button>
           </div>
         </div>
       )}
@@ -1205,22 +1396,70 @@ export default function KoalaClicker() {
               disabled={!canAscend}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 canAscend
-                  ? "bg-purple-600 text-white hover:bg-purple-500 cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                  ? "bg-purple-600 text-white hover:bg-purple-500 cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.3)] animate-pulse"
                   : `${isDark ? "bg-white/5 text-white/20" : "bg-gray-100 text-gray-400"} cursor-not-allowed`
               }`}
-              title={canAscend ? `Ascend for +${essenceGain} essence` : `Earn more lifetime leaves to ascend (need 1M+)`}
+              title={canAscend ? `Ascend for +${essenceGain} essence` : `Earn more lifetime leaves to ascend`}
             >
-              🔄 Ascend{canAscend ? ` (+${essenceGain})` : ""}
+              ✨ Ascend{canAscend ? ` (+${essenceGain})` : ""}
             </button>
           </div>
           {/* Multiplier bar */}
           {totalMultiplier > 1 && (
-            <div className={`text-[10px] mt-2 ${headerSubClass}`}>
+            <div className={`text-[10px] mt-1 ${headerSubClass}`}>
               Production multiplier: x{totalMultiplier.toFixed(2)}
               {essenceCount > 0 && <span> ({essenceCount} essence)</span>}
               {unlockedAchievements.length > 0 && <span> ({unlockedAchievements.length} achievements)</span>}
             </div>
           )}
+          {/* Ascend progress bar */}
+          {(() => {
+            const nextEssenceTarget = essenceCount + 1;
+            const leavesNeeded = lifetimeLeavesForEssence(nextEssenceTarget);
+            const prevThreshold = essenceCount > 0 ? lifetimeLeavesForEssence(essenceCount) : 0;
+            const progressInRange = leavesNeeded > prevThreshold
+              ? Math.min(1, Math.max(0, (lifetimeLeaves - prevThreshold) / (leavesNeeded - prevThreshold)))
+              : 0;
+            const afterNextMultiplier = getEssenceMultiplier(nextEssenceTarget) * achievementMultiplier;
+            return (
+              <div className={`mt-2 ${canAscend ? "" : ""}`}>
+                <div className="flex items-center justify-between text-[10px] mb-1">
+                  <span className={headerSubClass}>
+                    {canAscend
+                      ? <span className="text-purple-400 font-bold">Ready to ascend!</span>
+                      : <>Next essence at <span className={`font-bold ${headerTextClass}`}>{formatNumber(leavesNeeded)}</span> lifetime leaves</>
+                    }
+                  </span>
+                  <span className={headerSubClass}>
+                    {canAscend
+                      ? <>x{totalMultiplier.toFixed(2)} → <span className="text-purple-400 font-bold">x{(getEssenceMultiplier(essenceCount + essenceGain) * achievementMultiplier).toFixed(2)}</span></>
+                      : <>→ x{afterNextMultiplier.toFixed(2)}</>
+                    }
+                  </span>
+                </div>
+                <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? "bg-white/10" : "bg-gray-200"}`}>
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      canAscend
+                        ? "bg-gradient-to-r from-purple-500 to-fuchsia-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]"
+                        : "bg-gradient-to-r from-purple-600 to-purple-400"
+                    }`}
+                    style={{ width: `${canAscend ? 100 : progressInRange * 100}%` }}
+                  />
+                </div>
+                {!canAscend && (
+                  <div className={`text-[9px] mt-0.5 ${headerSubClass} opacity-70`}>
+                    {formatNumber(lifetimeLeaves)} / {formatNumber(leavesNeeded)} lifetime leaves
+                  </div>
+                )}
+                {getNextTitle(prestigeLevel) && (
+                  <div className={`text-[9px] mt-0.5 ${headerSubClass} opacity-60`}>
+                    Next title: {getNextTitle(prestigeLevel)!.emoji} {getNextTitle(prestigeLevel)!.title} (ascension {getNextTitle(prestigeLevel)!.level})
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         <div className="p-3 space-y-2">
