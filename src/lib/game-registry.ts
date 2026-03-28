@@ -263,6 +263,16 @@ export const games: Game[] = [
   },
 
   {
+    slug: "meteor-mayhem",
+    name: "Meteor Mayhem",
+    description:
+      "Blast meteors, grab power-ups, and chase your high score in this neon space shooter.",
+    category: "arcade",
+    color: "coral",
+    creditCost: 3,
+  },
+
+  {
     slug: "gem-crush",
     name: "Gem Crush",
     description: "Match gems, chain combos, and climb the leaderboard.",
