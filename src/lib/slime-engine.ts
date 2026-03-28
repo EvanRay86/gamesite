@@ -296,22 +296,40 @@ const BALL_COLOR = "#f0ece2";
 const GROUND_COLOR = "#1e2a3a";
 const NET_COLOR = "rgba(255,255,255,0.3)";
 
+export interface RenderTheme {
+  p2Color: string;
+  p2Dark: string;
+  bgTop: string;
+  bgBottom: string;
+  groundColor: string;
+}
+
+const DEFAULT_THEME: RenderTheme = {
+  p2Color: P2_COLOR,
+  p2Dark: P2_DARK,
+  bgTop: "#0d0d1a",
+  bgBottom: "#1a1a2e",
+  groundColor: GROUND_COLOR,
+};
+
 export function renderGame(
   ctx: CanvasRenderingContext2D,
   state: GameState,
-  localPlayer: 1 | 2
+  localPlayer: 1 | 2,
+  theme?: RenderTheme
 ): void {
+  const t = theme ?? DEFAULT_THEME;
   const { p1, p2, ball, score, countdown, winner } = state;
 
   // Background
   const grad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-  grad.addColorStop(0, "#0d0d1a");
-  grad.addColorStop(1, "#1a1a2e");
+  grad.addColorStop(0, t.bgTop);
+  grad.addColorStop(1, t.bgBottom);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
   // Ground
-  ctx.fillStyle = GROUND_COLOR;
+  ctx.fillStyle = t.groundColor;
   ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
   // Ground line
   ctx.strokeStyle = "rgba(255,255,255,0.1)";
@@ -330,7 +348,7 @@ export function renderGame(
 
   // Draw slimes
   drawSlime(ctx, p1, P1_COLOR, P1_DARK, ball);
-  drawSlime(ctx, p2, P2_COLOR, P2_DARK, ball);
+  drawSlime(ctx, p2, t.p2Color, t.p2Dark, ball);
 
   // "YOU" label
   const localSlime = localPlayer === 1 ? p1 : p2;
@@ -361,7 +379,8 @@ export function renderGame(
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255,107,107,0.3)";
   ctx.fillText(String(score[0]), CANVAS_W * 0.25, 55);
-  ctx.fillStyle = "rgba(78,205,196,0.3)";
+  // Use opponent color for P2 score
+  ctx.fillStyle = hexToRgba(t.p2Color, 0.3);
   ctx.fillText(String(score[1]), CANVAS_W * 0.75, 55);
 
   // Countdown
@@ -407,6 +426,13 @@ export function renderGame(
     ctx.font = "bold 14px 'Outfit', sans-serif";
     ctx.fillText("Back to Menu", CANVAS_W / 2, btnY + 26);
   }
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 function drawSlime(
