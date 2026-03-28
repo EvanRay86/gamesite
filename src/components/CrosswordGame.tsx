@@ -35,6 +35,7 @@ export default function CrosswordGame({ puzzle }: Props) {
   const [direction, setDirection] = useState<"across" | "down">("across");
   const [solved, setSolved] = useState(false);
   const [revealedCells, setRevealedCells] = useState<Set<string>>(new Set());
+  const [confirmedCorrect, setConfirmedCorrect] = useState<Set<string>>(new Set());
   const [checkedWrong, setCheckedWrong] = useState<Set<string>>(new Set());
 
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -119,7 +120,23 @@ export default function CrosswordGame({ puzzle }: Props) {
     [direction, rows, cols, grid, findClueForCell]
   );
 
-  // Handle key input
+  // Handle letter input (works on both desktop and mobile)
+  const enterLetter = useCallback(
+    (row: number, col: number, letter: string) => {
+      const key = `${row},${col}`;
+      const upper = letter.toUpperCase();
+      setUserGrid((prev) => ({ ...prev, [key]: upper }));
+      setCheckedWrong((prev) => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
+      moveToNext(row, col);
+    },
+    [moveToNext]
+  );
+
+  // Handle key input (desktop keyboard + navigation)
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent, row: number, col: number) => {
       const key = `${row},${col}`;
@@ -193,17 +210,23 @@ export default function CrosswordGame({ puzzle }: Props) {
 
       if (/^[a-zA-Z]$/.test(e.key)) {
         e.preventDefault();
-        const letter = e.key.toUpperCase();
-        setUserGrid((prev) => ({ ...prev, [key]: letter }));
-        setCheckedWrong((prev) => {
-          const next = new Set(prev);
-          next.delete(key);
-          return next;
-        });
-        moveToNext(row, col);
+        enterLetter(row, col, e.key);
       }
     },
-    [userGrid, selectedClue, clues, direction, moveToNext, selectCell, grid, rows, cols]
+    [userGrid, selectedClue, clues, direction, moveToNext, selectCell, grid, rows, cols, enterLetter]
+  );
+
+  // Handle mobile input via beforeinput (fires reliably on mobile virtual keyboards)
+  const handleBeforeInput = useCallback(
+    (e: React.FormEvent<HTMLInputElement>, row: number, col: number) => {
+      const nativeEvent = e.nativeEvent as InputEvent;
+      const data = nativeEvent.data;
+      if (data && /^[a-zA-Z]$/.test(data)) {
+        e.preventDefault();
+        enterLetter(row, col, data);
+      }
+    },
+    [enterLetter]
   );
 
   // Check if puzzle is solved
@@ -248,13 +271,22 @@ export default function CrosswordGame({ puzzle }: Props) {
     if (!selectedClue) return;
     const cells = getCellsForClue(selectedClue);
     const newRevealed = new Set(revealedCells);
+    const newCorrect = new Set(confirmedCorrect);
     const newGrid = { ...userGrid };
     cells.forEach((key, i) => {
-      newGrid[key] = selectedClue.answer[i];
-      newRevealed.add(key);
+      const correctLetter = selectedClue.answer[i];
+      if (userGrid[key] === correctLetter) {
+        // User already had the right letter — mark as confirmed correct
+        newCorrect.add(key);
+      } else {
+        // Wrong or empty — fill it in and mark as revealed
+        newGrid[key] = correctLetter;
+        newRevealed.add(key);
+      }
     });
     setUserGrid(newGrid);
     setRevealedCells(newRevealed);
+    setConfirmedCorrect(newCorrect);
   };
 
   // Select clue from list
@@ -303,6 +335,7 @@ export default function CrosswordGame({ puzzle }: Props) {
               const isSelected = selectedCell === key;
               const isHighlighted = highlightedCells.has(key);
               const isRevealed = revealedCells.has(key);
+              const isCorrect = confirmedCorrect.has(key);
               const isWrong = checkedWrong.has(key);
 
               if (cell.isBlack) {
@@ -339,13 +372,19 @@ export default function CrosswordGame({ puzzle }: Props) {
                     ref={(el) => { inputRefs.current[key] = el; }}
                     type="text"
                     maxLength={1}
-                    readOnly
                     value={userGrid[key] ?? ""}
+                    inputMode="text"
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    spellCheck={false}
                     className={`absolute inset-0 w-full h-full text-center font-bold text-base uppercase bg-transparent outline-none caret-transparent cursor-pointer
-                      ${isRevealed ? "text-teal" : "text-text-primary"}
+                      ${isRevealed ? "text-error" : isCorrect ? "text-green" : "text-text-primary"}
                     `}
-                    style={{ paddingTop: cell.number ? 6 : 0 }}
+                    style={{ paddingTop: cell.number ? 6 : 0, fontSize: 16 }}
                     onKeyDown={(e) => handleKeyDown(e, cell.row, cell.col)}
+                    onBeforeInput={(e) => handleBeforeInput(e, cell.row, cell.col)}
+                    onChange={() => {}}
                     onFocus={() => {
                       if (selectedCell !== key) selectCell(cell.row, cell.col);
                     }}
