@@ -235,8 +235,8 @@ export default function PixelVilleGame() {
 
   return (
     <div className="relative w-screen h-screen bg-[#1a1a2e] overflow-hidden select-none">
-      {/* Fullscreen game canvas */}
-      <div className="absolute inset-0">
+      {/* Game canvas — slightly inset from edges */}
+      <div className="absolute inset-4 rounded-xl overflow-hidden border border-white/10">
         {engineRef.current && <GameCanvas engine={engineRef.current} />}
       </div>
 
