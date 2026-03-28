@@ -1,4 +1,4 @@
-import CreditGate from "@/components/CreditGate";
+import FreePlaysGate from "@/components/FreePlaysGate";
 import MeteorMayhem from "@/components/MeteorMayhem";
 import MoreArcadeGames from "@/components/MoreArcadeGames";
 
@@ -11,9 +11,9 @@ export const metadata = {
 export default function MeteorMayhemPage() {
   return (
     <main>
-      <CreditGate creditCost={3} gameSlug="meteor-mayhem">
-        <MeteorMayhem />
-      </CreditGate>
+      <FreePlaysGate creditCost={3} gameSlug="meteor-mayhem">
+        {(onGameStart) => <MeteorMayhem onGameStart={onGameStart} />}
+      </FreePlaysGate>
       <MoreArcadeGames currentSlug="meteor-mayhem" />
     </main>
   );

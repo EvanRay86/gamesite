@@ -104,7 +104,11 @@ function randomBetween(a: number, b: number) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function MeteorMayhem() {
+interface MeteorMayhemProps {
+  onGameStart?: () => void;
+}
+
+export default function MeteorMayhem({ onGameStart }: MeteorMayhemProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<"menu" | "playing" | "over">("menu");
   const [score, setScore] = useState(0);
@@ -236,7 +240,8 @@ export default function MeteorMayhem() {
     screenShakeRef.current = 0;
     setGameState("playing");
     stateRef.current = "playing";
-  }, []);
+    onGameStart?.();
+  }, [onGameStart]);
 
   // Init stars
   useEffect(() => {
