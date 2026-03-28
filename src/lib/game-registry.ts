@@ -3,7 +3,7 @@
 
 export type GameColor = "coral" | "teal" | "sky" | "amber" | "purple" | "green";
 
-export type GameCategory = "daily" | "arcade";
+export type GameCategory = "daily" | "arcade" | "community";
 
 export interface GameVariant {
   slug: string;
@@ -221,6 +221,18 @@ export const games: Game[] = [
     color: "teal",
   },
 
+  // ── Community Games ──────────────────────────────────────────────────────
+
+  {
+    slug: "pixelville",
+    name: "PixelVille",
+    description:
+      "Farm, build, chat, and hang out in a pixel-art community world.",
+    category: "community",
+    color: "green",
+    creditCost: 0,
+  },
+
   // ── Arcade Games ─────────────────────────────────────────────────────────
 
   {
@@ -300,6 +312,11 @@ export function getDailyGames(): Game[] {
 /** All arcade-category games. */
 export function getArcadeGames(): Game[] {
   return games.filter((g) => g.category === "arcade");
+}
+
+/** All community-category games. */
+export function getCommunityGames(): Game[] {
+  return games.filter((g) => g.category === "community");
 }
 
 /** Look up a game by its slug. Returns `undefined` if not found. */

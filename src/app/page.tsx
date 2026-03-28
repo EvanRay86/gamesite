@@ -3,6 +3,7 @@ import Image from "next/image";
 import {
   getDailyGames,
   getArcadeGames,
+  getCommunityGames,
   getFeaturedGame,
   type Game,
 } from "@/lib/game-registry";
@@ -22,6 +23,7 @@ export default function HomePage() {
     (g) => !g.comingSoon && !g.featured,
   );
   const arcadeGames = getArcadeGames().filter((g) => !g.comingSoon);
+  const communityGames = getCommunityGames().filter((g) => !g.comingSoon);
 
   return (
     <main className="min-h-screen flex flex-col items-center px-4 py-10 relative overflow-hidden">
@@ -106,6 +108,41 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* ── Community ──────────────────────────────────────────────────────── */}
+      {communityGames.length > 0 && (
+        <section id="community" className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.45s_forwards] opacity-0">
+          <div className="flex items-baseline justify-between mb-5">
+            <h2 className="text-xl font-bold text-text-primary">Community</h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {communityGames.map((game) => (
+              <Link
+                key={game.slug}
+                href={`/arcade/${game.slug}`}
+                className="group relative bg-white rounded-xl border border-border-light p-5 shadow-sm
+                           hover:shadow-md hover:border-green/40 transition-all duration-200 no-underline"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green/10 flex items-center justify-center text-lg shrink-0">
+                    🏘️
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-text-primary group-hover:text-green transition-colors">
+                      {game.name}
+                    </h3>
+                    <p className="text-xs text-text-dim mt-0.5">{game.description}</p>
+                    <span className="inline-block mt-2 text-[10px] font-semibold uppercase tracking-wide text-green bg-green/10 px-2 py-0.5 rounded-full">
+                      Multiplayer
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Social Proof ──────────────────────────────────────────────────── */}
       <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
