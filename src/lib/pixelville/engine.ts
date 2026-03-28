@@ -94,11 +94,26 @@ export class PixelVilleEngine {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
     this.supabase = supabase;
+    this.attachInputListeners();
+  }
 
-    // Input listeners
+  /** Call from GameCanvas after setting canvas + ctx */
+  connectCanvas(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext("2d")!;
+    if (this.ctx) this.ctx.imageSmoothingEnabled = false;
+    this.attachInputListeners();
+  }
+
+  private attachInputListeners() {
+    // Remove first to avoid double-binding
+    window.removeEventListener("keydown", this.handleKeyDown);
+    window.removeEventListener("keyup", this.handleKeyUp);
+    this.canvas?.removeEventListener("click", this.handleClick);
+    // Attach
     window.addEventListener("keydown", this.handleKeyDown);
     window.addEventListener("keyup", this.handleKeyUp);
-    canvas.addEventListener("click", this.handleClick);
+    this.canvas?.addEventListener("click", this.handleClick);
   }
 
   destroy() {
@@ -764,53 +779,7 @@ export class PixelVilleEngine {
       ctx.setLineDash([]);
     }
 
-    // 6. Draw energy bar (top-left HUD)
-    this.drawHUD(ctx);
-  }
-
-  private drawHUD(ctx: CanvasRenderingContext2D) {
-    if (!this.state.player || !this.canvas) return;
-    const p = this.state.player;
-
-    ctx.save();
-
-    // Background
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
-    ctx.beginPath();
-    ctx.roundRect(8, 8, 180, 60, 8);
-    ctx.fill();
-
-    // Coins
-    ctx.fillStyle = "#FDD835";
-    ctx.font = "bold 14px 'Outfit', sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText(`Coins: ${p.coins}`, 16, 24);
-
-    // Level & XP
-    ctx.fillStyle = "#A5D6A7";
-    ctx.fillText(`Lv.${p.level}`, 16, 44);
-
-    // Energy bar
-    const barX = 70;
-    const barY = 38;
-    const barW = 108;
-    const barH = 12;
-    ctx.fillStyle = "#424242";
-    ctx.fillRect(barX, barY, barW, barH);
-    const energyPct = p.energy / p.maxEnergy;
-    const color = energyPct > 0.5 ? "#4CAF50" : energyPct > 0.25 ? "#FFC107" : "#F44336";
-    ctx.fillStyle = color;
-    ctx.fillRect(barX, barY, barW * energyPct, barH);
-    ctx.strokeStyle = "#757575";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(barX, barY, barW, barH);
-    ctx.fillStyle = "white";
-    ctx.font = "10px 'Outfit', sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(`${p.energy}/${p.maxEnergy}`, barX + barW / 2, barY + barH / 2 + 1);
-
-    ctx.restore();
+    // HUD is now rendered as React overlay — no canvas HUD needed
   }
 
   // ---------------------------------------------------------------------------

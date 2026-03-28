@@ -10,9 +10,9 @@ interface RoomNavProps {
 }
 
 const PUBLIC_ROOM_LIST = [
-  { id: PUBLIC_ROOMS.TOWN_SQUARE, name: "Town Square", icon: "🏛️" },
-  { id: PUBLIC_ROOMS.MARKET, name: "Market", icon: "🛒" },
-  { id: PUBLIC_ROOMS.PARK, name: "Park", icon: "🌳" },
+  { id: PUBLIC_ROOMS.TOWN_SQUARE, name: "Town Square", icon: "\u{1F3DB}\u{FE0F}" },
+  { id: PUBLIC_ROOMS.MARKET, name: "Market", icon: "\u{1F6D2}" },
+  { id: PUBLIC_ROOMS.PARK, name: "Park", icon: "\u{1F333}" },
 ];
 
 export default function RoomNav({ engine, currentRoomId, homeRoomId }: RoomNavProps) {
@@ -23,37 +23,40 @@ export default function RoomNav({ engine, currentRoomId, homeRoomId }: RoomNavPr
   };
 
   return (
-    <div className="absolute top-2 right-2 z-10">
-      <div className="bg-black/60 backdrop-blur-sm rounded-xl p-2 space-y-1">
-        <p className="text-[10px] uppercase text-white/40 font-semibold px-2">
+    <div className="absolute top-3 right-3 z-10">
+      <div className="bg-black/70 backdrop-blur-sm rounded-xl p-3 space-y-1 border border-white/10 min-w-[160px]">
+        <p className="text-[10px] uppercase text-white/30 font-semibold tracking-wider px-2 mb-2">
           Rooms
         </p>
         {PUBLIC_ROOM_LIST.map((room) => (
           <button
             key={room.id}
             onClick={() => handleNavigate(room.id)}
-            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-colors ${
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
               currentRoomId === room.id
-                ? "bg-teal-500/20 text-teal-300"
-                : "text-white/60 hover:bg-white/10 hover:text-white"
+                ? "bg-teal-500/20 text-teal-300 border border-teal-500/30"
+                : "text-white/50 hover:bg-white/10 hover:text-white border border-transparent"
             }`}
           >
-            <span>{room.icon}</span>
-            <span>{room.name}</span>
+            <span className="text-base">{room.icon}</span>
+            <span className="font-medium">{room.name}</span>
           </button>
         ))}
         {homeRoomId && (
-          <button
-            onClick={() => handleNavigate(homeRoomId)}
-            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-colors ${
-              currentRoomId === homeRoomId
-                ? "bg-teal-500/20 text-teal-300"
-                : "text-white/60 hover:bg-white/10 hover:text-white"
-            }`}
-          >
-            <span>🏠</span>
-            <span>My Home</span>
-          </button>
+          <>
+            <div className="border-t border-white/10 my-1" />
+            <button
+              onClick={() => handleNavigate(homeRoomId)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
+                currentRoomId === homeRoomId
+                  ? "bg-teal-500/20 text-teal-300 border border-teal-500/30"
+                  : "text-white/50 hover:bg-white/10 hover:text-white border border-transparent"
+              }`}
+            >
+              <span className="text-base">{"\u{1F3E0}"}</span>
+              <span className="font-medium">My Home</span>
+            </button>
+          </>
         )}
       </div>
     </div>

@@ -16,15 +16,14 @@ export default function GameCanvas({ engine }: GameCanvasProps) {
     const parent = canvas.parentElement;
     if (!parent) return;
     const rect = parent.getBoundingClientRect();
-    // Use a reasonable game resolution (scale for crisp pixels)
-    const dpr = Math.min(window.devicePixelRatio, 2);
-    canvas.width = Math.floor(rect.width * dpr);
-    canvas.height = Math.floor(rect.height * dpr);
+    // Use 1:1 pixel ratio for crisp pixel art — CSS handles display scaling
+    canvas.width = Math.floor(rect.width);
+    canvas.height = Math.floor(rect.height);
     canvas.style.width = `${rect.width}px`;
     canvas.style.height = `${rect.height}px`;
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      ctx.imageSmoothingEnabled = false; // Crisp pixel art
+      ctx.imageSmoothingEnabled = false;
     }
   }, []);
 
@@ -40,23 +39,19 @@ export default function GameCanvas({ engine }: GameCanvasProps) {
     };
   }, [handleResize]);
 
-  // Pass canvas ref to engine on mount
+  // Connect canvas to engine (registers input listeners + rendering context)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
-      engine.canvas = canvas;
-      engine.ctx = canvas.getContext("2d")!;
-      if (engine.ctx) {
-        engine.ctx.imageSmoothingEnabled = false;
-      }
+      engine.connectCanvas(canvas);
     }
   }, [engine]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="block w-full h-full cursor-crosshair"
-      style={{ imageRendering: "pixelated" }}
+      className="block w-full h-full"
+      style={{ imageRendering: "pixelated", cursor: "default" }}
     />
   );
 }
