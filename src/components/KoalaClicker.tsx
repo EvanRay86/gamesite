@@ -185,7 +185,7 @@ const INITIAL_UPGRADES: Upgrade[] = [
     description: "Paws forged from crystallized eucalyptus essence.",
     baseCost: 25000000,
     lps: 0,
-    clickBonus: 100,
+    clickBonus: 50000,
     owned: 0,
   },
   {
@@ -236,7 +236,7 @@ const INITIAL_UPGRADES: Upgrade[] = [
     description: "Transcendent paws that click across all realities at once.",
     baseCost: 50000000000,
     lps: 0,
-    clickBonus: 1000,
+    clickBonus: 100000000,
     owned: 0,
   },
   {
