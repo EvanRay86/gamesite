@@ -1430,12 +1430,12 @@ export default function KoalaClicker() {
           {(() => {
             const nextEssenceTarget = essenceCount + 1;
             const leavesNeeded = lifetimeLeavesForEssence(nextEssenceTarget);
-            const prevThreshold = essenceCount > 0 ? lifetimeLeavesForEssence(essenceCount) : 0;
-            const rangeSize = leavesNeeded - prevThreshold;
-            const progressInRange = rangeSize > 0
-              ? Math.min(1, Math.max(0, (lifetimeLeaves - prevThreshold) / rangeSize))
-              : 0;
             const remaining = Math.max(0, leavesNeeded - lifetimeLeaves);
+            // How much of the deficit existed when this run started?
+            const deficitAtRunStart = remaining + totalLeaves;
+            const progressThisRun = deficitAtRunStart > 0
+              ? Math.min(1, Math.max(0, totalLeaves / deficitAtRunStart))
+              : 0;
             const afterNextMultiplier = getEssenceMultiplier(nextEssenceTarget) * achievementMultiplier;
             return (
               <div className="mt-2">
@@ -1460,7 +1460,7 @@ export default function KoalaClicker() {
                         ? "bg-gradient-to-r from-purple-500 to-fuchsia-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]"
                         : "bg-gradient-to-r from-purple-600 to-purple-400"
                     }`}
-                    style={{ width: `${canAscend ? 100 : progressInRange * 100}%` }}
+                    style={{ width: `${canAscend ? 100 : progressThisRun * 100}%` }}
                   />
                 </div>
                 {getNextTitle(prestigeLevel) && (
