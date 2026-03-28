@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { songBank, CLIP_DURATIONS, type HeardlePuzzle } from "@/lib/heardle-puzzles";
+import { shareOrCopy } from "@/lib/share";
 
 const MAX_GUESSES = 6;
 const SC_WIDGET_API = "https://w.soundcloud.com/player/api.js";
@@ -250,17 +251,15 @@ export default function HeardleGame({ puzzle, variant }: Props) {
     while (squares.length < MAX_GUESSES) squares.push("⬛");
 
     const variantLabel = variant && variant !== "all" ? ` (${variant})` : "";
-    return `🎵 Heardle${variantLabel} — ${guessCount}/${MAX_GUESSES}\n${squares.join("")}\ngamesite.com`;
+    return `🎵 Heardle${variantLabel} — ${guessCount}/${MAX_GUESSES}\n${squares.join("")}\ngamesite.app/daily/heardle`;
   }, [gameState, guesses, puzzle, variant]);
 
   const handleShare = useCallback(async () => {
     const text = generateShareText();
-    try {
-      await navigator.clipboard.writeText(text);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // fallback
     }
   }, [generateShareText]);
 

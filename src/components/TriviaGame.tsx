@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { TriviaPuzzle } from "@/types/trivia";
+import { shareOrCopy } from "@/lib/share";
 
 const CATEGORY_COLORS: Record<string, string> = {
   Science: "#4ECDC4",
@@ -104,22 +105,10 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
     });
 
     const pct = Math.round((score / totalQ) * 100);
-    const text = `Daily Trivia ${puzzle.puzzle_date}\n${score}/${totalQ} (${pct}%)\n${lines.join("")}\ngamesite-orpin.vercel.app/daily/daily-trivia`;
+    const text = `Daily Trivia ${puzzle.puzzle_date}\n${score}/${totalQ} (${pct}%)\n${lines.join("")}\ngamesite.app/daily/daily-trivia`;
 
-    try {
-      await navigator.clipboard.writeText(text);
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
-    } catch {
-      // Fallback for browsers that block clipboard
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setShared(true);
       setTimeout(() => setShared(false), 2000);
     }

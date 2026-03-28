@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import type { CrosswordPuzzle, CrosswordClue } from "@/types/crossword";
+import { shareOrCopy } from "@/lib/share";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -36,6 +37,7 @@ export default function CrosswordGame({ puzzle }: Props) {
   const [solved, setSolved] = useState(false);
   const [revealedCells, setRevealedCells] = useState<Set<string>>(new Set());
   const [checkedWrong, setCheckedWrong] = useState<Set<string>>(new Set());
+  const [copied, setCopied] = useState(false);
 
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -266,6 +268,19 @@ export default function CrosswordGame({ puzzle }: Props) {
     setTimeout(() => inputRefs.current[cells[0]]?.focus(), 0);
   };
 
+  // Share result
+  const handleShare = useCallback(async () => {
+    const revealedCount = revealedCells.size;
+    const hintsUsed = revealedCount > 0 ? ` (${revealedCount} revealed)` : "";
+    const text = `📰 News Crossword — ${puzzle.title}\nSolved!${hintsUsed}\ngamesite.app/daily/crossword`;
+
+    const ok = await shareOrCopy(text);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [allClues, revealedCells, puzzle.title]);
+
   // Cell size
   const cellSize = 36;
 
@@ -285,6 +300,12 @@ export default function CrosswordGame({ puzzle }: Props) {
           <p className="text-text-muted text-sm mt-1">
             Great job solving today&apos;s news crossword!
           </p>
+          <button
+            onClick={handleShare}
+            className="mt-3 px-5 py-2 text-sm font-semibold rounded-full bg-green/20 text-green hover:bg-green/30 transition-colors"
+          >
+            {copied ? "Copied!" : "Share Results"}
+          </button>
         </div>
       )}
 

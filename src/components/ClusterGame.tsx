@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import type { Group, Puzzle, GuessEntry } from "@/types/puzzle";
+import { shareOrCopy } from "@/lib/share";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -140,19 +141,10 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
     const grid = guessHistory
       .map((guess) => guess.colors.map((c) => EMOJI_MAP[c] || "⬛").join(""))
       .join("\n");
-    const text = `${title}\n${grid}`;
+    const text = `${title}\n${grid}\ngamesite.app/daily/cluster`;
 
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
