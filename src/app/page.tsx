@@ -27,27 +27,32 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center px-4 py-10 relative overflow-hidden">
+      {/* ── Decorative background blobs ───────────────────────────────── */}
+      <div className="hero-blob w-72 h-72 bg-coral/40 -top-20 -left-20" style={{ animationDelay: "0s" }} />
+      <div className="hero-blob w-96 h-96 bg-teal/30 top-10 -right-32" style={{ animationDelay: "4s" }} />
+      <div className="hero-blob w-64 h-64 bg-purple/25 top-60 left-1/4" style={{ animationDelay: "8s" }} />
+
       {/* ── Hero Section ─────────────────────────────────────────────────── */}
-      <section className="text-center mb-10 max-w-3xl animate-[fade-up_0.6s_ease_forwards]">
-        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-3 leading-snug">
+      <section className="text-center mb-12 max-w-3xl animate-[fade-up_0.6s_ease_forwards] relative z-10">
+        <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight gradient-text-hero">
           Your daily dose of brain teasers, quick matches, and friendly
           competition.
         </h1>
-        <p className="text-text-muted text-sm mb-6 animate-[fade-up_0.6s_ease_0.15s_forwards] opacity-0">
+        <p className="text-text-muted text-base mb-8 animate-[fade-up_0.6s_ease_0.15s_forwards] opacity-0">
           New puzzles every day. No downloads required.
         </p>
-        <div className="flex items-center justify-center gap-3 animate-[fade-up_0.6s_ease_0.25s_forwards] opacity-0">
+        <div className="flex items-center justify-center gap-4 animate-[fade-up_0.6s_ease_0.25s_forwards] opacity-0">
           <Link
             href="/daily"
-            className="bg-coral text-white rounded-full px-6 py-2.5 font-semibold no-underline
-                       hover:bg-coral-dark hover:shadow-lg hover:shadow-coral/25 transition-all duration-200"
+            className="btn-glow bg-coral text-white rounded-full px-7 py-3 font-bold text-base no-underline
+                       hover:bg-coral-dark hover:shadow-xl hover:shadow-coral/30 hover:scale-105 transition-all duration-200"
           >
             Daily Puzzles
           </Link>
           <Link
             href="/arcade"
-            className="bg-teal text-white rounded-full px-6 py-2.5 font-semibold no-underline
-                       hover:shadow-lg hover:shadow-teal/25 transition-all duration-200"
+            className="btn-glow bg-teal text-white rounded-full px-7 py-3 font-bold text-base no-underline
+                       hover:shadow-xl hover:shadow-teal/30 hover:scale-105 transition-all duration-200"
           >
             Arcade
           </Link>
@@ -56,8 +61,9 @@ export default function HomePage() {
 
       {/* ── Featured Game ──────────────────────────────────────────────── */}
       {featuredGame && (
-        <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.3s_forwards] opacity-0">
-          <h2 className="text-xl font-bold text-text-primary mb-5">
+        <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.3s_forwards] opacity-0 relative z-10">
+          <div className="section-divider mb-8" />
+          <h2 className="text-2xl font-bold text-text-primary mb-5">
             Featured
           </h2>
           <FeaturedCard game={featuredGame} />
@@ -65,9 +71,10 @@ export default function HomePage() {
       )}
 
       {/* ── Today's Puzzles ──────────────────────────────────────────────── */}
-      <section id="daily" className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.35s_forwards] opacity-0">
+      <section id="daily" className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.35s_forwards] opacity-0 relative z-10">
+        <div className="section-divider mb-8" />
         <div className="flex items-baseline justify-between mb-5">
-          <h2 className="text-xl font-bold text-text-primary">
+          <h2 className="text-2xl font-bold text-text-primary">
             Today&apos;s Puzzles
           </h2>
           <Link
@@ -91,9 +98,10 @@ export default function HomePage() {
       </section>
 
       {/* ── Arcade ───────────────────────────────────────────────────────── */}
-      <section id="arcade" className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.4s_forwards] opacity-0">
+      <section id="arcade" className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.4s_forwards] opacity-0 relative z-10">
+        <div className="section-divider mb-8" />
         <div className="flex items-baseline justify-between mb-5">
-          <h2 className="text-xl font-bold text-text-primary">Arcade</h2>
+          <h2 className="text-2xl font-bold text-text-primary">Arcade</h2>
           <Link
             href="/arcade"
             className="text-sm font-semibold text-teal hover:text-teal transition-colors no-underline"
@@ -145,48 +153,71 @@ export default function HomePage() {
       )}
 
       {/* ── Social Proof ──────────────────────────────────────────────────── */}
-      <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0">
+      <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.5s_forwards] opacity-0 relative z-10">
+        <div className="section-divider mb-8" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { value: "14", label: "Daily puzzles", icon: "🧩" },
-            { value: "4", label: "Arcade games", icon: "🕹️" },
-            { value: "Free", label: "No account needed", icon: "🎯" },
-            { value: "Daily", label: "New puzzles every day", icon: "🔥" },
+            { value: "14", label: "Daily puzzles", color: "coral", icon: (
+              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
+              </svg>
+            )},
+            { value: "4", label: "Arcade games", color: "teal", icon: (
+              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2" /><line x1="6" y1="12" x2="10" y2="12" /><line x1="8" y1="10" x2="8" y2="14" /><circle cx="15" cy="11" r="1" /><circle cx="18" cy="13" r="1" />
+              </svg>
+            )},
+            { value: "Free", label: "No account needed", color: "purple", icon: (
+              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            )},
+            { value: "Daily", label: "New puzzles every day", color: "amber", icon: (
+              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+            )},
           ].map((stat) => (
-            <div key={stat.label} className="bg-white rounded-xl border border-border-light p-4 text-center shadow-sm">
-              <span className="text-2xl mb-1 block">{stat.icon}</span>
-              <p className="text-xl sm:text-2xl font-bold text-text-primary">{stat.value}</p>
-              <p className="text-xs text-text-dim mt-0.5">{stat.label}</p>
+            <div key={stat.label} className="clay-card stat-glow p-5 text-center group cursor-default">
+              <span className={`text-${stat.color} mb-2 flex justify-center transition-transform duration-200 group-hover:scale-110`}>{stat.icon}</span>
+              <p className="text-2xl sm:text-3xl font-bold text-text-primary">{stat.value}</p>
+              <p className="text-xs text-text-dim mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="w-full max-w-[1120px] pt-6 pb-8 animate-[fade-up_0.5s_ease_0.6s_forwards] opacity-0">
-        <div className="border-t border-border-light pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-text-muted text-sm">
-            Built for quick breaks and long rivalries.
-          </p>
-          <nav className="flex items-center gap-5">
-            <Link href="/daily" className="text-sm text-text-dim hover:text-text-primary transition-colors no-underline">
-              Daily Puzzles
+      <footer className="w-full max-w-[1120px] pt-6 pb-8 animate-[fade-up_0.5s_ease_0.6s_forwards] opacity-0 relative z-10">
+        <div className="section-divider mb-8" />
+        <div className="clay-card p-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <span className="gradient-text-hero font-bold text-lg">Gamesite</span>
+              <p className="text-text-muted text-sm mt-1">
+                Built for quick breaks and long rivalries.
+              </p>
+            </div>
+            <nav className="flex items-center gap-5">
+              <Link href="/daily" className="text-sm font-medium text-text-dim hover:text-coral transition-colors no-underline">
+                Daily Puzzles
+              </Link>
+              <Link href="/arcade" className="text-sm font-medium text-text-dim hover:text-teal transition-colors no-underline">
+                Arcade
+              </Link>
+            </nav>
+          </div>
+          <div className="mt-4 pt-4 border-t border-border-light flex items-center justify-center gap-4">
+            <Link href="/privacy" className="text-xs text-text-dim hover:text-text-muted transition-colors no-underline">
+              Privacy Policy
             </Link>
-            <Link href="/arcade" className="text-sm text-text-dim hover:text-text-primary transition-colors no-underline">
-              Arcade
+            <span className="text-text-dim text-xs">&middot;</span>
+            <Link href="/terms" className="text-xs text-text-dim hover:text-text-muted transition-colors no-underline">
+              Terms of Service
             </Link>
-          </nav>
+          </div>
+          <p className="mt-3 text-center text-xs text-text-dim">&copy; 2026 Gamesite</p>
         </div>
-        <div className="mt-4 flex items-center justify-center gap-4">
-          <Link href="/privacy" className="text-xs text-text-dim hover:text-text-muted transition-colors no-underline">
-            Privacy Policy
-          </Link>
-          <span className="text-text-dim text-xs">&middot;</span>
-          <Link href="/terms" className="text-xs text-text-dim hover:text-text-muted transition-colors no-underline">
-            Terms of Service
-          </Link>
-        </div>
-        <p className="mt-3 text-center text-xs text-text-dim">&copy; 2026 Gamesite</p>
       </footer>
     </main>
   );
@@ -674,13 +705,13 @@ function FeaturedCard({ game }: { game: Game }) {
   return (
     <Link
       href={href}
-      className={`group relative block bg-white rounded-2xl border-2 ${borderColorMap[game.color]}
-                  ${hoverBorderMap[game.color]} ${hoverBgMap[game.color]}
-                  overflow-hidden shadow-sm hover:shadow-lg
+      className={`group relative block clay-card
+                  ${hoverBorderMap[game.color]}
+                  overflow-hidden
                   transition-all duration-200 no-underline cursor-pointer`}
     >
       {/* Color accent strip */}
-      <div className={`h-1.5 ${colorMap[game.color]}`} />
+      <div className={`h-2 ${colorMap[game.color]}`} />
 
       <div className="flex flex-col sm:flex-row">
         {/* Preview — left side on desktop */}
@@ -745,13 +776,13 @@ function DailyCard({ game }: { game: Game }) {
   return (
     <Link
       href={`/daily/${game.slug}`}
-      className={`group relative flex flex-col bg-white rounded-2xl border-2 ${borderColorMap[game.color]}
-                  ${hoverBorderMap[game.color]} ${hoverBgMap[game.color]}
-                  p-5 shadow-sm hover:shadow-md
+      className={`group relative flex flex-col clay-card
+                  ${hoverBorderMap[game.color]}
+                  p-5
                   transition-all duration-200 no-underline cursor-pointer`}
     >
       {/* Color accent strip */}
-      <div className={`absolute top-0 left-6 right-6 h-1 ${colorMap[game.color]} rounded-b-full`} />
+      <div className={`absolute top-0 left-6 right-6 h-1.5 ${colorMap[game.color]} rounded-b-full`} />
 
       <GamePreview slug={game.slug} />
 
@@ -777,13 +808,13 @@ function ArcadeCard({ game }: { game: Game }) {
   return (
     <Link
       href={`/arcade/${game.slug}`}
-      className={`group relative flex flex-col bg-white rounded-2xl border-2 ${borderColorMap[game.color]}
-                  ${hoverBorderMap[game.color]} ${hoverBgMap[game.color]}
-                  p-5 shadow-sm hover:shadow-md
+      className={`group relative flex flex-col clay-card
+                  ${hoverBorderMap[game.color]}
+                  p-5
                   transition-all duration-200 no-underline cursor-pointer`}
     >
       {/* Color accent strip */}
-      <div className={`absolute top-0 left-6 right-6 h-1 ${colorMap[game.color]} rounded-b-full`} />
+      <div className={`absolute top-0 left-6 right-6 h-1.5 ${colorMap[game.color]} rounded-b-full`} />
 
       <GamePreview slug={game.slug} />
 

@@ -32,7 +32,7 @@ export default function TopNav() {
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border-light bg-white shadow-sm">
+    <nav className="sticky top-0 z-50 w-full glass-nav shadow-sm">
       <div className="mx-auto flex h-12 max-w-7xl items-center justify-between px-4 md:h-14">
         {/* Left: Logo */}
         <Link href="/" className="flex-shrink-0 no-underline">
@@ -152,7 +152,7 @@ export default function TopNav() {
 
       {/* Mobile menu dropdown */}
       <div
-        className={`overflow-hidden border-t border-border bg-white transition-all duration-200 md:hidden ${
+        className={`overflow-hidden border-t border-white/30 bg-white/80 backdrop-blur-xl transition-all duration-200 md:hidden ${
           mobileMenuOpen ? "max-h-80" : "max-h-0 border-t-0"
         }`}
       >

@@ -140,6 +140,108 @@
 }
 
 body {
-  background: #ffffff;
+  background: linear-gradient(135deg, #faf5ff 0%, #f0f9ff 25%, #fefce8 50%, #f0fdf4 75%, #fff1f2 100%);
+  background-attachment: fixed;
   min-height: 100vh;
+}
+
+/* Claymorphism card style */
+.clay-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 2.5px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    8px 8px 16px rgba(0, 0, 0, 0.06),
+    -2px -2px 8px rgba(255, 255, 255, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  transition: all 0.25s ease-out;
+}
+
+.clay-card:hover {
+  box-shadow:
+    12px 12px 24px rgba(0, 0, 0, 0.08),
+    -3px -3px 12px rgba(255, 255, 255, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-3px);
+}
+
+/* Frosted glass nav */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Gradient text utility */
+.gradient-text-hero {
+  background: linear-gradient(135deg, #FF6B6B 0%, #A855F7 40%, #4ECDC4 70%, #F7B731 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Stat card glow */
+.stat-glow {
+  position: relative;
+  overflow: hidden;
+}
+.stat-glow::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.stat-glow:hover::before {
+  opacity: 1;
+}
+
+/* Pill button with glow */
+.btn-glow {
+  position: relative;
+  z-index: 1;
+}
+.btn-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: -1;
+  filter: blur(12px);
+}
+.btn-glow:hover::after {
+  opacity: 0.4;
+}
+
+/* Decorative blob for hero */
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -20px) scale(1.05); }
+  50% { transform: translate(-20px, 15px) scale(0.95); }
+  75% { transform: translate(15px, 25px) scale(1.02); }
+}
+
+.hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  animation: blob-drift 12s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Section divider gradient */
+.section-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #FF6B6B, #A855F7, #4ECDC4, #F7B731, transparent);
+  border: none;
+  opacity: 0.3;
 }
