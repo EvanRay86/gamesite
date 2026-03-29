@@ -127,7 +127,7 @@ export default function AnagramGame({ puzzle }: { puzzle: AnagramPuzzle }) {
   // ── Splash Screen ──────────────────────────────────────────
   if (screen === "splash") {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="min-h-[70vh] flex items-center justify-center px-4">
         <div className="w-full max-w-[420px] text-center">
           <h1 className="font-display text-4xl text-text-primary mb-2">
             Anagram Scramble

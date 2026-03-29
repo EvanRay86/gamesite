@@ -158,7 +158,7 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
   // ── Splash ────────────────────────────────────────────────
   if (screen === "splash") {
     return (
-      <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-4 py-8 animate-[fade-up_0.5s_ease_forwards]">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8 animate-[fade-up_0.5s_ease_forwards]">
         <h1 className="font-body text-5xl font-extrabold text-text-primary tracking-tight mb-3">
           <span className="bg-gradient-to-r from-teal to-sky bg-clip-text text-transparent">
             Timeline

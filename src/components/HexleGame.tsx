@@ -244,7 +244,7 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
   // --- Splash Screen ---
   if (showSplash) {
     return (
-      <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-6 text-center">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center px-6 text-center">
         <div className="animate-[float_3s_ease-in-out_infinite]">
           <div className="flex gap-1.5 mb-8">
             {["H", "E", "X", "L", "E", "!"].map((letter, i) => (

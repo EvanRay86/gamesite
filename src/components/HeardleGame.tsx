@@ -276,7 +276,7 @@ export default function HeardleGame({ puzzle, variant }: Props) {
   if (showSplash) {
     return (
       <div
-        className={`flex min-h-[80vh] flex-col items-center justify-center px-4 transition-opacity duration-500 ${fadeIn ? "opacity-100" : "opacity-0"}`}
+        className={`flex min-h-[70vh] flex-col items-center justify-center px-4 transition-opacity duration-500 ${fadeIn ? "opacity-100" : "opacity-0"}`}
       >
         <div className="bg-white rounded-2xl shadow-lg border border-border-light p-8 max-w-md w-full text-center">
           <div className="text-5xl mb-4">🎵</div>
