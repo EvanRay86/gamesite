@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import type { QuotablePuzzle } from "@/types/quotable";
+import { shareOrCopy } from "@/lib/share";
 
 type Screen = "splash" | "playing" | "results";
 
@@ -192,21 +193,10 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
       ? `${guesses.length}/${MAX_GUESSES}`
       : `X/${MAX_GUESSES}`;
 
-    const text = `Quotable \u2014 ${puzzle.puzzle_date}\n${emoji} ${status}\ngamesite-orpin.vercel.app/daily/quotable`;
+    const text = `Quotable \u2014 ${puzzle.puzzle_date}\n${emoji} ${status}\ngamesite.app/daily/quotable`;
 
-    try {
-      await navigator.clipboard.writeText(text);
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setShared(true);
       setTimeout(() => setShared(false), 2000);
     }

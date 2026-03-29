@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import { movieBank, type FramedPuzzle } from "@/lib/framed-puzzles";
+import { shareOrCopy } from "@/lib/share";
 
 const MAX_GUESSES = 6;
 
@@ -103,17 +104,15 @@ export default function FramedGame({ puzzle, variant }: Props) {
     while (squares.length < MAX_GUESSES) squares.push("⬛");
 
     const variantLabel = variant && variant !== "all" ? ` (${variant})` : "";
-    return `🎬 Framed${variantLabel} — ${guessCount}/${MAX_GUESSES}\n${squares.join("")}\ngamesite.com`;
+    return `🎬 Framed${variantLabel} — ${guessCount}/${MAX_GUESSES}\n${squares.join("")}\ngamesite.app/daily/framed`;
   }, [gameState, guesses, puzzle.title, variant]);
 
   const handleShare = useCallback(async () => {
     const text = generateShareText();
-    try {
-      await navigator.clipboard.writeText(text);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // fallback
     }
   }, [generateShareText]);
 

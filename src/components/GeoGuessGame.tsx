@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { countryNames, type GeoPuzzle } from "@/lib/geo-puzzles";
+import { shareOrCopy } from "@/lib/share";
 
 const MAX_GUESSES = 4;
 const STORAGE_KEY = "geoguess-streak";
@@ -162,21 +163,10 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
     );
     while (squares.length < MAX_GUESSES) squares.push("\u2B1C");
 
-    const text = `\u{1F30D} GeoGuess ${date} — ${guessCount}/${MAX_GUESSES}\n${squares.join("")}\ngamesite-orpin.vercel.app/daily/geo-guess`;
+    const text = `\u{1F30D} GeoGuess ${date} — ${guessCount}/${MAX_GUESSES}\n${squares.join("")}\ngamesite.app/daily/geo-guess`;
 
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

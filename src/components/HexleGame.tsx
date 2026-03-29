@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { LetterStatus, HexleGuess } from "@/types/hexle";
 import { isValidGuess } from "@/lib/hexle-words";
+import { shareOrCopy } from "@/lib/share";
 
 const WORD_LENGTH = 6;
 const MAX_GUESSES = 7;
@@ -231,19 +232,10 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
           .join("")
       )
       .join("\n");
-    const text = `${title} ${score}${won ? ` (+${points}pts)` : ""}\n\n${grid}`;
+    const text = `${title} ${score}${won ? ` (+${points}pts)` : ""}\n\n${grid}\ngamesite.app/daily/hexle`;
 
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

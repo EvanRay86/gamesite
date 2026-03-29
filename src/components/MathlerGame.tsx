@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { evaluateEquation, type MathlerPuzzle } from "@/lib/mathler-puzzles";
+import { shareOrCopy } from "@/lib/share";
 
 const MAX_GUESSES = 6;
 const EQUATION_LENGTH = 6;
@@ -274,16 +275,16 @@ export default function MathlerGame({ puzzle, date }: Props) {
           .join(""),
       )
       .join("\n");
-    return `\uD83E\uDDEE Mathler ${guessCount}/${MAX_GUESSES}\nTarget: ${puzzle.target}\n${rows}\ngamesite.com`;
+    return `\uD83E\uDDEE Mathler ${guessCount}/${MAX_GUESSES}\nTarget: ${puzzle.target}\n${rows}\ngamesite.app/daily/mathler`;
   }, [gameState, guesses, puzzle.target]);
 
   const handleShare = useCallback(async () => {
     const text = generateShareText();
-    try {
-      await navigator.clipboard.writeText(text);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {}
+    }
   }, [generateShareText]);
 
   // Splash screen
