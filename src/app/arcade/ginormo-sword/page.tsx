@@ -2,7 +2,7 @@ import GinormoSword from "@/components/GinormoSword";
 import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = {
-  title: "Ginormo Sword — Action RPG",
+  title: "Big Ah Sword — Action RPG",
   description:
     "Slay monsters, collect gold, and grow your sword to absurd proportions in this action RPG.",
 };

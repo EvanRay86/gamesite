@@ -286,7 +286,7 @@ export const games: Game[] = [
 
   {
     slug: "ginormo-sword",
-    name: "Ginormo Sword",
+    name: "Big Ah Sword",
     description:
       "Slay monsters, collect gold, and grow your sword to absurd proportions in this action RPG.",
     category: "arcade",

@@ -684,7 +684,7 @@ export default function GinormoSword() {
   return (
     <div className="flex flex-col items-center gap-4 py-6 px-4 max-w-[960px] mx-auto">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-text-primary">Ginormo Sword</h1>
+        <h1 className="text-3xl font-bold text-text-primary">Big Ah Sword</h1>
         <p className="text-text-muted text-sm mt-1">
           Slay monsters, collect gold, and grow your sword to absurd proportions
         </p>
@@ -704,7 +704,7 @@ export default function GinormoSword() {
         {screen === "title" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70">
             <h2 className="text-5xl font-bold text-white mb-2 tracking-tight" style={{ textShadow: "0 0 20px rgba(255,107,107,0.7)" }}>
-              GINORMO SWORD
+              BIG AH SWORD
             </h2>
             <p className="text-gray-300 text-sm mb-6">
               Fight monsters. Get gold. Grow your sword.
