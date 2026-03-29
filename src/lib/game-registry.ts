@@ -285,6 +285,16 @@ export const games: Game[] = [
   },
 
   {
+    slug: "ginormo-sword",
+    name: "Ginormo Sword",
+    description:
+      "Slay monsters, collect gold, and grow your sword to absurd proportions in this action RPG.",
+    category: "arcade",
+    color: "coral",
+    creditCost: 0,
+  },
+
+  {
     slug: "gem-crush",
     name: "Gem Crush",
     description: "Match gems, chain combos, and climb the leaderboard.",
