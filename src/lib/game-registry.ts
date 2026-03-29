@@ -295,6 +295,16 @@ export const games: Game[] = [
   },
 
   {
+    slug: "sky-hopper",
+    name: "Sky Hopper",
+    description:
+      "Tap to flap, dodge the pipes, and chase your high score in this endless arcade hopper.",
+    category: "arcade",
+    color: "sky",
+    creditCost: 0,
+  },
+
+  {
     slug: "gem-crush",
     name: "Gem Crush",
     description: "Match gems, chain combos, and climb the leaderboard.",
