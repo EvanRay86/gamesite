@@ -60,19 +60,24 @@ export default function CreditGate({ creditCost, gameSlug, children }: CreditGat
   if (credits < creditCost) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[300px] gap-4 text-center px-4">
-        <div className="text-4xl">💰</div>
+        <svg className="h-10 w-10 text-amber" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125v-3.75" />
+        </svg>
         <h2 className="font-display text-xl text-text-primary">
           Not enough credits
         </h2>
         <p className="text-text-muted text-sm max-w-sm">
-          This game costs {creditCost} credits. You have {credits}.
+          This game costs <strong className="text-text-primary">{creditCost}</strong> credits. You have <strong className="text-amber">{credits}</strong>.
         </p>
         <Link
           href="/subscribe"
-          className="rounded-full bg-amber px-6 py-2.5 text-sm font-bold text-white no-underline
-                     hover:bg-amber/90 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-full bg-amber px-6 py-2.5 text-sm font-bold text-white no-underline
+                     shadow-md shadow-amber/20 hover:shadow-lg hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
         >
           Buy Credits
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
         </Link>
       </div>
     );

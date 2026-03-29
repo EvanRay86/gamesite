@@ -60,19 +60,53 @@ export default function ArchivePaywall({
 
         {/* Past dates */}
         {pastDates.length > 0 && !isSubscriber && (
-          <div className="relative rounded-2xl bg-gradient-to-br from-teal via-teal to-sky p-6 text-center text-white shadow-lg shadow-teal/20 mb-6">
-            <h2 className="text-lg font-bold mb-1">Unlock the full archive</h2>
-            <p className="text-white/80 text-sm max-w-sm mx-auto mb-4">
-              Subscribe for $6/month to play all past {gameName} puzzles,
-              plus archives for every game.
-            </p>
-            <Link
-              href="/subscribe"
-              className="inline-block bg-white text-teal font-bold rounded-full px-6 py-2.5 text-sm no-underline
-                         hover:shadow-lg hover:scale-105 transition-all duration-200"
-            >
-              Subscribe to unlock
-            </Link>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal via-teal/90 to-sky p-[1px] shadow-xl shadow-teal/15 mb-6">
+            {/* Inner card */}
+            <div className="relative rounded-[15px] bg-gradient-to-br from-teal via-teal/95 to-sky px-6 py-7 text-center">
+              {/* Decorative rings */}
+              <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full border border-white/10" />
+              <div className="pointer-events-none absolute -left-6 -bottom-6 h-24 w-24 rounded-full border border-white/10" />
+
+              {/* Badge */}
+              <span className="inline-block rounded-full bg-white/15 backdrop-blur-sm px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 mb-3">
+                Subscriber Perk
+              </span>
+
+              <h2 className="text-xl font-bold text-white mb-1.5">
+                Unlock the full archive
+              </h2>
+              <p className="text-white/70 text-sm mb-5">
+                Everything included for just <span className="font-semibold text-white">$6/month</span>
+              </p>
+
+              {/* Perks list */}
+              <ul className="space-y-2.5 text-left max-w-[280px] mx-auto mb-6">
+                {[
+                  `All past ${gameName} puzzles`,
+                  "Archives for every game",
+                  "New puzzles added daily",
+                ].map((perk) => (
+                  <li key={perk} className="flex items-start gap-2.5 text-sm text-white/90">
+                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    {perk}
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/subscribe"
+                className="inline-flex items-center justify-center bg-white text-teal font-bold rounded-full
+                           px-8 py-3 text-sm no-underline shadow-lg shadow-black/10
+                           hover:shadow-xl hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
+              >
+                Subscribe to unlock
+                <svg className="ml-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </Link>
+            </div>
           </div>
         )}
 

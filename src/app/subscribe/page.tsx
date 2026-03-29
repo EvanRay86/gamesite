@@ -45,43 +45,62 @@ export default function SubscribePage() {
           </p>
         </div>
 
-        <div className="relative rounded-2xl bg-gradient-to-br from-teal via-teal to-sky p-8 text-center text-white shadow-lg shadow-teal/20 mb-12">
-          <div className="text-sm font-semibold uppercase tracking-wide text-white/70 mb-2">
-            Premium
-          </div>
-          <div className="mb-1">
-            <span className="text-5xl font-extrabold">$6</span>
-            <span className="text-white/70 text-lg">/month</span>
-          </div>
-          <ul className="text-left text-sm text-white/90 space-y-2 mt-6 mb-8 max-w-xs mx-auto">
-            <li className="flex items-start gap-2">
-              <span className="text-white mt-0.5">✓</span>
-              Full archive access for all 14+ daily games
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-white mt-0.5">✓</span>
-              Play any past puzzle, any time
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-white mt-0.5">✓</span>
-              Cancel anytime
-            </li>
-          </ul>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal via-teal/90 to-sky p-[1px] shadow-xl shadow-teal/15 mb-12">
+          <div className="relative rounded-[15px] bg-gradient-to-br from-teal via-teal/95 to-sky px-8 py-9 text-center">
+            {/* Decorative rings */}
+            <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full border border-white/10" />
+            <div className="pointer-events-none absolute -left-6 -bottom-6 h-24 w-24 rounded-full border border-white/10" />
 
-          {isSubscriber ? (
-            <div className="inline-block bg-white/20 text-white font-bold rounded-full px-6 py-3 text-sm">
-              You&apos;re subscribed!
+            <span className="inline-block rounded-full bg-white/15 backdrop-blur-sm px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 mb-4">
+              Premium
+            </span>
+
+            <div className="mb-2">
+              <span className="text-5xl font-extrabold text-white">$6</span>
+              <span className="text-white/70 text-lg">/month</span>
             </div>
-          ) : (
-            <button
-              onClick={() => handleCheckout(STRIPE_PRICES.premium_monthly, "subscription")}
-              disabled={loading === STRIPE_PRICES.premium_monthly}
-              className="inline-block bg-white text-teal font-bold rounded-full px-8 py-3 text-sm
-                         hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50"
-            >
-              {loading === STRIPE_PRICES.premium_monthly ? "Redirecting…" : "Subscribe Now"}
-            </button>
-          )}
+
+            <p className="text-white/60 text-sm mb-6">Cancel anytime</p>
+
+            <ul className="space-y-2.5 text-left max-w-[280px] mx-auto mb-8">
+              {[
+                "Full archive for all 14+ daily games",
+                "Play any past puzzle, any time",
+                "New puzzles added daily",
+              ].map((perk) => (
+                <li key={perk} className="flex items-start gap-2.5 text-sm text-white/90">
+                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  {perk}
+                </li>
+              ))}
+            </ul>
+
+            {isSubscriber ? (
+              <div className="inline-flex items-center gap-2 bg-white/20 text-white font-bold rounded-full px-6 py-3 text-sm">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                You&apos;re subscribed!
+              </div>
+            ) : (
+              <button
+                onClick={() => handleCheckout(STRIPE_PRICES.premium_monthly, "subscription")}
+                disabled={loading === STRIPE_PRICES.premium_monthly}
+                className="inline-flex items-center justify-center bg-white text-teal font-bold rounded-full
+                           px-8 py-3 text-sm shadow-lg shadow-black/10
+                           hover:shadow-xl hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+              >
+                {loading === STRIPE_PRICES.premium_monthly ? "Redirecting…" : "Subscribe Now"}
+                {loading !== STRIPE_PRICES.premium_monthly && (
+                  <svg className="ml-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                )}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Credit Packs */}
