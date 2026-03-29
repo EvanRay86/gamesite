@@ -1000,12 +1000,47 @@ export default function KoalaClicker() {
                 style={{
                   background: hasKoalaGod
                     ? "conic-gradient(from 0deg, transparent, #f59e0b, transparent, #ef4444, transparent)"
-                    : hasQuantum
-                      ? "conic-gradient(from 0deg, transparent, #06b6d4, transparent, #3b82f6, transparent)"
-                      : hasDimension
-                        ? "conic-gradient(from 0deg, transparent, #d946ef, transparent, #ec4899, transparent)"
-                        : "conic-gradient(from 0deg, transparent, #a855f7, transparent, #22c55e, transparent)",
-                  animation: "koala-spin 8s linear infinite",
+                    : hasSingularity
+                      ? "conic-gradient(from 0deg, transparent, #f97316, transparent, #ef4444, transparent)"
+                      : hasMultiverse
+                        ? "conic-gradient(from 0deg, transparent, #8b5cf6, transparent, #6366f1, transparent)"
+                        : hasEternalCanopy
+                          ? "conic-gradient(from 0deg, transparent, #2dd4bf, transparent, #06b6d4, transparent)"
+                          : hasQuantum
+                            ? "conic-gradient(from 0deg, transparent, #06b6d4, transparent, #3b82f6, transparent)"
+                            : hasCosmicGrove
+                              ? "conic-gradient(from 0deg, transparent, #6366f1, transparent, #8b5cf6, transparent)"
+                              : hasDimension
+                                ? "conic-gradient(from 0deg, transparent, #d946ef, transparent, #ec4899, transparent)"
+                                : "conic-gradient(from 0deg, transparent, #a855f7, transparent, #22c55e, transparent)",
+                  animation: `koala-spin ${hasSingularity ? 4 : hasMultiverse ? 5 : 8}s linear infinite`,
+                }}
+              />
+            )}
+            {/* Time-warp vortex ring */}
+            {hasTimeWarp > 0 && (
+              <div
+                className="absolute top-1/2 left-1/2 w-[300px] h-[300px] rounded-full border-2 border-purple-400/20"
+                style={{ animation: "koala-warp 6s ease-in-out infinite" }}
+              />
+            )}
+            {/* Singularity — pulsing core */}
+            {hasSingularity > 0 && (
+              <div
+                className="absolute top-1/2 left-1/2 w-40 h-40 rounded-full"
+                style={{
+                  background: "radial-gradient(circle, rgba(249,115,22,0.3) 0%, rgba(239,68,68,0.1) 50%, transparent 70%)",
+                  animation: "koala-singularity-pull 3s ease-in-out infinite",
+                }}
+              />
+            )}
+            {/* Koala God — radiant halo */}
+            {hasKoalaGod > 0 && (
+              <div
+                className="absolute top-1/2 left-1/2 w-[400px] h-[400px] rounded-full"
+                style={{
+                  background: "radial-gradient(circle, rgba(245,158,11,0.2) 0%, rgba(245,158,11,0.05) 50%, transparent 70%)",
+                  animation: "koala-halo 5s ease-in-out infinite",
                 }}
               />
             )}
@@ -1053,6 +1088,31 @@ export default function KoalaClicker() {
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-4xl sm:text-5xl opacity-60"
               style={{ transform: "translateX(-50%) translateY(-40px)" }}>🏛️</div>
           )}
+          {/* Cosmic grove — orbiting planets */}
+          {hasCosmicGrove > 0 && Array.from({ length: Math.min(hasCosmicGrove, 4) }).map((_, i) => (
+            <div key={`planet-${i}`} className="absolute top-1/2 left-1/2 text-2xl sm:text-3xl"
+              style={{ "--orbit-r": `${100 + i * 35}px`, animation: `koala-orbit ${8 + i * 3}s linear ${i * 1.5}s infinite` } as React.CSSProperties}>
+              {["🪐", "🌍", "🌙", "☄️"][i]}
+            </div>
+          ))}
+          {/* Eternal canopy — aurora-like glow bands at top */}
+          {hasEternalCanopy > 0 && (
+            <div className="absolute top-0 left-0 right-0 h-32 pointer-events-none opacity-30"
+              style={{ background: "linear-gradient(180deg, rgba(45,212,191,0.4) 0%, rgba(6,182,212,0.2) 40%, transparent 100%)", animation: "koala-halo 4s ease-in-out infinite" }} />
+          )}
+          {/* Multiverse — flickering portal rifts */}
+          {hasMultiverse > 0 && Array.from({ length: Math.min(hasMultiverse, 5) }).map((_, i) => (
+            <div key={`rift-${i}`} className="absolute w-0.5 rounded-full"
+              style={{
+                left: `${12 + i * 18}%`,
+                top: `${15 + (i * 17) % 50}%`,
+                height: `${30 + i * 10}px`,
+                background: `linear-gradient(to bottom, transparent, ${["#8b5cf6", "#6366f1", "#a78bfa", "#818cf8", "#7c3aed"][i]}, transparent)`,
+                opacity: 0.5,
+                animation: `koala-flicker ${2 + i * 0.7}s ease-in-out ${i * 0.4}s infinite`,
+              }}
+            />
+          ))}
         </div>
 
         {/* ── Floating particles ────────────────────────────────────── */}
@@ -1067,6 +1127,34 @@ export default function KoalaClicker() {
             <div key={`sparkle-${i}`} className="absolute text-xs"
               style={{ left: `${(i * 31 + 17) % 90 + 5}%`, top: `${(i * 23 + 13) % 80 + 10}%`, animation: `koala-twinkle ${1.5 + (i % 3)}s ease-in-out ${i * 0.3}s infinite` }}>
               ✨
+            </div>
+          ))}
+          {/* Time-warp — floating hourglasses drifting upward */}
+          {hasTimeWarp > 0 && Array.from({ length: Math.min(3 + hasTimeWarp, 6) }).map((_, i) => (
+            <div key={`warp-${i}`} className="absolute text-sm"
+              style={{ left: `${(i * 23 + 7) % 90 + 5}%`, animation: `koala-rise ${7 + (i % 3) * 2}s linear ${i * 1.2}s infinite`, opacity: 0.35 }}>
+              ⏳
+            </div>
+          ))}
+          {/* Diamond paws — floating diamonds */}
+          {hasDiamondPaws > 0 && Array.from({ length: Math.min(hasDiamondPaws, 5) }).map((_, i) => (
+            <div key={`diamond-${i}`} className="absolute text-xs"
+              style={{ left: `${(i * 19 + 25) % 85 + 8}%`, top: `${(i * 29 + 11) % 70 + 15}%`, animation: `koala-twinkle ${2 + (i % 3)}s ease-in-out ${i * 0.5}s infinite`, opacity: 0.5 }}>
+              💎
+            </div>
+          ))}
+          {/* Omnipaws — glowing orbs */}
+          {hasOmnipaws > 0 && Array.from({ length: Math.min(hasOmnipaws, 6) }).map((_, i) => (
+            <div key={`orb-${i}`} className="absolute text-sm"
+              style={{ left: `${(i * 17 + 13) % 80 + 10}%`, top: `${(i * 31 + 9) % 70 + 15}%`, animation: `koala-twinkle ${2.5 + (i % 2)}s ease-in-out ${i * 0.6}s infinite`, opacity: 0.4 }}>
+              🔮
+            </div>
+          ))}
+          {/* Singularity — rising embers/fire particles */}
+          {hasSingularity > 0 && Array.from({ length: Math.min(4 + hasSingularity, 10) }).map((_, i) => (
+            <div key={`ember-${i}`} className="absolute text-xs"
+              style={{ left: `${(i * 13 + 20) % 80 + 10}%`, animation: `koala-rise ${4 + (i % 3) * 1.5}s linear ${i * 0.6}s infinite`, opacity: 0.5 }}>
+              {i % 2 === 0 ? "🔥" : "☀️"}
             </div>
           ))}
         </div>
@@ -1181,20 +1269,57 @@ export default function KoalaClicker() {
           >
             <span className="text-7xl sm:text-9xl leading-none pointer-events-none relative">
               🐨
-              {hasKoalaGod > 0 && (
+              {/* Top accessory — only show the highest tier's */}
+              {tier === "god" && (
                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-3xl sm:text-4xl"
                   style={{ animation: "koala-twinkle 1.5s ease-in-out infinite" }}>☀️</span>
               )}
-              {hasOverlord > 0 && !hasKoalaGod && (
+              {tier === "singularity" && (
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-2xl sm:text-3xl"
+                  style={{ animation: "koala-twinkle 1.8s ease-in-out infinite" }}>🌟</span>
+              )}
+              {tier === "multiverse" && (
+                <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl sm:text-3xl"
+                  style={{ animation: "koala-bob 3s ease-in-out infinite" }}>🌐</span>
+              )}
+              {tier === "canopy" && (
+                <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl sm:text-3xl"
+                  style={{ animation: "koala-bob 4s ease-in-out infinite" }}>🌅</span>
+              )}
+              {tier === "quantum" && (
+                <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-2xl sm:text-3xl"
+                  style={{ animation: "koala-twinkle 1.5s ease-in-out infinite" }}>⚛️</span>
+              )}
+              {tier === "cosmic" && (
+                <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-2xl sm:text-3xl"
+                  style={{ animation: "koala-bob 3s ease-in-out infinite" }}>🪐</span>
+              )}
+              {tier === "dimension" && (
+                <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-2xl sm:text-3xl"
+                  style={{ animation: "koala-twinkle 2s ease-in-out infinite" }}>🌌</span>
+              )}
+              {tier === "timewarp" && (
+                <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-2xl sm:text-3xl"
+                  style={{ animation: "koala-bob 2.5s ease-in-out infinite" }}>⏳</span>
+              )}
+              {tier === "overlord" && (
                 <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl sm:text-4xl"
                   style={{ animation: "koala-bob 3s ease-in-out infinite" }}>👑</span>
               )}
-              {hasGolden > 0 && !hasOverlord && !hasKoalaGod && (
+              {tier === "golden" && (
                 <span className="absolute -top-4 right-0 text-xl"
                   style={{ animation: "koala-twinkle 2s ease-in-out infinite" }}>✨</span>
               )}
-              {hasPaws > 0 && !hasGolden && (
+              {/* Bottom accessory — paw upgrades */}
+              {hasDiamondPaws > 0 && (
+                <span className="absolute -bottom-1 right-0 text-lg">💎</span>
+              )}
+              {hasPaws > 0 && !hasDiamondPaws && (
                 <span className="absolute -bottom-1 right-0 text-lg">🐾</span>
+              )}
+              {hasOmnipaws > 0 && (
+                <span className="absolute -bottom-1 left-0 text-lg"
+                  style={{ animation: "koala-twinkle 2s ease-in-out infinite" }}>🔮</span>
               )}
             </span>
           </button>
@@ -1203,7 +1328,7 @@ export default function KoalaClicker() {
           {floatingTexts.map((ft) => (
             <div key={ft.id}
               className={`absolute pointer-events-none font-bold text-lg ${
-                hasKoalaGod ? "text-amber-400" : hasQuantum ? "text-cyan-400" : hasDimension ? "text-fuchsia-400" : hasGolden ? "text-amber-400" : hasPortal ? "text-purple-300" : "text-emerald-600"
+                { god: "text-amber-400", singularity: "text-orange-400", multiverse: "text-violet-400", canopy: "text-teal-400", quantum: "text-cyan-400", cosmic: "text-indigo-400", dimension: "text-fuchsia-400", timewarp: "text-purple-400", overlord: "text-indigo-300", portal: "text-purple-300", sanctuary: "text-emerald-300", forest: "text-emerald-300", golden: "text-amber-400", colony: "text-emerald-600", tree: "text-emerald-600", bush: "text-emerald-600", default: "text-emerald-600" }[tier]
               }`}
               style={{ left: ft.x, top: ft.y, animation: "koala-float-up 0.8s ease-out forwards" }}>
               +{formatNumber(ft.value)}

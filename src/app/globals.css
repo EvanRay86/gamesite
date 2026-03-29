@@ -162,6 +162,45 @@
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+@keyframes koala-warp {
+  0%, 100% { opacity: 0.15; transform: scale(1) rotate(0deg); }
+  50% { opacity: 0.35; transform: scale(1.05) rotate(180deg); }
+}
+
+@keyframes koala-orbit {
+  from { transform: rotate(0deg) translateX(var(--orbit-r)) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(var(--orbit-r)) rotate(-360deg); }
+}
+
+@keyframes koala-pulse-ring {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.4; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.4; }
+}
+
+@keyframes koala-flicker {
+  0%, 100% { opacity: 0; }
+  5%, 95% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes koala-rise {
+  0% { bottom: -5%; opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { bottom: 105%; opacity: 0; }
+}
+
+@keyframes koala-singularity-pull {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); filter: brightness(1.3); }
+}
+
+@keyframes koala-halo {
+  0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.08); }
+}
+
 @keyframes hexle-flip {
   0% { transform: rotateX(0); }
   45% { transform: rotateX(90deg); }
