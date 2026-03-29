@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { Group, Puzzle, GuessEntry } from "@/types/puzzle";
 import { shareOrCopy } from "@/lib/share";
 
@@ -41,6 +41,8 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
   const [showSplash, setShowSplash] = useState(true);
   const [fadeIn, setFadeIn] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [focusedIdx, setFocusedIdx] = useState(0);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const initPuzzle = useCallback(() => {
     const allWords = puzzle.groups.flatMap((g) => g.words);
@@ -150,6 +152,54 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
     }
   };
 
+  // Keyboard navigation for word grid
+  const handleGridKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const solvedW = solved.flatMap((g) => g.words);
+      const remaining = words.filter((w) => !solvedW.includes(w));
+      const cols = 5;
+      const len = remaining.length;
+      if (len === 0) return;
+
+      switch (e.key) {
+        case "ArrowRight":
+          e.preventDefault();
+          setFocusedIdx((prev) => (prev + 1) % len);
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          setFocusedIdx((prev) => (prev - 1 + len) % len);
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          setFocusedIdx((prev) => Math.min(prev + cols, len - 1));
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          setFocusedIdx((prev) => Math.max(prev - cols, 0));
+          break;
+        case " ":
+          e.preventDefault();
+          toggleWord(remaining[focusedIdx]);
+          break;
+        case "Enter":
+          e.preventDefault();
+          handleSubmit();
+          break;
+      }
+    },
+    [words, solved, focusedIdx, toggleWord, handleSubmit]
+  );
+
+  // Keep focusedIdx in bounds when words get solved
+  useEffect(() => {
+    const solvedW = solved.flatMap((g) => g.words);
+    const remaining = words.filter((w) => !solvedW.includes(w));
+    if (focusedIdx >= remaining.length && remaining.length > 0) {
+      setFocusedIdx(remaining.length - 1);
+    }
+  }, [solved, words, focusedIdx]);
+
   const solvedWords = solved.flatMap((g) => g.words);
   const remainingWords = words.filter((w) => !solvedWords.includes(w));
 
@@ -206,7 +256,7 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
       </div>
 
       {/* Mistakes */}
-      <div className="flex gap-2 mb-4 items-center">
+      <div aria-live="polite" aria-label={`${mistakes} of ${MAX_MISTAKES} mistakes used`} className="flex gap-2 mb-4 items-center">
         <span className="text-text-dim text-[13px] mr-1">Mistakes:</span>
         {Array.from({ length: MAX_MISTAKES }).map((_, i) => (
           <div
@@ -268,22 +318,31 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
             })}
       </div>
 
-      {/* Word Grid */}
+      {/* Word Grid — arrow keys to navigate, Space to select, Enter to submit */}
       {!gameOver && (
         <div
-          className="grid grid-cols-5 gap-2 w-full max-w-[520px] mb-5"
+          ref={gridRef}
+          role="grid"
+          aria-label="Word grid — use arrow keys to navigate, Space to select, Enter to submit"
+          tabIndex={0}
+          onKeyDown={handleGridKeyDown}
+          className="grid grid-cols-5 gap-2 w-full max-w-[520px] mb-5 outline-none"
           style={{ animation: shakeWords ? "shake 0.4s ease" : "none" }}
         >
           {remainingWords.map((word, i) => {
             const isSelected = selected.includes(word);
+            const isFocused = i === focusedIdx;
             return (
               <button
                 key={word}
-                onClick={() => toggleWord(word)}
+                tabIndex={-1}
+                onClick={() => { toggleWord(word); setFocusedIdx(i); }}
+                aria-pressed={isSelected}
                 className={`rounded-xl py-4.5 px-1 text-[12px] font-semibold tracking-wide
                            cursor-pointer select-none transition-all duration-150
                            hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.3)]
                            active:scale-95
+                           ${isFocused ? "ring-2 ring-sky ring-offset-1" : ""}
                            ${
                              isSelected
                                ? "bg-gradient-to-br from-coral to-coral-dark text-white border-2 border-coral font-bold shadow-[0_4px_16px_rgba(255,107,107,0.25)]"

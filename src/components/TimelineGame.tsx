@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import type { TimelinePuzzle, TimelineEvent } from "@/types/timeline";
 import { useReorder } from "@/lib/use-reorder";
 import { shareOrCopy } from "@/lib/share";
@@ -67,6 +67,8 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
   );
 
   const [order, setOrder] = useState<TimelineEvent[]>(initialOrder);
+  const [kbFocusIdx, setKbFocusIdx] = useState(0);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const s = loadStreak();
@@ -83,6 +85,42 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
     handlePointerUp,
     handleTap,
   } = useReorder(order, setOrder, { lockedIndices: lockedPositions });
+
+  // Keyboard reordering: Arrow keys navigate, Shift+Arrow to move items (skips locked)
+  const handleListKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "ArrowDown" && !e.shiftKey) {
+        e.preventDefault();
+        setKbFocusIdx((prev) => Math.min(prev + 1, order.length - 1));
+      } else if (e.key === "ArrowUp" && !e.shiftKey) {
+        e.preventDefault();
+        setKbFocusIdx((prev) => Math.max(prev - 1, 0));
+      } else if (e.key === "ArrowDown" && e.shiftKey) {
+        e.preventDefault();
+        setKbFocusIdx((prev) => {
+          if (prev >= order.length - 1 || lockedPositions.has(prev) || lockedPositions.has(prev + 1)) return prev;
+          setOrder((o) => {
+            const next = [...o];
+            [next[prev], next[prev + 1]] = [next[prev + 1], next[prev]];
+            return next;
+          });
+          return prev + 1;
+        });
+      } else if (e.key === "ArrowUp" && e.shiftKey) {
+        e.preventDefault();
+        setKbFocusIdx((prev) => {
+          if (prev <= 0 || lockedPositions.has(prev) || lockedPositions.has(prev - 1)) return prev;
+          setOrder((o) => {
+            const next = [...o];
+            [next[prev], next[prev - 1]] = [next[prev - 1], next[prev]];
+            return next;
+          });
+          return prev - 1;
+        });
+      }
+    },
+    [order.length, lockedPositions]
+  );
 
   const handleCheck = useCallback(() => {
     // Check each position
@@ -268,7 +306,11 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
 
       <div
         ref={containerRef as React.RefObject<HTMLDivElement>}
-        className="w-full max-w-md space-y-2 mb-8"
+        role="listbox"
+        aria-label="Event list — use Arrow keys to navigate, Shift+Arrow to reorder"
+        tabIndex={0}
+        onKeyDown={handleListKeyDown}
+        className="w-full max-w-md space-y-2 mb-8 outline-none"
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
@@ -278,6 +320,7 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
           const isOver =
             overIndex === i && activeIndex !== null && activeIndex !== i;
           const isSelected = selectedIndex === i;
+          const isKbFocused = kbFocusIdx === i;
 
           const flashCorrect = flashResults?.[i] === true;
           const flashWrong = flashResults?.[i] === false;
@@ -304,12 +347,16 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
           return (
             <div
               key={event.description}
+              role="option"
+              aria-selected={isSelected || isKbFocused}
+              aria-label={`Position ${i + 1}: ${event.description}${isLocked ? " (locked)" : ""}`}
               onPointerDown={(e) => handlePointerDown(i, e)}
               onClick={() => handleTap(i)}
               className={`flex items-center gap-3 rounded-xl border px-4 py-4 select-none
                          transition-all duration-150
                          ${isDragging ? "opacity-50 scale-95" : ""}
                          ${borderClass} ${bgClass}
+                         ${isKbFocused && !isSelected ? "ring-2 ring-sky/50" : ""}
                          ${isLocked ? "cursor-default" : "cursor-grab hover:bg-surface-hover active:scale-[0.98]"}`}
               style={{ touchAction: isLocked ? "auto" : "none" }}
             >

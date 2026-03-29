@@ -363,7 +363,7 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
       </div>
 
       {/* Input + autocomplete */}
-      <div ref={dropdownRef} className="w-full max-w-md relative">
+      <div ref={dropdownRef} className="w-full max-w-md relative" role="combobox" aria-expanded={showDropdown && suggestions.length > 0} aria-haspopup="listbox">
         <input
           ref={inputRef}
           type="text"
@@ -376,6 +376,10 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
           onFocus={() => setShowDropdown(true)}
           onKeyDown={handleKeyDown}
           placeholder="Who said this?"
+          aria-label="Quote attribution"
+          aria-autocomplete="list"
+          aria-controls="quotable-suggestions"
+          aria-activedescendant={highlightIdx >= 0 ? `quotable-option-${highlightIdx}` : undefined}
           className={`w-full px-5 py-4 rounded-xl border bg-surface/80
                      text-text-primary text-base font-medium
                      placeholder:text-text-dim/50
@@ -385,10 +389,13 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
         />
 
         {showDropdown && suggestions.length > 0 && (
-          <div className="absolute top-full mt-1 w-full bg-surface border border-border-light rounded-xl shadow-lg overflow-hidden z-10">
+          <div id="quotable-suggestions" role="listbox" aria-label="Author suggestions" className="absolute top-full mt-1 w-full bg-surface border border-border-light rounded-xl shadow-lg overflow-hidden z-10">
             {suggestions.map((option, i) => (
               <button
                 key={option}
+                id={`quotable-option-${i}`}
+                role="option"
+                aria-selected={i === highlightIdx}
                 onClick={() => submitGuess(option)}
                 className={`w-full text-left px-4 py-3 text-sm transition-colors
                            ${

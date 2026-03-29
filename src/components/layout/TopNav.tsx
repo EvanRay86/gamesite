@@ -32,7 +32,7 @@ export default function TopNav() {
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 w-full glass-nav shadow-sm">
+    <nav aria-label="Main navigation" className="sticky top-0 z-50 w-full glass-nav shadow-sm">
       <div className="mx-auto flex h-12 max-w-7xl items-center justify-between px-4 md:h-14">
         {/* Left: Logo */}
         <Link href="/" className="flex-shrink-0 no-underline flex items-center gap-2">
@@ -90,24 +90,29 @@ export default function TopNav() {
                   <div className="relative" ref={userMenuRef}>
                     <button
                       onClick={() => setUserMenuOpen((prev) => !prev)}
+                      aria-label="User menu"
+                      aria-expanded={userMenuOpen}
+                      aria-haspopup="true"
                       className="flex h-8 w-8 items-center justify-center rounded-full bg-teal/10 text-teal text-sm font-bold hover:bg-teal/20 transition-colors"
                     >
                       {user.email?.[0]?.toUpperCase() ?? "U"}
                     </button>
 
                     {userMenuOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-white py-1 shadow-lg">
+                      <div role="menu" className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-white py-1 shadow-lg">
                         <div className="px-4 py-2 text-xs text-text-dim truncate border-b border-border">
                           {user.email}
                         </div>
                         <Link
                           href="/account"
+                          role="menuitem"
                           onClick={() => setUserMenuOpen(false)}
                           className="block px-4 py-2 text-sm text-text-secondary hover:bg-surface no-underline"
                         >
                           Account
                         </Link>
                         <button
+                          role="menuitem"
                           onClick={async () => {
                             setUserMenuOpen(false);
                             await signOut();
@@ -137,6 +142,8 @@ export default function TopNav() {
             className="flex h-8 w-8 flex-col items-center justify-center gap-[5px] md:hidden"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
           >
             <span
               className={`block h-0.5 w-5 rounded-full bg-text-primary transition-all duration-200 ${
@@ -159,6 +166,9 @@ export default function TopNav() {
 
       {/* Mobile menu dropdown */}
       <div
+        id="mobile-menu"
+        role="navigation"
+        aria-label="Mobile navigation"
         className={`overflow-hidden border-t border-white/30 bg-white/80 backdrop-blur-xl transition-all duration-200 md:hidden ${
           mobileMenuOpen ? "max-h-80" : "max-h-0 border-t-0"
         }`}
