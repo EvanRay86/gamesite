@@ -221,6 +221,15 @@ export const games: Game[] = [
     color: "teal",
   },
 
+  {
+    slug: "chain-reaction",
+    name: "Chain Reaction",
+    description:
+      "Complete the word chain — each pair forms a compound word or phrase.",
+    category: "daily",
+    color: "coral",
+  },
+
   // ── Community Games ──────────────────────────────────────────────────────
 
   {
