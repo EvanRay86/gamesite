@@ -76,7 +76,7 @@ export default function ArchivePaywall({
                 Unlock the full archive
               </h2>
               <p className="text-white/70 text-sm mb-5">
-                Everything included for just <span className="font-semibold text-white">$6/month</span>
+                Everything included for just <span className="font-semibold text-white">$3/month</span>
               </p>
 
               {/* Perks list */}

@@ -2,7 +2,7 @@
 
 ## Context
 
-gamesite.app is a browser-based game portal with 14+ daily puzzle games, arcade games, and a community game (PixelVille). It's built with Next.js/Vercel and has basic SEO (sitemap, robots.txt, OG tags) but **no analytics, no social media presence, and no sharing features**. The site monetizes via a $6/month premium subscription and a credit system. This plan focuses on free, actionable strategies to drive organic growth.
+gamesite.app is a browser-based game portal with 14+ daily puzzle games, arcade games, and a community game (PixelVille). It's built with Next.js/Vercel and has basic SEO (sitemap, robots.txt, OG tags) but **no analytics, no social media presence, and no sharing features**. The site monetizes via a $3/month (or $30/year) premium subscription and a credit system. This plan focuses on free, actionable strategies to drive organic growth.
 
 ---
 

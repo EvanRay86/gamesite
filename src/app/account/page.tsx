@@ -110,7 +110,7 @@ function AccountContent() {
                 className="inline-block rounded-full bg-teal px-6 py-2.5 text-sm font-bold text-white
                            hover:bg-teal/90 transition-colors no-underline"
               >
-                Subscribe — $6/mo
+                Subscribe — $3/mo
               </Link>
             </>
           )}

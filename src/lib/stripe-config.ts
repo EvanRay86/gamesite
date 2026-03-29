@@ -1,5 +1,6 @@
 export const STRIPE_PRICES = {
   premium_monthly: process.env.STRIPE_PREMIUM_PRICE_ID!,
+  premium_annual: process.env.STRIPE_PREMIUM_ANNUAL_PRICE_ID!,
   credits_10: process.env.STRIPE_CREDITS_10_PRICE_ID!,
   credits_35: process.env.STRIPE_CREDITS_35_PRICE_ID!,
   credits_60: process.env.STRIPE_CREDITS_60_PRICE_ID!,
