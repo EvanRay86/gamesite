@@ -187,79 +187,56 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       if (!guess) return;
       if (slotStatuses[slotIndex] === "correct") return;
 
+      // Per-word check via Enter does NOT cost an attempt.
+      // Attempts are only consumed by the "Check Chain" button.
       setIsChecking(true);
-      const newAttempts = attempts + 1;
       const newStatuses = [...slotStatuses];
 
       if (guess === chain[slotIndex].toLowerCase()) {
         newStatuses[slotIndex] = "correct";
+
+        // Check if all words are now correct — win without costing an attempt
+        const allCorrect = blankIndices.every(
+          (i) => newStatuses[i] === "correct",
+        );
+        setSlotStatuses(newStatuses);
+        if (allCorrect) {
+          setGameState("won");
+          saveStreak(date, true);
+        } else {
+          // Move to next unsolved slot
+          const nextUnsolved = blankIndices.find(
+            (i) => newStatuses[i] !== "correct" && i !== slotIndex,
+          );
+          if (nextUnsolved !== undefined) {
+            setActiveSlot(nextUnsolved);
+          }
+        }
       } else {
         newStatuses[slotIndex] = "wrong";
+        setSlotStatuses(newStatuses);
 
         // Shake it
         setShakeSlots(new Set([slotIndex]));
         setTimeout(() => setShakeSlots(new Set()), 600);
 
-        // Reveal a hint letter if not final attempt
-        if (newAttempts < MAX_ATTEMPTS) {
-          const newRevealed = [...revealedLetters.map((r) => [...r])];
-          const answer = chain[slotIndex].toLowerCase();
-          const alreadyRevealed = newRevealed[slotIndex].length;
-          if (alreadyRevealed < answer.length) {
-            newRevealed[slotIndex].push(answer[alreadyRevealed]);
-          }
-          setRevealedLetters(newRevealed);
-
-          // Reset wrong status back to blank after animation
-          setTimeout(() => {
-            setSlotStatuses((prev) => {
-              const reset = [...prev];
-              reset[slotIndex] = "blank";
-              return reset;
-            });
-          }, 800);
+        // Reveal a hint letter
+        const newRevealed = [...revealedLetters.map((r) => [...r])];
+        const answer = chain[slotIndex].toLowerCase();
+        const alreadyRevealed = newRevealed[slotIndex].length;
+        if (alreadyRevealed < answer.length) {
+          newRevealed[slotIndex].push(answer[alreadyRevealed]);
         }
-      }
+        setRevealedLetters(newRevealed);
 
-      setSlotStatuses(newStatuses);
-      setAttempts(newAttempts);
-
-      // Check win/loss
-      const allCorrect = blankIndices.every(
-        (i) => newStatuses[i] === "correct",
-      );
-
-      if (allCorrect) {
-        setGameState("won");
-        saveStreak(date, true);
-      } else if (newAttempts >= MAX_ATTEMPTS) {
-        // Reveal all answers on loss
-        const finalStatuses = [...newStatuses];
-        for (const i of blankIndices) {
-          if (finalStatuses[i] !== "correct") {
-            finalStatuses[i] = "wrong";
-          }
-        }
-        setSlotStatuses(finalStatuses);
-        setGameState("lost");
-        saveStreak(date, false);
-        setGuesses((prev) => {
-          const filled = [...prev];
-          for (const i of blankIndices) {
-            if (filled[i].toLowerCase() !== chain[i].toLowerCase()) {
-              filled[i] = chain[i];
-            }
-          }
-          return filled;
-        });
-      } else {
-        // Move to next unsolved slot
-        const nextUnsolved = blankIndices.find(
-          (i) => newStatuses[i] !== "correct" && i !== slotIndex,
-        );
-        if (nextUnsolved !== undefined) {
-          setActiveSlot(nextUnsolved);
-        }
+        // Reset wrong status back to blank after animation
+        setTimeout(() => {
+          setSlotStatuses((prev) => {
+            const reset = [...prev];
+            reset[slotIndex] = "blank";
+            return reset;
+          });
+        }, 800);
       }
 
       setTimeout(() => setIsChecking(false), 100);
@@ -269,7 +246,6 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       isChecking,
       chain,
       guesses,
-      attempts,
       slotStatuses,
       revealedLetters,
       blankIndices,
@@ -435,8 +411,9 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
               Answer: sun<strong>flower</strong> \u2192 flower<strong>pot</strong> \u2192 pot<strong>luck</strong> \u2192 luck charm
             </p>
             <ul className="list-disc pl-5 space-y-1">
-              <li>You have <strong>3 attempts</strong> to solve the chain.</li>
-              <li>After each wrong guess, a hint letter is revealed.</li>
+              <li>Press <strong>Enter</strong> to check a word instantly — no attempt cost.</li>
+              <li>Use <strong>Check Chain</strong> to submit all words at once (3 checks total).</li>
+              <li>A hint letter is revealed after each wrong guess.</li>
             </ul>
           </div>
 
@@ -463,7 +440,7 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
         Chain Reaction
       </h1>
       <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
-        {date} &middot; Attempt {Math.min(attempts + (isFinished ? 0 : 1), MAX_ATTEMPTS)}/{MAX_ATTEMPTS}
+        {date} &middot; {isFinished ? `${attempts}/${MAX_ATTEMPTS} check${attempts === 1 ? "" : "s"}` : `${MAX_ATTEMPTS - attempts} check${MAX_ATTEMPTS - attempts === 1 ? "" : "s"} remaining`}
       </p>
 
       {/* Chain slots */}
