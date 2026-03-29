@@ -841,113 +841,128 @@ export default function KoalaClicker() {
   const hasSanctuary = owned("koala-sanctuary");
   const hasPortal = owned("leaf-portal");
   const hasOverlord = owned("koala-overlord");
+  const hasTimeWarp = owned("time-warp-tree");
+  const hasDiamondPaws = owned("diamond-paws");
   const hasDimension = owned("koala-dimension");
+  const hasCosmicGrove = owned("cosmic-grove");
   const hasQuantum = owned("quantum-koala");
+  const hasEternalCanopy = owned("eternal-canopy");
+  const hasOmnipaws = owned("omnipaws");
+  const hasMultiverse = owned("multiverse-colony");
+  const hasSingularity = owned("leaf-singularity");
   const hasKoalaGod = owned("koala-god");
 
-  // Background evolves based on progression — 6 tiers
-  const bgClass = hasKoalaGod
-    ? "from-amber-950 via-yellow-900 to-orange-950"
-    : hasQuantum
-      ? "from-cyan-950 via-blue-900 to-indigo-950"
-      : hasDimension
-        ? "from-violet-950 via-fuchsia-900 to-pink-950"
-        : hasPortal
-          ? "from-indigo-950 via-purple-900 to-emerald-900"
-          : hasForest
-            ? "from-emerald-800 via-green-700 to-teal-800"
-            : hasTrees
-              ? "from-emerald-200 via-green-100 to-teal-100"
-              : hasBushes
-                ? "from-green-100 via-emerald-50 to-lime-50"
-                : "from-green-50 to-emerald-50";
+  // Background evolves based on progression — tiers match unlock order
+  // Tier key: which visual "era" are we in?
+  type VisualTier = "default" | "bush" | "tree" | "colony" | "golden" | "forest"
+    | "sanctuary" | "portal" | "overlord" | "timewarp" | "dimension"
+    | "cosmic" | "quantum" | "canopy" | "multiverse" | "singularity" | "god";
+  const tier: VisualTier = hasKoalaGod ? "god"
+    : hasSingularity ? "singularity"
+    : hasMultiverse ? "multiverse"
+    : hasEternalCanopy ? "canopy" // omnipaws is a click upgrade, skip for bg
+    : hasQuantum ? "quantum"
+    : hasCosmicGrove ? "cosmic"
+    : hasDimension ? "dimension"
+    : hasTimeWarp ? "timewarp" // diamond-paws is a click upgrade, skip for bg
+    : hasOverlord ? "overlord"
+    : hasPortal ? "portal"
+    : hasSanctuary ? "sanctuary"
+    : hasForest ? "forest"
+    : hasGolden ? "golden"
+    : hasColony ? "colony"
+    : hasTrees ? "tree"
+    : hasBushes ? "bush"
+    : "default";
 
-  const textClass = hasKoalaGod
-    ? "text-amber-200"
-    : hasQuantum
-      ? "text-cyan-200"
-      : hasDimension
-        ? "text-fuchsia-200"
-        : hasPortal
-          ? "text-purple-200"
-          : hasForest
-            ? "text-emerald-100"
-            : "text-emerald-800";
-
-  const subtextClass = hasKoalaGod
-    ? "text-amber-300"
-    : hasQuantum
-      ? "text-cyan-300"
-      : hasDimension
-        ? "text-fuchsia-300"
-        : hasPortal
-          ? "text-purple-300"
-          : hasForest
-            ? "text-emerald-200"
-            : "text-emerald-600";
-
-  const dimTextClass = hasKoalaGod
-    ? "text-amber-300/70"
-    : hasQuantum
-      ? "text-cyan-300/70"
-      : hasDimension
-        ? "text-fuchsia-300/70"
-        : hasPortal
-          ? "text-purple-300/70"
-          : hasForest
-            ? "text-emerald-300/70"
-            : "text-emerald-500/70";
+  const bgClass = {
+    god:         "from-amber-950 via-yellow-900 to-orange-950",
+    singularity: "from-gray-950 via-orange-950 to-red-950",
+    multiverse:  "from-slate-950 via-violet-950 to-blue-950",
+    canopy:      "from-teal-950 via-emerald-900 to-cyan-950",
+    quantum:     "from-cyan-950 via-blue-900 to-indigo-950",
+    cosmic:      "from-blue-950 via-indigo-900 to-violet-950",
+    dimension:   "from-violet-950 via-fuchsia-900 to-pink-950",
+    timewarp:    "from-slate-900 via-purple-900 to-indigo-950",
+    overlord:    "from-gray-900 via-indigo-900 to-purple-900",
+    portal:      "from-indigo-950 via-purple-900 to-emerald-900",
+    sanctuary:   "from-emerald-900 via-teal-800 to-green-900",
+    forest:      "from-emerald-800 via-green-700 to-teal-800",
+    golden:      "from-green-200 via-amber-50 to-emerald-100",
+    colony:      "from-emerald-200 via-green-100 to-lime-100",
+    tree:        "from-emerald-200 via-green-100 to-teal-100",
+    bush:        "from-green-100 via-emerald-50 to-lime-50",
+    default:     "from-green-50 to-emerald-50",
+  }[tier];
 
   // Is it a "dark" theme tier? (for panel styling)
-  const isDark = !!(hasPortal || hasDimension || hasQuantum || hasKoalaGod);
+  const isDark = ["portal", "overlord", "timewarp", "dimension", "cosmic", "quantum", "canopy", "multiverse", "singularity", "god"].includes(tier);
+  // Is it a "mid" dark tier? (sanctuary/forest — dark bg but green-tinted)
+  const isMidDark = ["sanctuary", "forest"].includes(tier);
 
-  const panelBg = hasKoalaGod
-    ? "bg-amber-950/80 border-amber-500/30"
-    : hasQuantum
-      ? "bg-cyan-950/80 border-cyan-500/30"
-      : hasDimension
-        ? "bg-fuchsia-950/80 border-fuchsia-500/30"
-        : hasPortal
-          ? "bg-indigo-950/80 border-purple-500/30"
-          : hasForest
-            ? "bg-emerald-900/60 border-emerald-500/30"
-            : "bg-white/80 border-emerald-200";
+  const textClass = isDark
+    ? { god: "text-amber-200", singularity: "text-orange-200", multiverse: "text-violet-200", canopy: "text-cyan-200", quantum: "text-cyan-200", cosmic: "text-indigo-200", dimension: "text-fuchsia-200", timewarp: "text-purple-200", overlord: "text-purple-200", portal: "text-purple-200" }[tier]!
+    : isMidDark ? "text-emerald-100"
+    : "text-emerald-800";
 
-  const panelHeaderBg = hasKoalaGod
-    ? "bg-amber-950/90 border-amber-500/30"
-    : hasQuantum
-      ? "bg-cyan-950/90 border-cyan-500/30"
-      : hasDimension
-        ? "bg-fuchsia-950/90 border-fuchsia-500/30"
-        : hasPortal
-          ? "bg-indigo-950/90 border-purple-500/30"
-          : hasForest
-            ? "bg-emerald-900/80 border-emerald-500/30"
-            : "bg-white/90 border-emerald-200";
+  const subtextClass = isDark
+    ? { god: "text-amber-300", singularity: "text-orange-300", multiverse: "text-violet-300", canopy: "text-cyan-300", quantum: "text-cyan-300", cosmic: "text-indigo-300", dimension: "text-fuchsia-300", timewarp: "text-purple-300", overlord: "text-purple-300", portal: "text-purple-300" }[tier]!
+    : isMidDark ? "text-emerald-200"
+    : "text-emerald-600";
 
-  const headerTextClass = isDark ? "text-white/90" : hasForest ? "text-emerald-100" : "text-emerald-900";
-  const headerSubClass = isDark ? "text-white/60" : hasForest ? "text-emerald-300" : "text-emerald-600";
+  const dimTextClass = isDark
+    ? { god: "text-amber-300/70", singularity: "text-orange-300/70", multiverse: "text-violet-300/70", canopy: "text-cyan-300/70", quantum: "text-cyan-300/70", cosmic: "text-indigo-300/70", dimension: "text-fuchsia-300/70", timewarp: "text-purple-300/70", overlord: "text-purple-300/70", portal: "text-purple-300/70" }[tier]!
+    : isMidDark ? "text-emerald-300/70"
+    : "text-emerald-500/70";
 
-  const cardBgAfford = isDark
-    ? `border-white/20 ${hasKoalaGod ? "bg-amber-900/40" : hasQuantum ? "bg-cyan-900/40" : hasDimension ? "bg-fuchsia-900/40" : "bg-purple-900/40"} hover:border-white/40 hover:shadow-md cursor-pointer`
-    : hasForest
+  // Panel accent colors keyed by dark tier
+  const darkPanelAccent: Record<string, { bg950: string; bg900: string; border: string }> = {
+    god:         { bg950: "bg-amber-950",   bg900: "bg-amber-900",   border: "border-amber-500/30" },
+    singularity: { bg950: "bg-orange-950",  bg900: "bg-orange-900",  border: "border-orange-500/30" },
+    multiverse:  { bg950: "bg-violet-950",  bg900: "bg-violet-900",  border: "border-violet-500/30" },
+    canopy:      { bg950: "bg-teal-950",    bg900: "bg-teal-900",    border: "border-teal-500/30" },
+    quantum:     { bg950: "bg-cyan-950",    bg900: "bg-cyan-900",    border: "border-cyan-500/30" },
+    cosmic:      { bg950: "bg-indigo-950",  bg900: "bg-indigo-900",  border: "border-indigo-500/30" },
+    dimension:   { bg950: "bg-fuchsia-950", bg900: "bg-fuchsia-900", border: "border-fuchsia-500/30" },
+    timewarp:    { bg950: "bg-purple-950",  bg900: "bg-purple-900",  border: "border-purple-500/30" },
+    overlord:    { bg950: "bg-indigo-950",  bg900: "bg-indigo-900",  border: "border-indigo-500/30" },
+    portal:      { bg950: "bg-indigo-950",  bg900: "bg-purple-900",  border: "border-purple-500/30" },
+  };
+  const da = isDark ? darkPanelAccent[tier] : null;
+
+  const panelBg = da
+    ? `${da.bg950}/80 ${da.border}`
+    : isMidDark ? "bg-emerald-900/60 border-emerald-500/30"
+    : "bg-white/80 border-emerald-200";
+
+  const panelHeaderBg = da
+    ? `${da.bg950}/90 ${da.border}`
+    : isMidDark ? "bg-emerald-900/80 border-emerald-500/30"
+    : "bg-white/90 border-emerald-200";
+
+  const headerTextClass = isDark ? "text-white/90" : isMidDark ? "text-emerald-100" : "text-emerald-900";
+  const headerSubClass = isDark ? "text-white/60" : isMidDark ? "text-emerald-300" : "text-emerald-600";
+
+  const cardBgAfford = da
+    ? `border-white/20 ${da.bg900}/40 hover:border-white/40 hover:shadow-md cursor-pointer`
+    : isMidDark
       ? "border-emerald-500/40 bg-emerald-900/30 hover:border-emerald-400 hover:shadow-md cursor-pointer"
       : "border-emerald-300 bg-white hover:border-emerald-500 hover:shadow-md cursor-pointer";
 
-  const cardBgLocked = isDark
-    ? `border-white/10 ${hasKoalaGod ? "bg-amber-950/30" : hasQuantum ? "bg-cyan-950/30" : hasDimension ? "bg-fuchsia-950/30" : "bg-purple-950/30"} opacity-50 cursor-not-allowed`
-    : hasForest
+  const cardBgLocked = da
+    ? `border-white/10 ${da.bg950}/30 opacity-50 cursor-not-allowed`
+    : isMidDark
       ? "border-emerald-800/30 bg-emerald-950/30 opacity-50 cursor-not-allowed"
       : "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed";
 
-  const cardNameClass = isDark ? "text-white/90" : hasForest ? "text-emerald-100" : "text-gray-900";
-  const cardDescClass = isDark ? "text-white/50" : hasForest ? "text-emerald-300" : "text-gray-500";
-  const cardCostClass = isDark ? "text-white/60" : hasForest ? "text-emerald-300" : "text-emerald-600";
-  const cardStatClass = isDark ? "text-white/40" : hasForest ? "text-emerald-400" : "text-gray-400";
-  const badgeBg = isDark ? "text-white/70 bg-white/10" : hasForest ? "text-emerald-200 bg-emerald-800/50" : "text-emerald-700 bg-emerald-100";
-  const statCardBg = isDark
-    ? `${hasKoalaGod ? "bg-amber-900/40 border-amber-500/30" : hasQuantum ? "bg-cyan-900/40 border-cyan-500/30" : hasDimension ? "bg-fuchsia-900/40 border-fuchsia-500/30" : "bg-purple-900/40 border-purple-500/30"}`
-    : hasForest ? "bg-emerald-900/30 border-emerald-500/30" : "bg-white/60 border-emerald-200";
+  const cardNameClass = isDark ? "text-white/90" : isMidDark ? "text-emerald-100" : "text-gray-900";
+  const cardDescClass = isDark ? "text-white/50" : isMidDark ? "text-emerald-300" : "text-gray-500";
+  const cardCostClass = isDark ? "text-white/60" : isMidDark ? "text-emerald-300" : "text-emerald-600";
+  const cardStatClass = isDark ? "text-white/40" : isMidDark ? "text-emerald-400" : "text-gray-400";
+  const badgeBg = isDark ? "text-white/70 bg-white/10" : isMidDark ? "text-emerald-200 bg-emerald-800/50" : "text-emerald-700 bg-emerald-100";
+  const statCardBg = da
+    ? `${da.bg900}/40 ${da.border}`
+    : isMidDark ? "bg-emerald-900/30 border-emerald-500/30" : "bg-white/60 border-emerald-200";
 
   if (!loaded) {
     return (
@@ -1000,10 +1015,10 @@ export default function KoalaClicker() {
         {/* ── Ground layer ─────────────────────────────────────────── */}
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
           {hasBushes > 0 && (
-            <div className={`h-16 ${isDark ? "bg-gradient-to-t from-black/30 to-transparent" : hasForest ? "bg-gradient-to-t from-emerald-900/30 to-transparent" : "bg-gradient-to-t from-emerald-200/60 to-transparent"}`} />
+            <div className={`h-16 ${isDark ? "bg-gradient-to-t from-black/30 to-transparent" : isMidDark ? "bg-gradient-to-t from-emerald-900/30 to-transparent" : "bg-gradient-to-t from-emerald-200/60 to-transparent"}`} />
           )}
           {hasBushes > 0 && (
-            <div className={`h-1 ${isDark ? "bg-white/10" : hasForest ? "bg-emerald-600/30" : "bg-emerald-300/50"}`} />
+            <div className={`h-1 ${isDark ? "bg-white/10" : isMidDark ? "bg-emerald-600/30" : "bg-emerald-300/50"}`} />
           )}
         </div>
 
@@ -1140,20 +1155,24 @@ export default function KoalaClicker() {
             className={`relative w-36 h-36 sm:w-56 sm:h-56 rounded-full cursor-pointer
                        transition-shadow duration-200 select-none
                        flex items-center justify-center
-                       ${hasKoalaGod
-                         ? "bg-gradient-to-br from-amber-900 to-orange-950 border-4 border-amber-400 shadow-[0_0_60px_rgba(245,158,11,0.4)] hover:shadow-[0_0_80px_rgba(245,158,11,0.6)]"
-                         : hasQuantum
-                           ? "bg-gradient-to-br from-cyan-900 to-blue-950 border-4 border-cyan-400 shadow-[0_0_60px_rgba(6,182,212,0.4)] hover:shadow-[0_0_80px_rgba(6,182,212,0.6)]"
-                           : hasDimension
-                             ? "bg-gradient-to-br from-fuchsia-900 to-pink-950 border-4 border-fuchsia-400 shadow-[0_0_60px_rgba(217,70,239,0.4)] hover:shadow-[0_0_80px_rgba(217,70,239,0.6)]"
-                             : hasPortal
-                               ? "bg-gradient-to-br from-purple-900 to-indigo-900 border-4 border-purple-400 shadow-[0_0_60px_rgba(168,85,247,0.4)] hover:shadow-[0_0_80px_rgba(168,85,247,0.6)]"
-                               : hasForest
-                                 ? "bg-gradient-to-br from-emerald-800 to-green-900 border-4 border-emerald-400 shadow-[0_8px_40px_rgba(34,197,94,0.3)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.5)]"
-                                 : hasGolden
-                                   ? "bg-white border-4 border-amber-400 shadow-[0_0_40px_rgba(247,183,49,0.3)] hover:shadow-[0_0_50px_rgba(247,183,49,0.5)]"
-                                   : "bg-white border-4 border-emerald-300 shadow-[0_8px_40px_rgba(34,197,94,0.2)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.35)]"
-                       }
+                       ${{ god: "bg-gradient-to-br from-amber-900 to-orange-950 border-4 border-amber-400 shadow-[0_0_60px_rgba(245,158,11,0.4)] hover:shadow-[0_0_80px_rgba(245,158,11,0.6)]",
+                         singularity: "bg-gradient-to-br from-gray-900 to-red-950 border-4 border-orange-400 shadow-[0_0_60px_rgba(249,115,22,0.4)] hover:shadow-[0_0_80px_rgba(249,115,22,0.6)]",
+                         multiverse: "bg-gradient-to-br from-slate-900 to-violet-950 border-4 border-violet-400 shadow-[0_0_60px_rgba(139,92,246,0.4)] hover:shadow-[0_0_80px_rgba(139,92,246,0.6)]",
+                         canopy: "bg-gradient-to-br from-teal-900 to-cyan-950 border-4 border-teal-400 shadow-[0_0_60px_rgba(45,212,191,0.4)] hover:shadow-[0_0_80px_rgba(45,212,191,0.6)]",
+                         quantum: "bg-gradient-to-br from-cyan-900 to-blue-950 border-4 border-cyan-400 shadow-[0_0_60px_rgba(6,182,212,0.4)] hover:shadow-[0_0_80px_rgba(6,182,212,0.6)]",
+                         cosmic: "bg-gradient-to-br from-blue-900 to-violet-950 border-4 border-indigo-400 shadow-[0_0_60px_rgba(99,102,241,0.4)] hover:shadow-[0_0_80px_rgba(99,102,241,0.6)]",
+                         dimension: "bg-gradient-to-br from-fuchsia-900 to-pink-950 border-4 border-fuchsia-400 shadow-[0_0_60px_rgba(217,70,239,0.4)] hover:shadow-[0_0_80px_rgba(217,70,239,0.6)]",
+                         timewarp: "bg-gradient-to-br from-slate-800 to-purple-950 border-4 border-purple-400 shadow-[0_0_60px_rgba(168,85,247,0.3)] hover:shadow-[0_0_80px_rgba(168,85,247,0.5)]",
+                         overlord: "bg-gradient-to-br from-gray-800 to-indigo-900 border-4 border-indigo-400 shadow-[0_0_60px_rgba(129,140,248,0.3)] hover:shadow-[0_0_80px_rgba(129,140,248,0.5)]",
+                         portal: "bg-gradient-to-br from-purple-900 to-indigo-900 border-4 border-purple-400 shadow-[0_0_60px_rgba(168,85,247,0.4)] hover:shadow-[0_0_80px_rgba(168,85,247,0.6)]",
+                         sanctuary: "bg-gradient-to-br from-emerald-800 to-teal-900 border-4 border-teal-400 shadow-[0_8px_40px_rgba(45,212,191,0.3)] hover:shadow-[0_12px_50px_rgba(45,212,191,0.5)]",
+                         forest: "bg-gradient-to-br from-emerald-800 to-green-900 border-4 border-emerald-400 shadow-[0_8px_40px_rgba(34,197,94,0.3)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.5)]",
+                         golden: "bg-white border-4 border-amber-400 shadow-[0_0_40px_rgba(247,183,49,0.3)] hover:shadow-[0_0_50px_rgba(247,183,49,0.5)]",
+                         colony: "bg-gradient-to-br from-green-50 to-emerald-100 border-4 border-emerald-400 shadow-[0_8px_40px_rgba(34,197,94,0.25)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.4)]",
+                         tree: "bg-gradient-to-br from-green-50 to-lime-50 border-4 border-emerald-300 shadow-[0_8px_40px_rgba(34,197,94,0.2)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.35)]",
+                         bush: "bg-white border-4 border-emerald-300 shadow-[0_8px_40px_rgba(34,197,94,0.2)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.35)]",
+                         default: "bg-white border-4 border-emerald-300 shadow-[0_8px_40px_rgba(34,197,94,0.2)] hover:shadow-[0_12px_50px_rgba(34,197,94,0.35)]",
+                       }[tier]}
                        active:scale-95`}
             style={{
               transform: `scale(${koalaScale})`,
