@@ -934,7 +934,7 @@ export default function KoalaClicker() {
   return (
     <div className={`h-[calc(100vh-3rem)] md:h-[calc(100vh-3.5rem)] bg-gradient-to-b ${bgClass} flex flex-col lg:flex-row transition-colors duration-1000 overflow-hidden`}>
       {/* ── Left Panel: Koala + Scene ──────────────────────────────────── */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="shrink-0 lg:flex-1 flex flex-col items-center justify-center p-3 sm:p-6 relative overflow-hidden">
 
         {/* ── Sky layer (portal+) ──────────────────────────────────── */}
         {isDark && (
@@ -1087,8 +1087,8 @@ export default function KoalaClicker() {
         </button>
 
         {/* Leaf counter */}
-        <div className="text-center mb-6 relative z-10">
-          <div className={`text-5xl sm:text-6xl font-bold tabular-nums ${textClass} transition-colors duration-1000 ${hasGolden ? "drop-shadow-[0_0_12px_rgba(247,183,49,0.4)]" : ""}`}>
+        <div className="text-center mb-2 sm:mb-6 relative z-10">
+          <div className={`text-3xl sm:text-6xl font-bold tabular-nums ${textClass} transition-colors duration-1000 ${hasGolden ? "drop-shadow-[0_0_12px_rgba(247,183,49,0.4)]" : ""}`}>
             {formatNumber(leaves)}
           </div>
           <div className={`font-semibold mt-1 ${subtextClass} transition-colors duration-1000`}>
@@ -1111,7 +1111,7 @@ export default function KoalaClicker() {
         <div className="relative z-10">
           <button
             onClick={handleClick}
-            className={`relative w-48 h-48 sm:w-56 sm:h-56 rounded-full cursor-pointer
+            className={`relative w-36 h-36 sm:w-56 sm:h-56 rounded-full cursor-pointer
                        transition-shadow duration-200 select-none
                        flex items-center justify-center
                        ${hasKoalaGod
@@ -1134,7 +1134,7 @@ export default function KoalaClicker() {
               transition: "transform 0.1s ease",
             }}
           >
-            <span className="text-8xl sm:text-9xl leading-none pointer-events-none relative">
+            <span className="text-7xl sm:text-9xl leading-none pointer-events-none relative">
               🐨
               {hasKoalaGod > 0 && (
                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-3xl sm:text-4xl"
@@ -1167,7 +1167,7 @@ export default function KoalaClicker() {
         </div>
 
         {/* Stats */}
-        <div className="mt-8 grid grid-cols-2 gap-4 text-center relative z-10">
+        <div className="mt-8 hidden sm:grid grid-cols-2 gap-4 text-center relative z-10">
           <div className={`rounded-xl px-4 py-3 border ${statCardBg}`}>
             <div className={`text-lg font-bold tabular-nums ${textClass}`}>{formatNumber(totalLeaves)}</div>
             <div className={`text-xs ${subtextClass}`}>Total earned</div>
@@ -1185,7 +1185,7 @@ export default function KoalaClicker() {
         </div>
 
         {/* Cloud sync indicator */}
-        <div className={`mt-4 flex items-center gap-1.5 text-[11px] ${dimTextClass} relative z-10`}>
+        <div className={`mt-4 hidden sm:flex items-center gap-1.5 text-[11px] ${dimTextClass} relative z-10`}>
           <div className={`w-1.5 h-1.5 rounded-full ${
             cloudStatus === "synced" ? "bg-emerald-400" : cloudStatus === "saving" ? "bg-amber-400 animate-pulse" : "bg-gray-300"
           }`} />
@@ -1397,7 +1397,7 @@ export default function KoalaClicker() {
       )}
 
       {/* ── Right Panel: Upgrades ──────────────────────────────────────── */}
-      <div className={`w-full lg:w-[400px] backdrop-blur border-l overflow-y-auto max-h-screen ${panelBg} transition-colors duration-1000`}>
+      <div className={`w-full lg:w-[400px] backdrop-blur border-l overflow-y-auto flex-1 lg:max-h-screen min-h-0 ${panelBg} transition-colors duration-1000`}>
         <div className={`sticky top-0 backdrop-blur border-b p-4 z-10 ${panelHeaderBg}`}>
           <div className="flex items-center justify-between">
             <div>
