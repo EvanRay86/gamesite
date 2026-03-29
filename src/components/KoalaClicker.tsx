@@ -306,11 +306,20 @@ const ACHIEVEMENTS: Achievement[] = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/** Cap numbers to prevent Infinity/NaN from poisoning game state */
+const MAX_VALUE = 1e300;
+function safeNum(n: number): number {
+  if (!Number.isFinite(n)) return n !== n ? 0 : MAX_VALUE; // NaN → 0, ±Inf → cap
+  return Math.min(Math.max(n, -MAX_VALUE), MAX_VALUE);
+}
+
 function getCost(upgrade: Upgrade): number {
   return Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.owned));
 }
 
 function formatNumber(n: number): string {
+  if (!Number.isFinite(n)) return "∞";
+  if (n >= 1e18) return `${(n / 1e18).toFixed(1)}Qi`;
   if (n >= 1e15) return `${(n / 1e15).toFixed(1)}Qa`;
   if (n >= 1e12) return `${(n / 1e12).toFixed(1)}T`;
   if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
@@ -322,13 +331,14 @@ function formatNumber(n: number): string {
 /** Calculate essence earned from ascending - based on lifetime leaves */
 function calcEssenceGain(lifetimeLeaves: number, currentEssence: number): number {
   // sqrt-based formula: you get diminishing returns but always more
-  const raw = Math.floor(Math.pow(lifetimeLeaves / 1e6, 0.5));
-  return Math.max(0, raw - currentEssence);
+  const raw = Math.floor(Math.pow(Math.min(lifetimeLeaves, MAX_VALUE) / 1e6, 0.5));
+  return Math.max(0, safeNum(raw - currentEssence));
 }
 
-/** Essence multiplier: each essence gives +2% compounding */
+/** Essence multiplier: each essence gives +2% compounding, capped to prevent Infinity */
 function getEssenceMultiplier(essence: number): number {
-  return Math.pow(1.02, essence);
+  // 1.02^35000 ≈ 1e300, cap essence input to stay under MAX_VALUE
+  return Math.pow(1.02, Math.min(essence, 35000));
 }
 
 /** Calculate how many lifetime leaves are needed to reach a given essence total */
@@ -413,19 +423,19 @@ function applySave(save: SaveData): {
     ...u,
     owned: save.upgrades[u.id] || 0,
   }));
-  const essenceMultiplier = getEssenceMultiplier(save.essenceCount || 0);
-  const offlineLps = restoredUpgrades.reduce(
+  const essenceMultiplier = safeNum(getEssenceMultiplier(save.essenceCount || 0));
+  const offlineLps = safeNum(restoredUpgrades.reduce(
     (sum, u) => sum + u.lps * u.owned,
     0,
-  ) * essenceMultiplier;
-  const offlineEarnings = Math.floor(
+  ) * essenceMultiplier);
+  const offlineEarnings = safeNum(Math.floor(
     offlineLps * Math.min(elapsed, 28800),
-  ); // cap at 8hrs
+  )); // cap at 8hrs
 
   return {
     upgrades: restoredUpgrades,
-    leaves: save.leaves + offlineEarnings,
-    totalLeaves: save.totalLeaves + offlineEarnings,
+    leaves: safeNum(save.leaves + offlineEarnings),
+    totalLeaves: safeNum(save.totalLeaves + offlineEarnings),
     totalClicks: save.totalClicks,
     prestigeLevel: save.prestigeLevel || 0,
     essenceCount: save.essenceCount || 0,
@@ -522,20 +532,20 @@ export default function KoalaClicker() {
   const playerIdRef = useRef<string>("");
 
   // Derived values
-  const essenceMultiplier = getEssenceMultiplier(essenceCount);
+  const essenceMultiplier = safeNum(getEssenceMultiplier(essenceCount));
   const achievementMultiplier = ACHIEVEMENTS
     .filter((a) => unlockedAchievements.includes(a.id))
     .reduce((m, a) => m * a.multiplier, 1);
-  const totalMultiplier = essenceMultiplier * achievementMultiplier;
+  const totalMultiplier = safeNum(essenceMultiplier * achievementMultiplier);
 
   const baseLeavesPerClick =
     1 + upgrades.reduce((sum, u) => sum + u.clickBonus * u.owned, 0);
-  const leavesPerClick = Math.floor(baseLeavesPerClick * totalMultiplier);
+  const leavesPerClick = safeNum(Math.floor(baseLeavesPerClick * totalMultiplier));
   const baseLeavesPerSecond = upgrades.reduce(
     (sum, u) => sum + u.lps * u.owned,
     0,
   );
-  const leavesPerSecond = baseLeavesPerSecond * totalMultiplier;
+  const leavesPerSecond = safeNum(baseLeavesPerSecond * totalMultiplier);
 
   // ── Load save (localStorage + cloud, pick best) ───────────────────
   useEffect(() => {
@@ -655,9 +665,9 @@ export default function KoalaClicker() {
     if (leavesPerSecond > 0) {
       tickRef.current = setInterval(() => {
         const increment = leavesPerSecond / 10;
-        setLeaves((l) => l + increment);
-        setTotalLeaves((t) => t + increment);
-        setLifetimeLeaves((lt) => lt + increment);
+        setLeaves((l) => safeNum(l + increment));
+        setTotalLeaves((t) => safeNum(t + increment));
+        setLifetimeLeaves((lt) => safeNum(lt + increment));
       }, 100);
     }
     return () => {
@@ -668,11 +678,11 @@ export default function KoalaClicker() {
   // ── Click handler ───────────────────────────────────────────────────
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
-      setLeaves((l) => l + leavesPerClick);
-      setTotalLeaves((t) => t + leavesPerClick);
-      setLifetimeLeaves((lt) => lt + leavesPerClick);
-      setTotalClicks((c) => c + 1);
-      setLifetimeClicks((c) => c + 1);
+      setLeaves((l) => safeNum(l + leavesPerClick));
+      setTotalLeaves((t) => safeNum(t + leavesPerClick));
+      setLifetimeLeaves((lt) => safeNum(lt + leavesPerClick));
+      setTotalClicks((c) => safeNum(c + 1));
+      setLifetimeClicks((c) => safeNum(c + 1));
 
       // Bounce animation
       setKoalaScale(1.15);
@@ -798,10 +808,10 @@ export default function KoalaClicker() {
   const clickGoldenLeaf = useCallback(() => {
     if (!goldenLeaf) return;
     // Golden leaf gives 10% of current LPS * 60 seconds, or 1000 leaves minimum
-    const bonus = Math.max(1000, Math.floor(leavesPerSecond * 60 * 0.1));
-    setLeaves((l) => l + bonus);
-    setTotalLeaves((t) => t + bonus);
-    setLifetimeLeaves((lt) => lt + bonus);
+    const bonus = safeNum(Math.max(1000, Math.floor(leavesPerSecond * 60 * 0.1)));
+    setLeaves((l) => safeNum(l + bonus));
+    setTotalLeaves((t) => safeNum(t + bonus));
+    setLifetimeLeaves((lt) => safeNum(lt + bonus));
     setGoldenLeavesClicked((g) => g + 1);
     setGoldenLeaf(null);
 
