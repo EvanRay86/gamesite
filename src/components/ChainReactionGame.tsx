@@ -174,27 +174,125 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
     }
   }, [activeSlot]);
 
-  // Submit handler — validate the chain
+  // Helper: all blank slot indices
+  const blankIndices = chain
+    .map((_, i) => i)
+    .filter((i) => i !== 0 && i !== chain.length - 1);
+
+  // Check a single slot — called when user presses Enter on an input
+  const handleCheckSlot = useCallback(
+    (slotIndex: number) => {
+      if (gameState !== "playing" || isChecking) return;
+      const guess = guesses[slotIndex].trim().toLowerCase();
+      if (!guess) return;
+      if (slotStatuses[slotIndex] === "correct") return;
+
+      setIsChecking(true);
+      const newAttempts = attempts + 1;
+      const newStatuses = [...slotStatuses];
+
+      if (guess === chain[slotIndex].toLowerCase()) {
+        newStatuses[slotIndex] = "correct";
+      } else {
+        newStatuses[slotIndex] = "wrong";
+
+        // Shake it
+        setShakeSlots(new Set([slotIndex]));
+        setTimeout(() => setShakeSlots(new Set()), 600);
+
+        // Reveal a hint letter if not final attempt
+        if (newAttempts < MAX_ATTEMPTS) {
+          const newRevealed = [...revealedLetters.map((r) => [...r])];
+          const answer = chain[slotIndex].toLowerCase();
+          const alreadyRevealed = newRevealed[slotIndex].length;
+          if (alreadyRevealed < answer.length) {
+            newRevealed[slotIndex].push(answer[alreadyRevealed]);
+          }
+          setRevealedLetters(newRevealed);
+
+          // Reset wrong status back to blank after animation
+          setTimeout(() => {
+            setSlotStatuses((prev) => {
+              const reset = [...prev];
+              reset[slotIndex] = "blank";
+              return reset;
+            });
+          }, 800);
+        }
+      }
+
+      setSlotStatuses(newStatuses);
+      setAttempts(newAttempts);
+
+      // Check win/loss
+      const allCorrect = blankIndices.every(
+        (i) => newStatuses[i] === "correct",
+      );
+
+      if (allCorrect) {
+        setGameState("won");
+        saveStreak(date, true);
+      } else if (newAttempts >= MAX_ATTEMPTS) {
+        // Reveal all answers on loss
+        const finalStatuses = [...newStatuses];
+        for (const i of blankIndices) {
+          if (finalStatuses[i] !== "correct") {
+            finalStatuses[i] = "wrong";
+          }
+        }
+        setSlotStatuses(finalStatuses);
+        setGameState("lost");
+        saveStreak(date, false);
+        setGuesses((prev) => {
+          const filled = [...prev];
+          for (const i of blankIndices) {
+            if (filled[i].toLowerCase() !== chain[i].toLowerCase()) {
+              filled[i] = chain[i];
+            }
+          }
+          return filled;
+        });
+      } else {
+        // Move to next unsolved slot
+        const nextUnsolved = blankIndices.find(
+          (i) => newStatuses[i] !== "correct" && i !== slotIndex,
+        );
+        if (nextUnsolved !== undefined) {
+          setActiveSlot(nextUnsolved);
+        }
+      }
+
+      setTimeout(() => setIsChecking(false), 100);
+    },
+    [
+      gameState,
+      isChecking,
+      chain,
+      guesses,
+      attempts,
+      slotStatuses,
+      revealedLetters,
+      blankIndices,
+      date,
+    ],
+  );
+
+  // Submit all filled slots at once (Check Chain button)
   const handleSubmit = useCallback(() => {
     if (gameState !== "playing" || isChecking) return;
 
-    // Check if all blanks are filled
-    const blankIndices = chain
-      .map((_, i) => i)
-      .filter((i) => i !== 0 && i !== chain.length - 1);
-    const allFilled = blankIndices.every(
-      (i) => guesses[i].trim().length > 0,
+    // Find unsolved slots that have a guess
+    const toCheck = blankIndices.filter(
+      (i) => slotStatuses[i] !== "correct" && guesses[i].trim().length > 0,
     );
-    if (!allFilled) return;
+    if (toCheck.length === 0) return;
 
     setIsChecking(true);
     const newAttempts = attempts + 1;
     const newStatuses = [...slotStatuses];
     const wrongSlots = new Set<number>();
 
-    // Check each blank slot
-    for (const i of blankIndices) {
-      if (newStatuses[i] === "correct") continue; // already solved
+    for (const i of toCheck) {
       const guess = guesses[i].trim().toLowerCase();
       const answer = chain[i].toLowerCase();
       if (guess === answer) {
@@ -205,15 +303,15 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       }
     }
 
-    const allCorrect = blankIndices.every((i) => newStatuses[i] === "correct");
+    const allCorrect = blankIndices.every(
+      (i) => newStatuses[i] === "correct",
+    );
 
-    // Shake wrong slots
     if (wrongSlots.size > 0) {
       setShakeSlots(wrongSlots);
       setTimeout(() => setShakeSlots(new Set()), 600);
     }
 
-    // Reveal hints for wrong slots after a failed attempt (if not final)
     if (!allCorrect && newAttempts < MAX_ATTEMPTS) {
       const newRevealed = [...revealedLetters.map((r) => [...r])];
       for (const i of wrongSlots) {
@@ -225,7 +323,6 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       }
       setRevealedLetters(newRevealed);
 
-      // Reset wrong statuses back to blank after animation
       setTimeout(() => {
         setSlotStatuses((prev) => {
           const reset = [...prev];
@@ -244,7 +341,6 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       setGameState("won");
       saveStreak(date, true);
     } else if (newAttempts >= MAX_ATTEMPTS) {
-      // Reveal all answers on loss
       const finalStatuses = [...newStatuses];
       for (const i of blankIndices) {
         if (finalStatuses[i] !== "correct") {
@@ -254,7 +350,6 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       setSlotStatuses(finalStatuses);
       setGameState("lost");
       saveStreak(date, false);
-      // Fill in correct answers for display
       setGuesses((prev) => {
         const filled = [...prev];
         for (const i of blankIndices) {
@@ -266,7 +361,6 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       });
     }
 
-    // Focus first unsolved slot
     const nextUnsolved = blankIndices.find(
       (i) => newStatuses[i] !== "correct",
     );
@@ -283,21 +377,11 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
     attempts,
     slotStatuses,
     revealedLetters,
+    blankIndices,
     date,
   ]);
 
-  // Keyboard submit
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (showSplash || gameState !== "playing") return;
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleSubmit();
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [showSplash, gameState, handleSubmit]);
+  // No global Enter handler — Enter is handled per-input in onKeyDown
 
   // Share
   const handleShare = async () => {
@@ -460,46 +544,23 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
                       }}
                       onFocus={() => setActiveSlot(i)}
                       onKeyDown={(e) => {
-                        if (e.key === "Tab" || e.key === "Enter") {
+                        if (e.key === "Enter") {
                           e.preventDefault();
-                          // Find unfilled blank slots
-                          const blankIndices = chain
-                            .map((_, idx) => idx)
-                            .filter(
-                              (idx) =>
-                                idx !== 0 &&
-                                idx !== chain.length - 1 &&
-                                slotStatuses[idx] !== "correct",
-                            );
-
-                          if (e.key === "Enter") {
-                            // If all blanks are filled, submit
-                            const allFilled = blankIndices.every(
-                              (idx) => guesses[idx].trim().length > 0,
-                            );
-                            if (allFilled) {
-                              handleSubmit();
-                              return;
-                            }
-                            // Otherwise move to next empty slot
-                            const nextEmpty = blankIndices.find(
-                              (idx) => idx !== i && guesses[idx].trim().length === 0,
-                            );
-                            if (nextEmpty !== undefined) {
-                              setActiveSlot(nextEmpty);
-                              return;
-                            }
-                            // All filled from this perspective, submit anyway
-                            handleSubmit();
-                            return;
+                          if (guesses[i].trim().length > 0) {
+                            handleCheckSlot(i);
                           }
-
-                          // Tab: cycle through blank slots
-                          const currentPos = blankIndices.indexOf(i);
+                          return;
+                        }
+                        if (e.key === "Tab") {
+                          e.preventDefault();
+                          const openSlots = blankIndices.filter(
+                            (idx) => slotStatuses[idx] !== "correct",
+                          );
+                          const currentPos = openSlots.indexOf(i);
                           const nextPos = e.shiftKey
-                            ? (currentPos - 1 + blankIndices.length) % blankIndices.length
-                            : (currentPos + 1) % blankIndices.length;
-                          setActiveSlot(blankIndices[nextPos]);
+                            ? (currentPos - 1 + openSlots.length) % openSlots.length
+                            : (currentPos + 1) % openSlots.length;
+                          setActiveSlot(openSlots[nextPos]);
                         }
                       }}
                       className="w-full bg-transparent text-center uppercase tracking-widest outline-none placeholder:text-zinc-300 placeholder:normal-case placeholder:tracking-normal dark:placeholder:text-zinc-600"
