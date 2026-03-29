@@ -266,14 +266,19 @@ export default function Game2048() {
     return () => window.removeEventListener("keydown", handler);
   }, [started, handleMove]);
 
-  // Touch input
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    touchStart.current = { x: touch.clientX, y: touch.clientY };
-  }, []);
+  // Touch input — use native listeners so we can preventDefault to block page scroll
+  useEffect(() => {
+    const board = boardRef.current;
+    if (!board) return;
 
-  const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      touchStart.current = { x: touch.clientX, y: touch.clientY };
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
       if (!touchStart.current) return;
       const touch = e.changedTouches[0];
       const dx = touch.clientX - touchStart.current.x;
@@ -290,9 +295,15 @@ export default function Game2048() {
         handleMove(dy > 0 ? "down" : "up");
       }
       touchStart.current = null;
-    },
-    [handleMove],
-  );
+    };
+
+    board.addEventListener("touchstart", onTouchStart, { passive: false });
+    board.addEventListener("touchend", onTouchEnd, { passive: false });
+    return () => {
+      board.removeEventListener("touchstart", onTouchStart);
+      board.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [handleMove]);
 
   // ── Menu screen ─────────────────────────────────────────────────────────────
 
@@ -379,9 +390,7 @@ export default function Game2048() {
       {/* Board */}
       <div
         ref={boardRef}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        className="relative bg-stone-300 rounded-xl p-2 sm:p-3"
+        className="relative bg-stone-300 rounded-xl p-2 sm:p-3 touch-none"
       >
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
           {board.flatMap((row, r) =>

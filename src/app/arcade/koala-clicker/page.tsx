@@ -9,9 +9,11 @@ export const metadata = {
 
 export default function KoalaClickerPage() {
   return (
-    <main>
+    <main className="overflow-hidden max-h-[100dvh]">
       <KoalaClicker />
-      <MoreArcadeGames currentSlug="koala-clicker" />
+      <div className="hidden lg:block">
+        <MoreArcadeGames currentSlug="koala-clicker" />
+      </div>
     </main>
   );
 }
