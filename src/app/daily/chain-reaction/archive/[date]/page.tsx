@@ -1,25 +1,31 @@
 import ChainReactionGame from "@/components/ChainReactionGame";
 import {
+  getChainReactionPuzzleByDate,
   getChainReactionPuzzle,
-  getTodayDate,
 } from "@/lib/chain-reaction-puzzles";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
-export const revalidate = 60;
+interface Props {
+  params: Promise<{ date: string }>;
+}
 
-export const metadata = {
-  title: "Chain Reaction — Gamesite",
-  description:
-    "Complete the word chain — each pair of neighbors forms a compound word or phrase.",
-};
+export default async function ChainReactionArchivePuzzlePage({ params }: Props) {
+  const { date } = await params;
 
-export default function ChainReactionPage() {
-  const today = getTodayDate();
-  const puzzle = getChainReactionPuzzle(today);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    notFound();
+  }
+
+  // Try Supabase first, then fall back to seed data
+  let puzzle = await getChainReactionPuzzleByDate(date);
+  if (!puzzle) {
+    puzzle = getChainReactionPuzzle(date);
+  }
 
   return (
     <main>
-      <ChainReactionGame puzzle={puzzle} date={today} />
+      <ChainReactionGame puzzle={puzzle} date={date} />
       <div className="fixed bottom-4 left-4">
         <Link
           href="/daily/chain-reaction/archive"
@@ -28,7 +34,7 @@ export default function ChainReactionPage() {
                      hover:bg-surface-hover hover:text-text-secondary transition-all
                      no-underline"
         >
-          Past puzzles
+          &larr; Archive
         </Link>
       </div>
     </main>
