@@ -55,13 +55,6 @@ export default function SubscribePage() {
               Premium
             </span>
 
-            <div className="mb-2">
-              <span className="text-5xl font-extrabold text-white">$6</span>
-              <span className="text-white/70 text-lg">/month</span>
-            </div>
-
-            <p className="text-white/60 text-sm mb-6">Cancel anytime</p>
-
             <ul className="space-y-2.5 text-left max-w-[280px] mx-auto mb-8">
               {[
                 "Full archive for all 14+ daily games",
@@ -85,20 +78,27 @@ export default function SubscribePage() {
                 You&apos;re subscribed!
               </div>
             ) : (
-              <button
-                onClick={() => handleCheckout(STRIPE_PRICES.premium_monthly, "subscription")}
-                disabled={loading === STRIPE_PRICES.premium_monthly}
-                className="inline-flex items-center justify-center bg-white text-teal font-bold rounded-full
-                           px-8 py-3 text-sm shadow-lg shadow-black/10
-                           hover:shadow-xl hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
-              >
-                {loading === STRIPE_PRICES.premium_monthly ? "Redirecting…" : "Subscribe Now"}
-                {loading !== STRIPE_PRICES.premium_monthly && (
-                  <svg className="ml-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                  </svg>
-                )}
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => handleCheckout(STRIPE_PRICES.premium_monthly, "subscription")}
+                  disabled={loading === STRIPE_PRICES.premium_monthly}
+                  className="inline-flex items-center justify-center bg-white/20 text-white font-bold rounded-full
+                             px-6 py-3 text-sm border border-white/30
+                             hover:bg-white/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+                >
+                  {loading === STRIPE_PRICES.premium_monthly ? "Redirecting…" : "$3/month"}
+                </button>
+                <button
+                  onClick={() => handleCheckout(STRIPE_PRICES.premium_annual, "subscription")}
+                  disabled={loading === STRIPE_PRICES.premium_annual}
+                  className="inline-flex items-center justify-center bg-white text-teal font-bold rounded-full
+                             px-6 py-3 text-sm shadow-lg shadow-black/10
+                             hover:shadow-xl hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+                >
+                  {loading === STRIPE_PRICES.premium_annual ? "Redirecting…" : "$30/year"}
+                  <span className="ml-1.5 text-xs font-semibold text-teal/70">Save 17%</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
