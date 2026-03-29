@@ -5,8 +5,8 @@
       "args": ["-y", "vercel-mcp"]
     },
     "supabase": {
-      "command": "npx",
-      "args": ["-y", "@supabase/mcp-server-supabase@latest", "--read-only"]
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=rbsjmgszwwngywisgiqt"
     }
   }
 }
