@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import TopNav from "@/components/layout/TopNav";
 import CookieBanner from "@/components/CookieBanner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -46,6 +47,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-TB8LQYPT6J"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-TB8LQYPT6J');
+          `}
+        </Script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

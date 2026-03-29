@@ -177,6 +177,7 @@ export const movieBank: string[] = [
   "The Departed", "Casino Royale", "Skyfall",
   "Everything Everywhere All at Once", "Dune", "Dune: Part Two",
   "Oppenheimer", "Barbie", "The Batman",
+  "Milk Money",
 ];
 
 // ---------------------------------------------------------------------------
