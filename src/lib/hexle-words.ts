@@ -96,3 +96,36 @@ export function getFallbackHexleWord(date: string): string {
 export function isValidGuess(word: string): boolean {
   return VALID_GUESSES.has(word.toUpperCase());
 }
+
+export function getTodayDate(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
+export function getSeedPuzzleCount(): number {
+  return uniqueAnswers.length;
+}
+
+/** Fetch all hexle archive dates from Supabase. */
+export async function getHexleArchiveDates(): Promise<
+  { puzzle_date: string }[]
+> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  const today = getTodayDate();
+  const { data, error } = await supabase
+    .from("hexle_puzzles")
+    .select("puzzle_date")
+    .lte("puzzle_date", today)
+    .order("puzzle_date", { ascending: false });
+
+  if (error || !data) return [];
+  return data as { puzzle_date: string }[];
+}
+
+/** Fetch a hexle puzzle by specific date (for archive). */
+export async function getHexlePuzzleByDate(
+  date: string
+): Promise<string | null> {
+  return getHexlePuzzle(date);
+}
