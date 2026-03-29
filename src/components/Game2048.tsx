@@ -272,12 +272,14 @@ export default function Game2048() {
     if (!board) return;
 
     const onTouchStart = (e: TouchEvent) => {
+      if (gameOver) return;
       e.preventDefault();
       const touch = e.touches[0];
       touchStart.current = { x: touch.clientX, y: touch.clientY };
     };
 
     const onTouchEnd = (e: TouchEvent) => {
+      if (gameOver) return;
       e.preventDefault();
       if (!touchStart.current) return;
       const touch = e.changedTouches[0];
@@ -303,7 +305,7 @@ export default function Game2048() {
       board.removeEventListener("touchstart", onTouchStart);
       board.removeEventListener("touchend", onTouchEnd);
     };
-  }, [handleMove]);
+  }, [handleMove, gameOver]);
 
   // ── Menu screen ─────────────────────────────────────────────────────────────
 
