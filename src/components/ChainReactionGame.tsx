@@ -479,7 +479,7 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
                         }
                       }}
                       className="w-full bg-transparent text-center uppercase tracking-widest outline-none placeholder:text-zinc-300 placeholder:normal-case placeholder:tracking-normal dark:placeholder:text-zinc-600"
-                      disabled={isFinished || status === "correct"}
+                      disabled={isFinished}
                       autoComplete="off"
                       spellCheck={false}
                     />
