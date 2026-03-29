@@ -3,6 +3,9 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import type { CrosswordPuzzle, CrosswordClue } from "@/types/crossword";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -39,8 +42,11 @@ export default function CrosswordGame({ puzzle }: Props) {
   const [confirmedCorrect, setConfirmedCorrect] = useState<Set<string>>(new Set());
   const [checkedWrong, setCheckedWrong] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  const { stats, recordGame } = useGameStats("crossword", puzzle.date);
 
   // All clues flat
   const allClues = useMemo(
@@ -249,8 +255,10 @@ export default function CrosswordGame({ puzzle }: Props) {
     }
     if (allCorrect && Object.keys(userGrid).length > 0) {
       setSolved(true);
+      recordGame(true, 1);
+      setTimeout(() => setShowStats(true), 800);
     }
-  }, [userGrid, allClues, solved]);
+  }, [userGrid, allClues, solved, recordGame]);
 
   // Check answers
   const handleCheck = () => {
@@ -324,6 +332,7 @@ export default function CrosswordGame({ puzzle }: Props) {
           {puzzle.title}
         </h1>
         <p className="text-text-muted text-sm mt-1">{puzzle.subtitle}</p>
+        <StatsButton onClick={() => setShowStats(true)} />
       </div>
 
       {solved && (
@@ -481,6 +490,14 @@ export default function CrosswordGame({ puzzle }: Props) {
           </div>
         </div>
       </div>
+
+      <StatsModal
+        open={showStats}
+        onClose={() => setShowStats(false)}
+        stats={stats}
+        gameName="News Crossword"
+        color="amber"
+      />
     </div>
   );
 }

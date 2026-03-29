@@ -3,6 +3,9 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { countryNames, type GeoPuzzle } from "@/lib/geo-puzzles";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 const MAX_GUESSES = 4;
 const STORAGE_KEY = "geoguess-streak";
@@ -51,6 +54,8 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
   const [copied, setCopied] = useState(false);
   const [streak, setStreak] = useState(0);
   const [highlightIdx, setHighlightIdx] = useState(-1);
+  const [showStats, setShowStats] = useState(false);
+  const { stats, recordGame } = useGameStats("geo-guess", date);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -117,6 +122,8 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
             : 1;
         saveStreak({ current: newStreak, lastDate: date });
         setStreak(newStreak);
+        recordGame(true, newGuesses.length);
+        setTimeout(() => setShowStats(true), 800);
         return;
       }
 
@@ -129,6 +136,8 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
           saveStreak({ current: 0, lastDate: date });
           setStreak(0);
         }
+        recordGame(false, newGuesses.length);
+        setTimeout(() => setShowStats(true), 800);
         return;
       }
     },
@@ -241,8 +250,11 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
             </h1>
             <p className="text-text-dim text-xs">{date}</p>
           </div>
-          <div className="text-sm text-text-muted font-medium tabular-nums">
-            {guesses.length} / {MAX_GUESSES} guesses
+          <div className="flex items-center gap-2">
+            <div className="text-sm text-text-muted font-medium tabular-nums">
+              {guesses.length} / {MAX_GUESSES} guesses
+            </div>
+            <StatsButton onClick={() => setShowStats(true)} />
           </div>
         </div>
 
@@ -478,6 +490,15 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
           </div>
         )}
       </div>
+
+      <StatsModal
+        open={showStats}
+        onClose={() => setShowStats(false)}
+        stats={stats}
+        gameName="GeoGuess"
+        color="green"
+        maxGuesses={MAX_GUESSES}
+      />
     </div>
   );
 }

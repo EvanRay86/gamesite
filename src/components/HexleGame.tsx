@@ -4,6 +4,9 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import type { LetterStatus, HexleGuess } from "@/types/hexle";
 import { isValidGuess } from "@/lib/hexle-words";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 const WORD_LENGTH = 6;
 const MAX_GUESSES = 7;
@@ -73,7 +76,9 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
   const [copied, setCopied] = useState(false);
   const [streak, setStreak] = useState(0);
   const [bounceRow, setBounceRow] = useState(-1);
+  const [showStats, setShowStats] = useState(false);
   const gameRef = useRef<HTMLDivElement>(null);
+  const { stats, recordGame } = useGameStats("hexle", puzzleDate);
 
   // Load streak from localStorage
   useEffect(() => {
@@ -183,12 +188,15 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
           setWon(true);
           setGameOver(true);
           saveStats(true, newGuesses.length);
+          recordGame(true, newGuesses.length);
+          setTimeout(() => setShowStats(true), 600);
         }, 600);
       } else if (isLoss) {
         setTimeout(() => {
           setGameOver(true);
           saveStats(false, newGuesses.length);
-          showToast(answer);
+          recordGame(false, newGuesses.length);
+          setTimeout(() => setShowStats(true), 600);
         }, 200);
       }
     }, WORD_LENGTH * 100 + 300);
@@ -309,7 +317,10 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
       )}
 
       {/* Header */}
-      <div className="text-center mb-4 w-full max-w-[400px]">
+      <div className="text-center mb-4 w-full max-w-[400px] relative">
+        <div className="absolute right-0 top-0">
+          <StatsButton onClick={() => setShowStats(true)} />
+        </div>
         <h1 className="font-display text-4xl text-text-primary tracking-tight">
           Hexle
         </h1>
@@ -453,6 +464,15 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
       <div className="mt-auto pt-6 text-text-dim/30 text-[11px] tracking-wider">
         {puzzleDate}
       </div>
+
+      <StatsModal
+        open={showStats}
+        onClose={() => setShowStats(false)}
+        stats={stats}
+        gameName="Hexle"
+        color="amber"
+        maxGuesses={MAX_GUESSES}
+      />
     </div>
   );
 }
