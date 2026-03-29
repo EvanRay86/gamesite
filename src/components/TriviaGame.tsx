@@ -97,6 +97,22 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
     [locked, current, totalQ, questions, streak, bestStreak]
   );
 
+  // ── Keyboard shortcuts (1-4 for answers) ───────────────
+  useEffect(() => {
+    if (screen !== "playing" || locked) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const num = parseInt(e.key);
+      if (num >= 1 && num <= questions[current].options.length) {
+        e.preventDefault();
+        handleAnswer(num - 1);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [screen, locked, handleAnswer, questions, current]);
+
   // ── Share ───────────────────────────────────────────────
   const handleShare = useCallback(async () => {
     const lines = answers.map((a, i) => {
@@ -280,8 +296,8 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
           {q.question}
         </h2>
 
-        {/* Options — click = instant answer */}
-        <div className="space-y-3">
+        {/* Options — click or press 1-4 */}
+        <div role="group" aria-label="Answer options — press 1 through 4 to answer" className="space-y-3">
           {q.options.map((opt, i) => {
             const isPicked = picked === i;
             const isCorrectAnswer = i === q.correctIndex;
@@ -302,6 +318,7 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
                 key={i}
                 onClick={() => handleAnswer(i)}
                 disabled={locked}
+                aria-label={`Option ${String.fromCharCode(65 + i)}: ${opt}`}
                 className={`w-full text-left px-5 py-4 rounded-xl border
                            font-medium text-base transition-all duration-200
                            cursor-pointer disabled:cursor-default
@@ -319,7 +336,7 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
       </div>
 
       {/* Score ticker */}
-      <div className="mt-6 flex items-center gap-4 text-text-dim text-sm">
+      <div aria-live="polite" className="mt-6 flex items-center gap-4 text-text-dim text-sm">
         <span>
           Score: <span className="text-text-primary font-bold">{score}</span>
         </span>

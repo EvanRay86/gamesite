@@ -414,7 +414,7 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
         {/* Input area */}
         {!isFinished && (
           <div className="relative" ref={dropdownRef}>
-            <div className="relative">
+            <div className="relative" role="combobox" aria-expanded={showDropdown && suggestions.length > 0} aria-haspopup="listbox">
               <input
                 ref={inputRef}
                 type="text"
@@ -428,6 +428,10 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="Type a country name..."
+                aria-label="Country name"
+                aria-autocomplete="list"
+                aria-controls="geo-suggestions"
+                aria-activedescendant={highlightIdx >= 0 ? `geo-option-${highlightIdx}` : undefined}
                 className="w-full rounded-xl border-2 border-border-light bg-white px-4 py-3 text-sm
                            text-text-primary placeholder-text-dim
                            focus:border-green focus:outline-none transition-colors"
@@ -435,10 +439,13 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
 
               {/* Dropdown */}
               {showDropdown && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-border-light shadow-lg z-20 overflow-hidden">
+                <div id="geo-suggestions" role="listbox" aria-label="Country suggestions" className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-border-light shadow-lg z-20 overflow-hidden">
                   {suggestions.map((name, i) => (
                     <button
                       key={name}
+                      id={`geo-option-${i}`}
+                      role="option"
+                      aria-selected={i === highlightIdx}
                       onClick={() => submitGuess(name)}
                       className={`w-full text-left px-4 py-2.5 text-sm text-text-primary
                                  transition-colors border-b border-border-light last:border-0 ${

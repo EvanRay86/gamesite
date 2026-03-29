@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import type { Top5Puzzle, Top5Item } from "@/types/top5";
 import { useReorder } from "@/lib/use-reorder";
 import { shareOrCopy } from "@/lib/share";
@@ -62,6 +62,8 @@ export default function Top5Game({ puzzle }: { puzzle: Top5Puzzle }) {
 
   const [order, setOrder] = useState<Top5Item[]>(initialOrder);
   const [scores, setScores] = useState<number[] | null>(null);
+  const [kbFocusIdx, setKbFocusIdx] = useState(0);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const s = loadStreak();
@@ -78,6 +80,42 @@ export default function Top5Game({ puzzle }: { puzzle: Top5Puzzle }) {
     handlePointerUp,
     handleTap,
   } = useReorder(order, setOrder);
+
+  // Keyboard reordering: focus item with Up/Down, Shift+Up/Down to move item
+  const handleListKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "ArrowDown" && !e.shiftKey) {
+        e.preventDefault();
+        setKbFocusIdx((prev) => Math.min(prev + 1, order.length - 1));
+      } else if (e.key === "ArrowUp" && !e.shiftKey) {
+        e.preventDefault();
+        setKbFocusIdx((prev) => Math.max(prev - 1, 0));
+      } else if (e.key === "ArrowDown" && e.shiftKey) {
+        e.preventDefault();
+        setKbFocusIdx((prev) => {
+          if (prev >= order.length - 1) return prev;
+          setOrder((o) => {
+            const next = [...o];
+            [next[prev], next[prev + 1]] = [next[prev + 1], next[prev]];
+            return next;
+          });
+          return prev + 1;
+        });
+      } else if (e.key === "ArrowUp" && e.shiftKey) {
+        e.preventDefault();
+        setKbFocusIdx((prev) => {
+          if (prev <= 0) return prev;
+          setOrder((o) => {
+            const next = [...o];
+            [next[prev], next[prev - 1]] = [next[prev - 1], next[prev]];
+            return next;
+          });
+          return prev - 1;
+        });
+      }
+    },
+    [order.length]
+  );
 
   const handleSubmit = useCallback(() => {
     const s: number[] = order.map((item, i) => {
@@ -246,7 +284,11 @@ export default function Top5Game({ puzzle }: { puzzle: Top5Puzzle }) {
 
       <div
         ref={containerRef as React.RefObject<HTMLDivElement>}
-        className="w-full max-w-md space-y-2 mb-8"
+        role="listbox"
+        aria-label="Ranking list — use Arrow keys to navigate, Shift+Arrow to reorder"
+        tabIndex={0}
+        onKeyDown={handleListKeyDown}
+        className="w-full max-w-md space-y-2 mb-8 outline-none"
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
@@ -254,10 +296,14 @@ export default function Top5Game({ puzzle }: { puzzle: Top5Puzzle }) {
           const isDragging = activeIndex === i;
           const isOver = overIndex === i && activeIndex !== null && activeIndex !== i;
           const isSelected = selectedIndex === i;
+          const isKbFocused = kbFocusIdx === i;
 
           return (
             <div
               key={item.name}
+              role="option"
+              aria-selected={isSelected || isKbFocused}
+              aria-label={`Position ${i + 1}: ${item.name}`}
               onPointerDown={(e) => handlePointerDown(i, e)}
               onClick={() => handleTap(i)}
               className={`flex items-center gap-3 rounded-xl border px-4 py-4 cursor-grab select-none
@@ -265,6 +311,7 @@ export default function Top5Game({ puzzle }: { puzzle: Top5Puzzle }) {
                          ${isDragging ? "opacity-50 scale-95" : ""}
                          ${isOver ? "border-amber shadow-md" : "border-border-light"}
                          ${isSelected ? "border-amber bg-amber/10 ring-2 ring-amber/30" : "bg-surface/80"}
+                         ${isKbFocused && !isSelected ? "ring-2 ring-sky/50" : ""}
                          hover:bg-surface-hover active:scale-[0.98]`}
               style={{ touchAction: "none" }}
             >
