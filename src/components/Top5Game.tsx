@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Top5Puzzle, Top5Item } from "@/types/top5";
 import { useReorder } from "@/lib/use-reorder";
+import { shareOrCopy } from "@/lib/share";
 
 type Screen = "splash" | "playing" | "results";
 
@@ -113,21 +114,10 @@ export default function Top5Game({ puzzle }: { puzzle: Top5Puzzle }) {
       .map((s) => (s === 2 ? "\uD83D\uDFE9" : s === 1 ? "\uD83D\uDFE8" : "\uD83D\uDFE5"))
       .join("");
 
-    const text = `Top 5 \u2014 ${puzzle.puzzle_date}\n"${puzzle.category}"\n${emoji}\nScore: ${total}/10\ngamesite-orpin.vercel.app/daily/top-5`;
+    const text = `Top 5 \u2014 ${puzzle.puzzle_date}\n"${puzzle.category}"\n${emoji}\nScore: ${total}/10\ngamesite.app/daily/top-5`;
 
-    try {
-      await navigator.clipboard.writeText(text);
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setShared(true);
       setTimeout(() => setShared(false), 2000);
     }

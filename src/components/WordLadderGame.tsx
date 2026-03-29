@@ -6,6 +6,7 @@ import {
   differsByOneLetter,
   type WordLadderPuzzle,
 } from "@/lib/word-ladder-puzzles";
+import { shareOrCopy } from "@/lib/share";
 
 type GameState = "playing" | "won" | "lost";
 
@@ -220,16 +221,16 @@ export default function WordLadderGame({ puzzle, date }: Props) {
     const steps = chain.length - 1;
     const emoji = gameState === "won" ? "\u2705" : "\u274C";
     const chainStr = chain.map((w) => w.toUpperCase()).join(" \u2192 ");
-    return `\uD83E\uDDF1 Word Ladder ${emoji}\n${puzzle.start.toUpperCase()} \u2192 ${puzzle.end.toUpperCase()}\nSteps: ${steps} (optimal: ${optimalSteps})\n${chainStr}\ngamesite.com`;
+    return `\uD83E\uDDF1 Word Ladder ${emoji}\n${puzzle.start.toUpperCase()} \u2192 ${puzzle.end.toUpperCase()}\nSteps: ${steps} (optimal: ${optimalSteps})\n${chainStr}\ngamesite.app/daily/word-ladder`;
   }, [gameState, chain, puzzle, optimalSteps]);
 
   const handleShare = useCallback(async () => {
     const text = generateShareText();
-    try {
-      await navigator.clipboard.writeText(text);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {}
+    }
   }, [generateShareText]);
 
   // ---------------------------------------------------------------------------

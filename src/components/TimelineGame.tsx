@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import type { TimelinePuzzle, TimelineEvent } from "@/types/timeline";
 import { useReorder } from "@/lib/use-reorder";
+import { shareOrCopy } from "@/lib/share";
 
 type Screen = "splash" | "playing" | "results";
 
@@ -145,21 +146,10 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
     const status = won
       ? `Solved ${attemptsUsed}/${MAX_ATTEMPTS}`
       : `X/${MAX_ATTEMPTS}`;
-    const text = `Timeline \u2014 ${puzzle.puzzle_date}\n${status}\n${lines.join("\n")}\ngamesite-orpin.vercel.app/daily/timeline`;
+    const text = `Timeline \u2014 ${puzzle.puzzle_date}\n${status}\n${lines.join("\n")}\ngamesite.app/daily/timeline`;
 
-    try {
-      await navigator.clipboard.writeText(text);
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
+    const ok = await shareOrCopy(text);
+    if (ok) {
       setShared(true);
       setTimeout(() => setShared(false), 2000);
     }

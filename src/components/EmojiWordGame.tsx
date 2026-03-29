@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import type { EmojiWordPuzzle } from "@/types/emoji-word";
+import { shareOrCopy } from "@/lib/share";
 
 const MAX_GUESSES_PER_ROUND = 3;
 
@@ -136,16 +137,18 @@ export default function EmojiWordGame({
   const totalStars = results.reduce((sum, r) => sum + getStars(r), 0);
   const maxStars = totalRounds * MAX_GUESSES_PER_ROUND;
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const lines = results.map((r, i) => {
       const stars = getStars(r);
       const starEmoji = stars > 0 ? "⭐".repeat(stars) : "❌";
       return `${rounds[i].emojis} ${starEmoji}`;
     });
-    const text = `Emoji Decoder ${puzzle.puzzle_date}\n${lines.join("\n")}\n${solvedCount}/${totalRounds} solved — ${totalStars}/${maxStars} ⭐`;
-    navigator.clipboard.writeText(text);
-    setShared(true);
-    setTimeout(() => setShared(false), 2000);
+    const text = `Emoji Decoder ${puzzle.puzzle_date}\n${lines.join("\n")}\n${solvedCount}/${totalRounds} solved — ${totalStars}/${maxStars} ⭐\ngamesite.app/daily/emoji-word`;
+    const ok = await shareOrCopy(text);
+    if (ok) {
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    }
   };
 
   const diffColor = DIFFICULTY_COLORS[currentRound?.difficulty ?? 1];

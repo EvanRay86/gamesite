@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { AnagramPuzzle } from "@/types/anagram";
+import { shareOrCopy } from "@/lib/share";
 
 const TIME_LIMIT = 30; // seconds per word
 
@@ -108,12 +109,14 @@ export default function AnagramGame({ puzzle }: { puzzle: AnagramPuzzle }) {
   const solvedCount = results.filter((r) => r.solved).length;
   const totalTime = results.reduce((sum, r) => sum + r.timeTaken, 0);
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const emoji = results.map((r) => (r.solved ? "✅" : "❌")).join("");
-    const text = `Anagram Scramble ${puzzle.puzzle_date}\n${emoji}\n${solvedCount}/${totalWords} solved`;
-    navigator.clipboard.writeText(text);
-    setShared(true);
-    setTimeout(() => setShared(false), 2000);
+    const text = `Anagram Scramble ${puzzle.puzzle_date}\n${emoji}\n${solvedCount}/${totalWords} solved\ngamesite.app/daily/anagram`;
+    const ok = await shareOrCopy(text);
+    if (ok) {
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    }
   };
 
   // ── Timer bar color ───────────────────────────────────────
