@@ -85,6 +85,12 @@ export async function GET() {
     .select("id, puzzle_date, word, created_at")
     .order("puzzle_date", { ascending: true });
 
+  // Fetch chain reaction puzzles (table may not exist yet — fail gracefully)
+  const { data: chainReaction } = await supabase
+    .from("chain_reaction_puzzles")
+    .select("id, puzzle_date, chain, created_at")
+    .order("puzzle_date", { ascending: true });
+
   if (triviaErr || crosswordErr || clustersErr) {
     return NextResponse.json(
       { error: "Failed to fetch puzzles", details: { triviaErr, crosswordErr, clustersErr } },
@@ -105,6 +111,7 @@ export async function GET() {
     quotable: quotable ?? [],
     timeline: timeline ?? [],
     hexle: hexle ?? [],
+    chainReaction: chainReaction ?? [],
     fetchedAt: new Date().toISOString(),
   });
 }

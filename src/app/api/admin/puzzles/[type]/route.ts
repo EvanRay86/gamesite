@@ -16,6 +16,7 @@ const TABLE_MAP: Record<string, string> = {
   quotable: "quotable_puzzles",
   timeline: "timeline_puzzles",
   hexle: "hexle_puzzles",
+  "chain-reaction": "chain_reaction_puzzles",
 };
 
 function getTable(type: string): string | null {
