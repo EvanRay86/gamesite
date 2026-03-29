@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { shareOrCopy } from "@/lib/share";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -183,6 +184,8 @@ export default function Game2048() {
   const [keepPlaying, setKeepPlaying] = useState(false);
   const [started, setStarted] = useState(false);
 
+  const [copied, setCopied] = useState(false);
+
   // Touch handling
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
@@ -218,6 +221,16 @@ export default function Game2048() {
     setKeepPlaying(false);
     setStarted(true);
   }, []);
+
+  const handleShare = useCallback(async () => {
+    const maxTile = Math.max(...board.flat());
+    const text = `🎮 2048 — Score: ${score.toLocaleString()} | Best tile: ${maxTile}\nPlay at gamesite.app/arcade/2048`;
+    const ok = await shareOrCopy(text);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [board, score]);
 
   const handleMove = useCallback(
     (direction: Direction) => {
@@ -420,6 +433,13 @@ export default function Game2048() {
             <p className="text-4xl font-black text-white">You Win!</p>
             <div className="flex gap-3">
               <button
+                onClick={handleShare}
+                className="bg-white text-stone-700 px-5 py-2 rounded-lg font-bold
+                           hover:bg-stone-100 transition-colors"
+              >
+                {copied ? "Copied!" : "Share Score"}
+              </button>
+              <button
                 onClick={() => setKeepPlaying(true)}
                 className="bg-white text-stone-700 px-5 py-2 rounded-lg font-bold
                            hover:bg-stone-100 transition-colors"
@@ -444,14 +464,23 @@ export default function Game2048() {
             <p className="text-lg text-stone-500">
               Score: {score.toLocaleString()}
             </p>
-            <button
-              onClick={startGame}
-              className="bg-gradient-to-br from-amber-400 to-amber-600 text-white
-                         px-6 py-2.5 rounded-lg font-bold
-                         hover:scale-105 transition-transform"
-            >
-              Try Again
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleShare}
+                className="bg-stone-600 text-white px-5 py-2.5 rounded-lg font-bold
+                           hover:bg-stone-700 transition-colors"
+              >
+                {copied ? "Copied!" : "Share Score"}
+              </button>
+              <button
+                onClick={startGame}
+                className="bg-gradient-to-br from-amber-400 to-amber-600 text-white
+                           px-5 py-2.5 rounded-lg font-bold
+                           hover:scale-105 transition-transform"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         )}
       </div>
