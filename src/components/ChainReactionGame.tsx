@@ -460,9 +460,9 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
                       }}
                       onFocus={() => setActiveSlot(i)}
                       onKeyDown={(e) => {
-                        if (e.key === "Tab") {
+                        if (e.key === "Tab" || e.key === "Enter") {
                           e.preventDefault();
-                          // Find next blank slot
+                          // Find unfilled blank slots
                           const blankIndices = chain
                             .map((_, idx) => idx)
                             .filter(
@@ -471,6 +471,30 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
                                 idx !== chain.length - 1 &&
                                 slotStatuses[idx] !== "correct",
                             );
+
+                          if (e.key === "Enter") {
+                            // If all blanks are filled, submit
+                            const allFilled = blankIndices.every(
+                              (idx) => guesses[idx].trim().length > 0,
+                            );
+                            if (allFilled) {
+                              handleSubmit();
+                              return;
+                            }
+                            // Otherwise move to next empty slot
+                            const nextEmpty = blankIndices.find(
+                              (idx) => idx !== i && guesses[idx].trim().length === 0,
+                            );
+                            if (nextEmpty !== undefined) {
+                              setActiveSlot(nextEmpty);
+                              return;
+                            }
+                            // All filled from this perspective, submit anyway
+                            handleSubmit();
+                            return;
+                          }
+
+                          // Tab: cycle through blank slots
                           const currentPos = blankIndices.indexOf(i);
                           const nextPos = e.shiftKey
                             ? (currentPos - 1 + blankIndices.length) % blankIndices.length
