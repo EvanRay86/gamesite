@@ -599,24 +599,24 @@ export default function KoalaClicker() {
     [],
   );
 
-  // ── Auto-save every 15s (local) + every 30s (cloud) ───────────────
+  // ── Auto-save every 5s (local) + every 30s (cloud) ────────────────
   const cloudTickRef = useRef(0);
   useEffect(() => {
     if (!loaded) return;
     const interval = setInterval(() => {
       const save = saveToLocal();
       cloudTickRef.current++;
-      // Cloud save every other tick (30s)
-      if (cloudTickRef.current % 2 === 0) {
+      // Cloud save every 6th tick (30s)
+      if (cloudTickRef.current % 6 === 0) {
         saveToCloud(save);
       }
-    }, 15000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [loaded, saveToLocal, saveToCloud]);
 
-  // Save on unmount
+  // Save on unmount + visibility change (mobile browsers don't fire beforeunload)
   useEffect(() => {
-    const handleUnload = () => {
+    const doSave = () => {
       const save = buildSaveData(leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, lifetimeClicks, unlockedAchievements, goldenLeavesClicked);
       try {
         localStorage.setItem(SAVE_KEY, JSON.stringify(save));
@@ -638,8 +638,15 @@ export default function KoalaClicker() {
         );
       }
     };
-    window.addEventListener("beforeunload", handleUnload);
-    return () => window.removeEventListener("beforeunload", handleUnload);
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") doSave();
+    };
+    window.addEventListener("beforeunload", doSave);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.removeEventListener("beforeunload", doSave);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, lifetimeClicks, unlockedAchievements, goldenLeavesClicked]);
 
   // ── Production tick (10 times/sec) ──────────────────────────────────
@@ -695,14 +702,22 @@ export default function KoalaClicker() {
       const cost = getCost(upgrade);
       if (leaves < cost) return;
 
-      setLeaves((l) => l - cost);
-      setUpgrades((prev) =>
-        prev.map((u) =>
-          u.id === upgradeId ? { ...u, owned: u.owned + 1 } : u,
-        ),
+      const newLeaves = leaves - cost;
+      const newUpgrades = upgrades.map((u) =>
+        u.id === upgradeId ? { ...u, owned: u.owned + 1 } : u,
       );
+      setLeaves(newLeaves);
+      setUpgrades(newUpgrades);
+
+      // Save immediately after purchase
+      try {
+        const save = buildSaveData(newLeaves, totalLeaves, totalClicks, newUpgrades, prestigeLevel, essenceCount, lifetimeLeaves, lifetimeClicks, unlockedAchievements, goldenLeavesClicked);
+        localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+      } catch {
+        // ignore
+      }
     },
-    [leaves, upgrades],
+    [leaves, totalLeaves, totalClicks, upgrades, prestigeLevel, essenceCount, lifetimeLeaves, lifetimeClicks, unlockedAchievements, goldenLeavesClicked],
   );
 
   // ── Prestige / Ascend ──────────────────────────────────────────────
