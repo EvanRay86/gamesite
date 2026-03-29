@@ -4,6 +4,7 @@ import {
   cleanupSession,
 } from "@/lib/trailer-frames";
 import { getSupabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
 interface SaveBody {
   sessionId: string;
@@ -17,6 +18,9 @@ interface SaveBody {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ("error" in auth) return auth.error;
+
   const body = (await req.json()) as SaveBody;
 
   const { sessionId, selectedFrames, title, year, date, variant, movieSlug } =

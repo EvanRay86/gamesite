@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
 interface SaveBody {
   soundcloudUrl: string;
@@ -11,6 +12,9 @@ interface SaveBody {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ("error" in auth) return auth.error;
+
   const body = (await req.json()) as SaveBody;
 
   const { soundcloudUrl, title, artist, year, date, variant } = body;

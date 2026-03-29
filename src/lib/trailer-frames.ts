@@ -136,6 +136,10 @@ export async function readFrameImage(
   sessionId: string,
   filename: string,
 ): Promise<Buffer> {
+  // Prevent path traversal via sessionId
+  if (sessionId.includes("..") || sessionId.includes("/") || sessionId.includes("\\")) {
+    throw new Error("Invalid session ID");
+  }
   const framePath = path.join(TEMP_BASE, sessionId, "frames", filename);
   return fs.readFile(framePath);
 }

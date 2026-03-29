@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { getSupabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
 const TABLE_MAP: Record<string, string> = {
   trivia: "trivia_puzzles",
@@ -26,6 +27,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ type: string }> },
 ) {
+  const auth = await requireAdmin();
+  if ("error" in auth) return auth.error;
+
   const { type } = await params;
   const table = getTable(type);
   if (!table) {
@@ -56,6 +60,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ type: string }> },
 ) {
+  const auth = await requireAdmin();
+  if ("error" in auth) return auth.error;
+
   const { type } = await params;
   const table = getTable(type);
   if (!table) {
@@ -89,6 +96,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ type: string }> },
 ) {
+  const auth = await requireAdmin();
+  if ("error" in auth) return auth.error;
+
   const { type } = await params;
   const table = getTable(type);
   if (!table) {
