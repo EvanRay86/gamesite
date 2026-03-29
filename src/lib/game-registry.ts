@@ -44,7 +44,7 @@ export const games: Game[] = [
   {
     slug: "hexle",
     name: "Hexle",
-    description: "Seven guesses to crack the six-letter gaming word.",
+    description: "Seven guesses to crack the six-letter word.",
     category: "daily",
     color: "amber",
   },

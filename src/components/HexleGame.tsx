@@ -262,7 +262,7 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
           Hexle
         </h1>
         <p className="text-text-muted text-base max-w-[340px] leading-relaxed mt-4 mb-10 animate-[fade-up_0.6s_ease_0.2s_forwards] opacity-0">
-          Crack the six-letter gaming word in seven guesses.
+          Crack the six-letter word in seven guesses.
           <br />
           <span className="inline-block mt-2 text-sm">
             <span className="inline-block w-4 h-4 rounded bg-amber align-middle mr-1" /> Correct spot{" "}
@@ -314,7 +314,7 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
           Hexle
         </h1>
         <p className="text-text-dim text-[13px] mt-1">
-          Six letters. Seven guesses. Gaming words only.
+          Six letters. Seven guesses. A new word every day.
         </p>
       </div>
 
