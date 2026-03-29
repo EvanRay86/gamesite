@@ -900,18 +900,22 @@ export default function KoalaClicker() {
   // Is it a "mid" dark tier? (sanctuary/forest — dark bg but green-tinted)
   const isMidDark = ["sanctuary", "forest"].includes(tier);
 
+  const darkTextColors: Record<string, string> = { god: "text-amber-200", singularity: "text-orange-200", multiverse: "text-violet-200", canopy: "text-cyan-200", quantum: "text-cyan-200", cosmic: "text-indigo-200", dimension: "text-fuchsia-200", timewarp: "text-purple-200", overlord: "text-purple-200", portal: "text-purple-200" };
+  const darkSubtextColors: Record<string, string> = { god: "text-amber-300", singularity: "text-orange-300", multiverse: "text-violet-300", canopy: "text-cyan-300", quantum: "text-cyan-300", cosmic: "text-indigo-300", dimension: "text-fuchsia-300", timewarp: "text-purple-300", overlord: "text-purple-300", portal: "text-purple-300" };
+  const darkDimTextColors: Record<string, string> = { god: "text-amber-300/70", singularity: "text-orange-300/70", multiverse: "text-violet-300/70", canopy: "text-cyan-300/70", quantum: "text-cyan-300/70", cosmic: "text-indigo-300/70", dimension: "text-fuchsia-300/70", timewarp: "text-purple-300/70", overlord: "text-purple-300/70", portal: "text-purple-300/70" };
+
   const textClass = isDark
-    ? { god: "text-amber-200", singularity: "text-orange-200", multiverse: "text-violet-200", canopy: "text-cyan-200", quantum: "text-cyan-200", cosmic: "text-indigo-200", dimension: "text-fuchsia-200", timewarp: "text-purple-200", overlord: "text-purple-200", portal: "text-purple-200" }[tier]!
+    ? darkTextColors[tier] ?? "text-purple-200"
     : isMidDark ? "text-emerald-100"
     : "text-emerald-800";
 
   const subtextClass = isDark
-    ? { god: "text-amber-300", singularity: "text-orange-300", multiverse: "text-violet-300", canopy: "text-cyan-300", quantum: "text-cyan-300", cosmic: "text-indigo-300", dimension: "text-fuchsia-300", timewarp: "text-purple-300", overlord: "text-purple-300", portal: "text-purple-300" }[tier]!
+    ? darkSubtextColors[tier] ?? "text-purple-300"
     : isMidDark ? "text-emerald-200"
     : "text-emerald-600";
 
   const dimTextClass = isDark
-    ? { god: "text-amber-300/70", singularity: "text-orange-300/70", multiverse: "text-violet-300/70", canopy: "text-cyan-300/70", quantum: "text-cyan-300/70", cosmic: "text-indigo-300/70", dimension: "text-fuchsia-300/70", timewarp: "text-purple-300/70", overlord: "text-purple-300/70", portal: "text-purple-300/70" }[tier]!
+    ? darkDimTextColors[tier] ?? "text-purple-300/70"
     : isMidDark ? "text-emerald-300/70"
     : "text-emerald-500/70";
 
