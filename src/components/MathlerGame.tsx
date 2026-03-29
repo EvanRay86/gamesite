@@ -3,6 +3,9 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { evaluateEquation, type MathlerPuzzle } from "@/lib/mathler-puzzles";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 const MAX_GUESSES = 6;
 const EQUATION_LENGTH = 6;
@@ -120,6 +123,8 @@ export default function MathlerGame({ puzzle, date }: Props) {
   const [shake, setShake] = useState(false);
   const [revealRow, setRevealRow] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showStats, setShowStats] = useState(false);
+  const { stats: gameStats, recordGame } = useGameStats("mathler", date);
 
   // Load saved state on mount
   useEffect(() => {
@@ -224,6 +229,8 @@ export default function MathlerGame({ puzzle, date }: Props) {
     const isWin = statuses.every((s) => s === "correct");
     if (isWin) {
       setGameState("won");
+      recordGame(true, newGuesses.length);
+      setTimeout(() => setShowStats(true), 800);
       // Update streak
       const streak = loadStreak();
       const yesterday = new Date(date + "T00:00:00Z");
@@ -237,6 +244,8 @@ export default function MathlerGame({ puzzle, date }: Props) {
       });
     } else if (newGuesses.length >= MAX_GUESSES) {
       setGameState("lost");
+      recordGame(false, MAX_GUESSES);
+      setTimeout(() => setShowStats(true), 800);
       // Break streak
       const streak = loadStreak();
       saveStreak({ ...streak, current: 0, lastDate: date });
@@ -344,6 +353,7 @@ export default function MathlerGame({ puzzle, date }: Props) {
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-xl font-bold text-text-primary mb-1">Mathler</h1>
+          <StatsButton onClick={() => setShowStats(true)} />
           <div className="inline-block bg-purple/10 rounded-xl px-5 py-3">
             <p className="text-xs text-text-muted font-medium uppercase tracking-wide mb-0.5">
               Find the equation that equals
@@ -521,6 +531,15 @@ export default function MathlerGame({ puzzle, date }: Props) {
           </div>
         )}
       </div>
+
+      <StatsModal
+        open={showStats}
+        onClose={() => setShowStats(false)}
+        stats={gameStats}
+        gameName="Mathler"
+        color="purple"
+        maxGuesses={MAX_GUESSES}
+      />
 
       {/* Shake animation */}
       <style dangerouslySetInnerHTML={{ __html: `

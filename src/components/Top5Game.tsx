@@ -4,6 +4,9 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Top5Puzzle, Top5Item } from "@/types/top5";
 import { useReorder } from "@/lib/use-reorder";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 type Screen = "splash" | "playing" | "results";
 
@@ -62,11 +65,23 @@ export default function Top5Game({ puzzle }: { puzzle: Top5Puzzle }) {
 
   const [order, setOrder] = useState<Top5Item[]>(initialOrder);
   const [scores, setScores] = useState<number[] | null>(null);
+  const [showStats, setShowStats] = useState(false);
+
+  const { stats, recordGame } = useGameStats("top-5", puzzle.puzzle_date);
 
   useEffect(() => {
     const s = loadStreak();
     setStreak(s.current);
   }, []);
+
+  useEffect(() => {
+    if (screen === "results" && scores) {
+      const total = scores.reduce((a, b) => a + b, 0);
+      recordGame(total >= 6, total);
+      setTimeout(() => setShowStats(true), 1000);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
 
   const {
     containerRef,
@@ -230,6 +245,23 @@ export default function Top5Game({ puzzle }: { puzzle: Top5Puzzle }) {
         >
           {shared ? "Copied!" : "Share Results"}
         </button>
+
+        <button
+          onClick={() => setShowStats(true)}
+          className="bg-surface text-text-muted border-[1.5px] border-border-light
+                     rounded-full px-8 py-3 text-base font-bold cursor-pointer
+                     transition-all hover:bg-surface-hover hover:text-text-secondary mt-3"
+        >
+          View Stats
+        </button>
+
+        <StatsModal
+          open={showStats}
+          onClose={() => setShowStats(false)}
+          stats={stats}
+          gameName="Top 5"
+          color="amber"
+        />
       </div>
     );
   }

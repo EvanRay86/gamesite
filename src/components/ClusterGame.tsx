@@ -3,6 +3,9 @@
 import { useState, useCallback, useEffect } from "react";
 import type { Group, Puzzle, GuessEntry } from "@/types/puzzle";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -41,6 +44,8 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
   const [showSplash, setShowSplash] = useState(true);
   const [fadeIn, setFadeIn] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const { stats, recordGame } = useGameStats("cluster", puzzle.puzzle_date);
 
   const initPuzzle = useCallback(() => {
     const allWords = puzzle.groups.flatMap((g) => g.words);
@@ -91,6 +96,8 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
         setTimeout(() => {
           setWon(true);
           setGameOver(true);
+          recordGame(true, mistakes + 1);
+          setTimeout(() => setShowStats(true), 600);
         }, 500);
       }
     } else {
@@ -116,6 +123,7 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
       ]);
 
       if (newMistakes >= MAX_MISTAKES) {
+        recordGame(false, MAX_MISTAKES);
         setTimeout(() => {
           setGameOver(true);
           let delay = 0;
@@ -196,7 +204,10 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
       style={{ opacity: fadeIn ? 1 : 0 }}
     >
       {/* Header */}
-      <div className="text-center mb-5 w-full max-w-[520px]">
+      <div className="text-center mb-5 w-full max-w-[520px] relative">
+        <div className="absolute right-0 top-0">
+          <StatsButton onClick={() => setShowStats(true)} />
+        </div>
         <h1 className="font-display text-4xl text-text-primary tracking-tight">
           Cluster
         </h1>
@@ -390,6 +401,15 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
       <div className="mt-auto pt-8 text-[rgba(255,255,255,0.15)] text-[11px] tracking-wider">
         {puzzle.puzzle_date}
       </div>
+
+      <StatsModal
+        open={showStats}
+        onClose={() => setShowStats(false)}
+        stats={stats}
+        gameName="Cluster"
+        color="coral"
+        maxGuesses={MAX_MISTAKES}
+      />
     </div>
   );
 }
