@@ -1,5 +1,4 @@
 import { getHeardleArchiveDates, getTodayDate } from "@/lib/heardle-puzzles";
-import { isUserSubscribed } from "@/lib/check-subscription";
 import ArchivePaywall from "@/components/ArchivePaywall";
 
 export const revalidate = 3600;
@@ -21,8 +20,6 @@ export default async function HeardleArchivePage() {
     });
   }
 
-  const subscribed = await isUserSubscribed();
-
   return (
     <ArchivePaywall
       dates={dates}
@@ -31,7 +28,7 @@ export default async function HeardleArchivePage() {
       gameSlug="heardle"
       gameColor="text-purple"
       todayHref="/daily/heardle"
-      isSubscriber={subscribed}
+      isSubscriber={true}
     />
   );
 }

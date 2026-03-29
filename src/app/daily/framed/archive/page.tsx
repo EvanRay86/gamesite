@@ -1,5 +1,4 @@
 import { getFramedArchiveDates, getTodayDate } from "@/lib/framed-puzzles";
-import { isUserSubscribed } from "@/lib/check-subscription";
 import ArchivePaywall from "@/components/ArchivePaywall";
 
 export const revalidate = 3600;
@@ -21,8 +20,6 @@ export default async function FramedArchivePage() {
     });
   }
 
-  const subscribed = await isUserSubscribed();
-
   return (
     <ArchivePaywall
       dates={dates}
@@ -31,7 +28,7 @@ export default async function FramedArchivePage() {
       gameSlug="framed"
       gameColor="text-green"
       todayHref="/daily/framed"
-      isSubscriber={subscribed}
+      isSubscriber={true}
     />
   );
 }
