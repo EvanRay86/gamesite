@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractFrames, listSessionFrames } from "@/lib/trailer-frames";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ("error" in auth) return auth.error;
+
   const body = await req.json();
   const { url, interval } = body as { url: string; interval?: number };
 

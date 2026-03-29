@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin-auth";
 
 /**
  * Search SoundCloud for tracks.
@@ -7,6 +8,9 @@ import { NextRequest, NextResponse } from "next/server";
  * Proxies the SoundCloud API so the client_id stays server-side.
  */
 export async function GET(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ("error" in auth) return auth.error;
+
   const query = req.nextUrl.searchParams.get("q");
 
   if (!query) {

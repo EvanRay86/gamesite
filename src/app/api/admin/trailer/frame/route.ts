@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFrameImage } from "@/lib/trailer-frames";
+import { requireAdmin } from "@/lib/admin-auth";
 
 /**
  * Serve a frame image from a temp session.
  * GET /api/admin/trailer/frame?session=xxx&file=frame-001.jpg
  */
 export async function GET(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ("error" in auth) return auth.error;
+
   const sessionId = req.nextUrl.searchParams.get("session");
   const file = req.nextUrl.searchParams.get("file");
 
