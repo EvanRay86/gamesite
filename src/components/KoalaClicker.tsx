@@ -330,21 +330,22 @@ function formatNumber(n: number): string {
 
 /** Calculate essence earned from ascending - based on lifetime leaves */
 function calcEssenceGain(lifetimeLeaves: number, currentEssence: number): number {
-  // sqrt-based formula: you get diminishing returns but always more
-  const raw = Math.floor(Math.pow(Math.min(lifetimeLeaves, MAX_VALUE) / 1e6, 0.5));
+  // Slower-than-sqrt scaling (exponent 0.4) so hoarding before ascending doesn't break the game
+  const raw = Math.floor(Math.pow(Math.min(lifetimeLeaves, MAX_VALUE) / 1e6, 0.4));
   return Math.max(0, safeNum(raw - currentEssence));
 }
 
-/** Essence multiplier: each essence gives +2% compounding, capped to prevent Infinity */
+/** Essence multiplier: logarithmic so it can never explode to Infinity */
 function getEssenceMultiplier(essence: number): number {
-  // 1.02^35000 ≈ 1e300, cap essence input to stay under MAX_VALUE
-  return Math.pow(1.02, Math.min(essence, 35000));
+  // Each essence has diminishing returns — first few are impactful, later ones are gradual
+  // 1 essence → x1.35, 10 → x2.20, 100 → x3.31, 1000 → x4.45
+  return 1 + Math.log(1 + essence) * 0.5;
 }
 
 /** Calculate how many lifetime leaves are needed to reach a given essence total */
 function lifetimeLeavesForEssence(essenceTarget: number): number {
-  // Inverse of: floor(sqrt(lifetime / 1e6)) = essenceTarget
-  return essenceTarget * essenceTarget * 1e6;
+  // Inverse of: floor(pow(lifetime / 1e6, 0.4)) = essenceTarget
+  return Math.pow(essenceTarget, 2.5) * 1e6;
 }
 
 /** Koala titles unlocked by ascending — each ascension earns a new title */
