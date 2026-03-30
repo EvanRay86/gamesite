@@ -41,16 +41,35 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-text-primary mb-2">3. Cookies</h2>
+            <h2 className="text-lg font-bold text-text-primary mb-2">3. Cookies &amp; Tracking Technologies</h2>
             <p>
               We use essential cookies to keep the site functional (e.g., remembering your cookie preferences)
-              and optional analytics cookies to understand how the site is used. You can manage your cookie
+              and optional cookies for analytics and advertising. You can manage your cookie
               preferences at any time through the banner at the bottom of the page.
+            </p>
+            <ul className="list-disc pl-5 mt-2 space-y-1">
+              <li><strong>Essential cookies:</strong> required for the site to function (authentication, preferences, consent state).</li>
+              <li><strong>Analytics cookies:</strong> we use Google Analytics to understand how the site is used, including pages visited, session duration, and device information. Google Analytics may set cookies on your device.</li>
+              <li><strong>Advertising cookies:</strong> we use Google AdSense to display advertisements. Google and its advertising partners may set cookies on your device to serve ads based on your interests and prior visits to this and other websites. You can opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" className="text-coral hover:text-coral-dark transition-colors" target="_blank" rel="noopener noreferrer">Google Ads Settings</a>.</li>
+            </ul>
+            <p className="mt-2">
+              If you decline cookies, analytics and advertising scripts will not be loaded on your device.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-text-primary mb-2">4. Data Sharing</h2>
+            <h2 className="text-lg font-bold text-text-primary mb-2">4. Third-Party Services</h2>
+            <p>We use the following third-party services:</p>
+            <ul className="list-disc pl-5 mt-2 space-y-1">
+              <li><strong>Google Analytics:</strong> for site usage analytics. <a href="https://policies.google.com/privacy" className="text-coral hover:text-coral-dark transition-colors" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>.</li>
+              <li><strong>Google AdSense:</strong> for serving advertisements. Google may use cookies to serve ads based on your browsing history. <a href="https://policies.google.com/technologies/ads" className="text-coral hover:text-coral-dark transition-colors" target="_blank" rel="noopener noreferrer">How Google uses data</a>.</li>
+              <li><strong>Stripe:</strong> for processing payments. Payment card data is handled directly by Stripe and is never stored on our servers. <a href="https://stripe.com/privacy" className="text-coral hover:text-coral-dark transition-colors" target="_blank" rel="noopener noreferrer">Stripe Privacy Policy</a>.</li>
+              <li><strong>Supabase:</strong> for authentication and data storage.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-bold text-text-primary mb-2">5. Data Sharing</h2>
             <p>
               We do not sell your personal information. We may share anonymized, aggregated data with
               analytics providers to improve our services. Payment data is handled directly by our
@@ -59,7 +78,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-text-primary mb-2">5. Data Retention</h2>
+            <h2 className="text-lg font-bold text-text-primary mb-2">6. Data Retention</h2>
             <p>
               We retain your data for as long as your account is active or as needed to provide services.
               You can request deletion of your data by contacting us. Game progress stored locally in
@@ -68,7 +87,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-text-primary mb-2">6. Your Rights</h2>
+            <h2 className="text-lg font-bold text-text-primary mb-2">7. Your Rights</h2>
             <p>You have the right to:</p>
             <ul className="list-disc pl-5 mt-2 space-y-1">
               <li>Access the personal data we hold about you.</li>
@@ -79,7 +98,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-text-primary mb-2">7. Children&apos;s Privacy</h2>
+            <h2 className="text-lg font-bold text-text-primary mb-2">8. Children&apos;s Privacy</h2>
             <p>
               Gamesite is intended for a general audience. We do not knowingly collect personal
               information from children under 13. If you believe we have collected such information,
@@ -88,7 +107,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-text-primary mb-2">8. Changes to This Policy</h2>
+            <h2 className="text-lg font-bold text-text-primary mb-2">9. Changes to This Policy</h2>
             <p>
               We may update this privacy policy from time to time. We will notify users of material
               changes by posting a notice on our site.
@@ -96,7 +115,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-text-primary mb-2">9. Contact</h2>
+            <h2 className="text-lg font-bold text-text-primary mb-2">10. Contact</h2>
             <p>
               If you have questions about this privacy policy, please contact us at{" "}
               <a href="mailto:privacy@gamesite.app" className="text-coral hover:text-coral-dark transition-colors">

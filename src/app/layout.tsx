@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import TopNav from "@/components/layout/TopNav";
+import Footer from "@/components/layout/Footer";
 import CookieBanner from "@/components/CookieBanner";
+import ConsentScripts from "@/components/ConsentScripts";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
@@ -48,24 +49,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="google-adsense-account" content="ca-pub-9472092135896672" />
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9472092135896672"
-          crossOrigin="anonymous"
-          strategy="beforeInteractive"
-        />
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-TB8LQYPT6J"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-TB8LQYPT6J');
-          `}
-        </Script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -82,7 +65,9 @@ export default function RootLayout({
           <main id="main-content">
             {children}
           </main>
+          <Footer />
           <CookieBanner />
+          <ConsentScripts />
         </AuthProvider>
       </body>
     </html>
