@@ -138,7 +138,6 @@ export const games: Game[] = [
       "A daily crossword puzzle built from today's headlines and pop culture.",
     category: "daily",
     color: "amber",
-    featured: true,
   },
 
   {
@@ -320,6 +319,17 @@ export const games: Game[] = [
     category: "arcade",
     color: "sky",
     creditCost: 0,
+  },
+
+  {
+    slug: "lexicon-quest",
+    name: "Lexicon Quest",
+    description:
+      "Spell words to slay monsters in this roguelike dungeon crawler. How deep can you go?",
+    category: "arcade",
+    color: "purple",
+    creditCost: 0,
+    featured: true,
   },
 
   {
