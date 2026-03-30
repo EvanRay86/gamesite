@@ -269,12 +269,12 @@ function isAlpha(w) {
   return /^[a-z]+$/.test(w);
 }
 
-const byLength = { 3: new Set(), 4: new Set(), 5: new Set(), 6: new Set() };
+const byLength = { 3: new Set(), 4: new Set(), 5: new Set(), 6: new Set(), 7: new Set() };
 
 // Add from npm package
 for (const w of words) {
   const lower = w.toLowerCase();
-  if (lower.length >= 3 && lower.length <= 6 && isAlpha(lower)) {
+  if (lower.length >= 3 && lower.length <= 7 && isAlpha(lower)) {
     byLength[lower.length].add(lower);
   }
 }
@@ -282,20 +282,20 @@ for (const w of words) {
 // Merge existing game words
 for (const w of EXISTING_HEXLE_GUESSES) {
   const lower = w.toLowerCase();
-  if (lower.length >= 3 && lower.length <= 6 && isAlpha(lower)) {
+  if (lower.length >= 3 && lower.length <= 7 && isAlpha(lower)) {
     byLength[lower.length].add(lower);
   }
 }
 for (const w of EXISTING_WORD_LADDER) {
   const lower = w.toLowerCase();
-  if (lower.length >= 3 && lower.length <= 6 && isAlpha(lower)) {
+  if (lower.length >= 3 && lower.length <= 7 && isAlpha(lower)) {
     byLength[lower.length].add(lower);
   }
 }
 
 // Sort each group
 const sorted = {};
-for (const len of [3, 4, 5, 6]) {
+for (const len of [3, 4, 5, 6, 7]) {
   sorted[len] = [...byLength[len]].sort();
 }
 
@@ -317,7 +317,7 @@ const output = [
   "// Regenerate with: node scripts/generate-word-list.js",
   `// Generated: ${new Date().toISOString().slice(0, 10)}`,
   `// Source: an-array-of-english-words + existing game words`,
-  `// 3-letter: ${sorted[3].length} | 4-letter: ${sorted[4].length} | 5-letter: ${sorted[5].length} | 6-letter: ${sorted[6].length}`,
+  `// 3-letter: ${sorted[3].length} | 4-letter: ${sorted[4].length} | 5-letter: ${sorted[5].length} | 6-letter: ${sorted[6].length} | 7-letter: ${sorted[7].length}`,
   "",
   formatArray("WORDS_3", sorted[3]),
   "",
@@ -326,6 +326,8 @@ const output = [
   formatArray("WORDS_5", sorted[5]),
   "",
   formatArray("WORDS_6", sorted[6]),
+  "",
+  formatArray("WORDS_7", sorted[7]),
   "",
 ].join("\n");
 
@@ -337,4 +339,5 @@ console.log(`  3-letter: ${sorted[3].length}`);
 console.log(`  4-letter: ${sorted[4].length}`);
 console.log(`  5-letter: ${sorted[5].length}`);
 console.log(`  6-letter: ${sorted[6].length}`);
-console.log(`  Total: ${sorted[3].length + sorted[4].length + sorted[5].length + sorted[6].length}`);
+console.log(`  7-letter: ${sorted[7].length}`);
+console.log(`  Total: ${sorted[3].length + sorted[4].length + sorted[5].length + sorted[6].length + sorted[7].length}`);

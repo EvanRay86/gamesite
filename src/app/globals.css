@@ -440,3 +440,64 @@ body {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
 }
+
+/* ── Wordsmith animations ─────────────────────────────────────────────── */
+
+@keyframes ws-tile-pop {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ws-tile-return {
+  0% { transform: translateY(16px); opacity: 0.5; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes ws-score-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes ws-bonus-fly {
+  0% { transform: translateX(30px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes ws-card-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(247, 183, 49, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(247, 183, 49, 0.5); }
+}
+
+@keyframes ws-card-flip {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(90deg); }
+  100% { transform: rotateY(0deg); }
+}
+
+@keyframes ws-card-fade-out {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.95); }
+}
+
+@keyframes ws-round-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes ws-stagger-in {
+  0% { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes ws-count-up {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes ws-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}

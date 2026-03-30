@@ -230,6 +230,15 @@ export const games: Game[] = [
     color: "coral",
   },
 
+  {
+    slug: "wordsmith",
+    name: "Wordsmith",
+    description:
+      "Forge words through five rounds, collect power-ups, and chase the daily high score.",
+    category: "daily",
+    color: "amber",
+  },
+
   // ── Community Games ──────────────────────────────────────────────────────
 
   {

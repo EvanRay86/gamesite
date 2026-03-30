@@ -685,6 +685,45 @@ function ChainReactionPreview() {
   );
 }
 
+/* ─── Wordsmith Mini Preview ────────────────────────────────────────── */
+
+function WordsmithPreview() {
+  const tiles = ["F", "O", "R", "G", "E", "D", "S"];
+  const powerUps = ["\u{1F525}", "\u26A1", "\u{1F48E}"];
+  return (
+    <div className="mb-4 rounded-lg bg-amber/5 border border-amber/20 p-3">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-amber">
+          Round 3 of 5
+        </span>
+        <span className="text-[10px] font-bold text-amber">Score: 247</span>
+      </div>
+      <div className="flex gap-1 mb-2">
+        {tiles.map((letter, i) => (
+          <span
+            key={i}
+            className={`w-8 h-8 flex items-center justify-center rounded-md text-xs font-bold border ${
+              i < 4
+                ? "bg-amber/10 border-amber/30 text-amber"
+                : "bg-white border-gray-200 text-text-primary"
+            }`}
+          >
+            {letter}
+          </span>
+        ))}
+      </div>
+      <div className="flex items-center gap-1">
+        {powerUps.map((emoji, i) => (
+          <span key={i} className="text-xs bg-amber/10 rounded-full px-1.5 py-0.5">
+            {emoji}
+          </span>
+        ))}
+        <span className="text-[9px] text-text-dim ml-auto">Power-ups stack!</span>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Meteor Mayhem Mini Preview ─────────────────────────────────────── */
 
 function MeteorPreview() {
@@ -868,6 +907,7 @@ function GamePreview({ slug }: { slug: string }) {
     case "quotable": return <QuotablePreview />;
     case "timeline": return <TimelinePreview />;
     case "chain-reaction": return <ChainReactionPreview />;
+    case "wordsmith": return <WordsmithPreview />;
     case "meteor-mayhem": return <MeteorPreview />;
     case "ginormo-sword": return <SwordPreview />;
     case "sky-hopper": return <SkyHopperPreview />;
@@ -877,7 +917,7 @@ function GamePreview({ slug }: { slug: string }) {
 
 /* ─── New games badge list ───────────────────────────────────────────────── */
 
-const newGameSlugs = new Set(["chain-reaction", "mathler", "timeline", "quotable", "top-5"]);
+const newGameSlugs = new Set(["chain-reaction", "mathler", "timeline", "quotable", "top-5", "wordsmith"]);
 
 /* ─── Card Components ────────────────────────────────────────────────────── */
 
