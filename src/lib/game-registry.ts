@@ -257,6 +257,16 @@ export const games: Game[] = [
       "Join a faction and conquer the hex map through real-time puzzle duels. ELO rankings, seasons, and territory wars.",
     category: "community",
     color: "coral",
+    creditCost: 0,
+  },
+
+  {
+    slug: "netherveil",
+    name: "Netherveil",
+    description:
+      "A tactical roguelike deckbuilder with grid combat, four classes, and persistent progression. Descend into the deep.",
+    category: "community",
+    color: "purple",
     featured: true,
     creditCost: 0,
   },
