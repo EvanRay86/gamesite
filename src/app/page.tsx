@@ -843,7 +843,7 @@ function SnakePreview() {
 /* ─── Featured Card ─────────────────────────────────────────────────────── */
 
 function FeaturedCard({ game }: { game: Game }) {
-  const href = game.category === "daily" ? `/daily/${game.slug}` : `/arcade/${game.slug}`;
+  const href = game.slug === "rift" ? "/rift" : game.category === "daily" ? `/daily/${game.slug}` : `/arcade/${game.slug}`;
   return (
     <Link
       href={href}
