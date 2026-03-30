@@ -3,6 +3,9 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import type { QuotablePuzzle } from "@/types/quotable";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 type Screen = "splash" | "playing" | "results";
 
@@ -59,6 +62,8 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [highlightIdx, setHighlightIdx] = useState(-1);
   const [shakeInput, setShakeInput] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const { stats, recordGame } = useGameStats("quotable", puzzle.puzzle_date);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -141,6 +146,8 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
       if (trimmed.toLowerCase() === puzzle.attribution.toLowerCase()) {
         setWon(true);
         setScreen("results");
+        recordGame(true, guesses.length + 1);
+        setTimeout(() => setShowStats(true), 800);
         const s = loadStreak();
         const newStreak = isConsecutiveDay(s.lastDate, puzzle.puzzle_date)
           ? s.current + 1
@@ -149,6 +156,8 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
         setStreak(newStreak);
       } else if (newGuesses.length >= MAX_GUESSES) {
         setScreen("results");
+        recordGame(false, MAX_GUESSES);
+        setTimeout(() => setShowStats(true), 800);
         saveStreak({ current: 0, lastDate: puzzle.puzzle_date });
         setStreak(0);
       } else {
@@ -234,9 +243,12 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
   if (screen === "results") {
     return (
       <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-4 py-8 animate-[fade-up_0.5s_ease_forwards]">
-        <h2 className="font-body text-4xl font-extrabold text-text-primary mb-4">
-          {won ? "You got it!" : "Not this time!"}
-        </h2>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-body text-4xl font-extrabold text-text-primary">
+            {won ? "You got it!" : "Not this time!"}
+          </h2>
+          <StatsButton onClick={() => setShowStats(true)} />
+        </div>
 
         {/* Full quote */}
         <div className="w-full max-w-lg bg-surface/80 rounded-2xl border border-border-light p-6 mb-4">
@@ -294,6 +306,14 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
         >
           {shared ? "Copied!" : "Share Results"}
         </button>
+        <StatsModal
+          open={showStats}
+          onClose={() => setShowStats(false)}
+          stats={stats}
+          gameName="Quotable"
+          color="purple"
+          maxGuesses={MAX_GUESSES}
+        />
       </div>
     );
   }

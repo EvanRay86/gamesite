@@ -4,6 +4,9 @@ import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import type { TimelinePuzzle, TimelineEvent } from "@/types/timeline";
 import { useReorder } from "@/lib/use-reorder";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 type Screen = "splash" | "playing" | "results";
 
@@ -58,6 +61,8 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
   );
   const [attemptResults, setAttemptResults] = useState<boolean[][]>([]);
   const [flashResults, setFlashResults] = useState<boolean[] | null>(null);
+  const [showStats, setShowStats] = useState(false);
+  const { stats, recordGame } = useGameStats("timeline", puzzle.puzzle_date);
 
   const correctOrder = puzzle.events;
 
@@ -149,6 +154,8 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
       if (allCorrect) {
         setWon(true);
         setScreen("results");
+        recordGame(true, attemptsUsed + 1);
+        setTimeout(() => setShowStats(true), 800);
         const streakData = loadStreak();
         const newStreak = isConsecutiveDay(
           streakData.lastDate,
@@ -161,6 +168,8 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
       } else if (newAttemptsUsed >= MAX_ATTEMPTS) {
         setWon(false);
         setScreen("results");
+        recordGame(false, MAX_ATTEMPTS);
+        setTimeout(() => setShowStats(true), 800);
         saveStreak({ current: 0, lastDate: puzzle.puzzle_date });
         setStreak(0);
       }
@@ -172,6 +181,7 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
     lockedPositions,
     attemptsUsed,
     puzzle.puzzle_date,
+    recordGame,
   ]);
 
   const handleShare = useCallback(async () => {
@@ -275,15 +285,27 @@ export default function TimelineGame({ puzzle }: { puzzle: TimelinePuzzle }) {
           ))}
         </div>
 
-        <button
-          onClick={handleShare}
-          className="bg-gradient-to-br from-teal to-sky text-white border-none
-                     px-8 py-3 rounded-full text-base font-bold cursor-pointer
-                     shadow-[0_4px_16px_rgba(78,205,196,0.3)]
-                     hover:scale-105 transition-all duration-200"
-        >
-          {shared ? "Copied!" : "Share Results"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleShare}
+            className="bg-gradient-to-br from-teal to-sky text-white border-none
+                       px-8 py-3 rounded-full text-base font-bold cursor-pointer
+                       shadow-[0_4px_16px_rgba(78,205,196,0.3)]
+                       hover:scale-105 transition-all duration-200"
+          >
+            {shared ? "Copied!" : "Share Results"}
+          </button>
+          <StatsButton onClick={() => setShowStats(true)} />
+        </div>
+
+        <StatsModal
+          open={showStats}
+          onClose={() => setShowStats(false)}
+          stats={stats}
+          gameName="Timeline"
+          color="teal"
+          maxGuesses={MAX_ATTEMPTS}
+        />
       </div>
     );
   }

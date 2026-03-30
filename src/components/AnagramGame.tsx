@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { AnagramPuzzle } from "@/types/anagram";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 const TIME_LIMIT = 30; // seconds per word
 
@@ -23,9 +26,21 @@ export default function AnagramGame({ puzzle }: { puzzle: AnagramPuzzle }) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef(0);
 
+  const [showStats, setShowStats] = useState(false);
+  const { stats, recordGame } = useGameStats("anagram", puzzle.puzzle_date);
+
   const words = puzzle.words;
   const totalWords = words.length;
   const currentWord = words[current];
+
+  useEffect(() => {
+    if (screen === "results") {
+      const solvedCount = results.filter(r => r.solved).length;
+      recordGame(solvedCount === totalWords, solvedCount);
+      setTimeout(() => setShowStats(true), 1000);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
 
   // ── Timer ─────────────────────────────────────────────────
   useEffect(() => {
@@ -226,6 +241,22 @@ export default function AnagramGame({ puzzle }: { puzzle: AnagramPuzzle }) {
                 Play Again
               </button>
             </div>
+            <button
+              onClick={() => setShowStats(true)}
+              className="bg-surface text-text-muted border-[1.5px] border-border-light
+                         rounded-full px-8 py-3 text-base font-bold cursor-pointer
+                         transition-all hover:bg-surface-hover hover:text-text-secondary mt-3"
+            >
+              View Stats
+            </button>
+            <StatsModal
+              open={showStats}
+              onClose={() => setShowStats(false)}
+              stats={stats}
+              gameName="Anagram Scramble"
+              color="teal"
+              maxGuesses={totalWords}
+            />
           </div>
         </div>
       </div>

@@ -3,6 +3,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import type { EmojiWordPuzzle } from "@/types/emoji-word";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 const MAX_GUESSES_PER_ROUND = 3;
 
@@ -36,6 +39,9 @@ export default function EmojiWordGame({
   const [shared, setShared] = useState(false);
   const [emojiPop, setEmojiPop] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [showStats, setShowStats] = useState(false);
+
+  const { stats, recordGame } = useGameStats("emoji-word", puzzle.puzzle_date);
 
   const rounds = puzzle.rounds;
   const totalRounds = rounds.length;
@@ -46,6 +52,16 @@ export default function EmojiWordGame({
       inputRef.current?.focus();
     }
   }, [screen, current, revealed]);
+
+  useEffect(() => {
+    if (screen === "results") {
+      const solvedCount = results.filter((r) => r.solved).length;
+      const totalRounds = rounds.length;
+      recordGame(solvedCount === totalRounds, solvedCount);
+      setTimeout(() => setShowStats(true), 1000);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
 
   // Pop animation when a new round starts
   useEffect(() => {
@@ -281,6 +297,23 @@ export default function EmojiWordGame({
                 Play Again
               </button>
             </div>
+
+            <button
+              onClick={() => setShowStats(true)}
+              className="bg-surface text-text-muted border-[1.5px] border-border-light
+                         rounded-full px-8 py-3 text-base font-bold cursor-pointer
+                         transition-all hover:bg-surface-hover hover:text-text-secondary mt-3"
+            >
+              View Stats
+            </button>
+
+            <StatsModal
+              open={showStats}
+              onClose={() => setShowStats(false)}
+              stats={stats}
+              gameName="Emoji Decoder"
+              color="amber"
+            />
           </div>
         </div>
       </div>

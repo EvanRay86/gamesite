@@ -7,6 +7,9 @@ import {
   type WordLadderPuzzle,
 } from "@/lib/word-ladder-puzzles";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 type GameState = "playing" | "won" | "lost";
 
@@ -85,6 +88,8 @@ export default function WordLadderGame({ puzzle, date }: Props) {
   const [copied, setCopied] = useState(false);
   const [shake, setShake] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showStats, setShowStats] = useState(false);
+  const { stats: gameStats, recordGame } = useGameStats("word-ladder", date);
 
   // Load saved state
   useEffect(() => {
@@ -177,6 +182,8 @@ export default function WordLadderGame({ puzzle, date }: Props) {
     // Check win
     if (word === puzzle.end) {
       setGameState("won");
+      recordGame(true, newChain.length - 1);
+      setTimeout(() => setShowStats(true), 800);
       const streak = loadStreak();
       const yesterday = new Date(date + "T00:00:00Z");
       yesterday.setUTCDate(yesterday.getUTCDate() - 1);
@@ -191,6 +198,8 @@ export default function WordLadderGame({ puzzle, date }: Props) {
     } else if (newChain.length - 1 >= MAX_STEPS) {
       // Used all steps without reaching the end
       setGameState("lost");
+      recordGame(false, MAX_STEPS);
+      setTimeout(() => setShowStats(true), 800);
       const streak = loadStreak();
       saveStreak({ ...streak, current: 0, lastDate: date });
     }
@@ -327,9 +336,12 @@ export default function WordLadderGame({ puzzle, date }: Props) {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-xl font-bold text-text-primary mb-2">
-            Word Ladder
-          </h1>
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="text-xl font-bold text-text-primary mb-2">
+              Word Ladder
+            </h1>
+            <StatsButton onClick={() => setShowStats(true)} />
+          </div>
           <div className="flex items-center justify-center gap-3">
             <div className="bg-teal/10 rounded-xl px-4 py-2 text-center">
               <p className="text-[10px] text-text-dim uppercase tracking-wide">
@@ -584,6 +596,15 @@ export default function WordLadderGame({ puzzle, date }: Props) {
           </div>
         )}
       </div>
+
+      <StatsModal
+        open={showStats}
+        onClose={() => setShowStats(false)}
+        stats={gameStats}
+        gameName="Word Ladder"
+        color="teal"
+        maxGuesses={MAX_STEPS}
+      />
 
       {/* Shake animation loaded via CSS module: src/styles/animations.module.css */}
     </div>

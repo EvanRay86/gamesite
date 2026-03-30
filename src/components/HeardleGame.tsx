@@ -3,6 +3,9 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { songBank, CLIP_DURATIONS, type HeardlePuzzle } from "@/lib/heardle-puzzles";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 const MAX_GUESSES = 6;
 const SC_WIDGET_API = "https://w.soundcloud.com/player/api.js";
@@ -57,6 +60,8 @@ export default function HeardleGame({ puzzle, variant }: Props) {
   const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showStats, setShowStats] = useState(false);
+  const { stats, recordGame } = useGameStats("heardle", puzzle.date);
 
   useEffect(() => {
     setTimeout(() => setFadeIn(true), 100);
@@ -209,18 +214,22 @@ export default function HeardleGame({ puzzle, variant }: Props) {
 
       if (isCorrect) {
         setGameState("won");
+        recordGame(true, newGuesses.length);
+        setTimeout(() => setShowStats(true), 800);
         return;
       }
 
       if (newGuesses.length >= MAX_GUESSES) {
         setGameState("lost");
+        recordGame(false, MAX_GUESSES);
+        setTimeout(() => setShowStats(true), 800);
         return;
       }
 
       // Reveal longer clip
       setCurrentStage((prev) => Math.min(prev + 1, MAX_GUESSES - 1));
     },
-    [gameState, guesses, puzzle, stopAudio],
+    [gameState, guesses, puzzle, stopAudio, recordGame],
   );
 
   const skipGuess = useCallback(() => {
@@ -233,11 +242,13 @@ export default function HeardleGame({ puzzle, variant }: Props) {
 
     if (newGuesses.length >= MAX_GUESSES) {
       setGameState("lost");
+      recordGame(false, MAX_GUESSES);
+      setTimeout(() => setShowStats(true), 800);
       return;
     }
 
     setCurrentStage((prev) => Math.min(prev + 1, MAX_GUESSES - 1));
-  }, [gameState, guesses, stopAudio]);
+  }, [gameState, guesses, stopAudio, recordGame]);
 
   const generateShareText = useCallback(() => {
     const guessCount = gameState === "won" ? guesses.length : "X";
@@ -358,8 +369,11 @@ export default function HeardleGame({ puzzle, variant }: Props) {
               )}
             </h1>
           </div>
-          <div className="text-sm text-text-muted font-medium tabular-nums">
-            {currentStage + 1} / {MAX_GUESSES}
+          <div className="flex items-center gap-3">
+            <StatsButton onClick={() => setShowStats(true)} />
+            <div className="text-sm text-text-muted font-medium tabular-nums">
+              {currentStage + 1} / {MAX_GUESSES}
+            </div>
           </div>
         </div>
 
@@ -606,6 +620,14 @@ export default function HeardleGame({ puzzle, variant }: Props) {
           </div>
         )}
       </div>
+      <StatsModal
+        open={showStats}
+        onClose={() => setShowStats(false)}
+        stats={stats}
+        gameName="Heardle"
+        color="purple"
+        maxGuesses={MAX_GUESSES}
+      />
     </div>
   );
 }

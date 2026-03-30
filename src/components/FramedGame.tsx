@@ -4,6 +4,9 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import { movieBank, type FramedPuzzle } from "@/lib/framed-puzzles";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 const MAX_GUESSES = 6;
 
@@ -23,6 +26,9 @@ export default function FramedGame({ puzzle, variant }: Props) {
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showStats, setShowStats] = useState(false);
+
+  const { stats, recordGame } = useGameStats("framed", puzzle.date);
 
   useEffect(() => {
     setTimeout(() => setFadeIn(true), 100);
@@ -66,19 +72,23 @@ export default function FramedGame({ puzzle, variant }: Props) {
       // Check win
       if (trimmed.toLowerCase() === puzzle.title.toLowerCase()) {
         setGameState("won");
+        recordGame(true, newGuesses.length);
+        setTimeout(() => setShowStats(true), 800);
         return;
       }
 
       // Check lose (used all guesses)
       if (newGuesses.length >= MAX_GUESSES) {
         setGameState("lost");
+        recordGame(false, MAX_GUESSES);
+        setTimeout(() => setShowStats(true), 800);
         return;
       }
 
       // Reveal next frame
       setCurrentFrame((prev) => Math.min(prev + 1, MAX_GUESSES - 1));
     },
-    [gameState, guesses, puzzle.title],
+    [gameState, guesses, puzzle.title, recordGame],
   );
 
   const skipGuess = useCallback(() => {
@@ -89,11 +99,13 @@ export default function FramedGame({ puzzle, variant }: Props) {
 
     if (newGuesses.length >= MAX_GUESSES) {
       setGameState("lost");
+      recordGame(false, MAX_GUESSES);
+      setTimeout(() => setShowStats(true), 800);
       return;
     }
 
     setCurrentFrame((prev) => Math.min(prev + 1, MAX_GUESSES - 1));
-  }, [gameState, guesses]);
+  }, [gameState, guesses, recordGame]);
 
   const generateShareText = useCallback(() => {
     const guessCount = gameState === "won" ? guesses.length : "X";
@@ -185,8 +197,11 @@ export default function FramedGame({ puzzle, variant }: Props) {
               )}
             </h1>
           </div>
-          <div className="text-sm text-text-muted font-medium tabular-nums">
-            {currentFrame + 1} / {MAX_GUESSES}
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-text-muted font-medium tabular-nums">
+              {currentFrame + 1} / {MAX_GUESSES}
+            </div>
+            <StatsButton onClick={() => setShowStats(true)} />
           </div>
         </div>
 
@@ -366,6 +381,14 @@ export default function FramedGame({ puzzle, variant }: Props) {
           </div>
         )}
       </div>
+      <StatsModal
+        open={showStats}
+        onClose={() => setShowStats(false)}
+        stats={stats}
+        gameName="Framed"
+        color="green"
+        maxGuesses={MAX_GUESSES}
+      />
     </div>
   );
 }

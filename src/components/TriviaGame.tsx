@@ -3,6 +3,9 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { TriviaPuzzle } from "@/types/trivia";
 import { shareOrCopy } from "@/lib/share";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 const CATEGORY_COLORS: Record<string, string> = {
   Science: "#4ECDC4",
@@ -38,6 +41,8 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
   const [shared, setShared] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [showStats, setShowStats] = useState(false);
+  const { stats, recordGame } = useGameStats("daily-trivia", puzzle.puzzle_date);
 
   const questions = puzzle.questions;
   const totalQ = questions.length;
@@ -67,6 +72,15 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen, current, locked]);
+
+  // Record stats when game ends
+  useEffect(() => {
+    if (screen === "results") {
+      recordGame(score >= Math.ceil(totalQ / 2), score);
+      setTimeout(() => setShowStats(true), 1000);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
 
   // ── Answer immediately on click ─────────────────────────
   const handleAnswer = useCallback(
@@ -239,6 +253,23 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
         >
           {shared ? "Copied!" : "Share Results"}
         </button>
+        <button
+          onClick={() => setShowStats(true)}
+          className="bg-surface text-text-muted border-[1.5px] border-border-light
+                     rounded-full px-8 py-3 text-base font-bold cursor-pointer
+                     transition-all hover:bg-surface-hover hover:text-text-secondary mt-3"
+        >
+          View Stats
+        </button>
+
+        <StatsModal
+          open={showStats}
+          onClose={() => setShowStats(false)}
+          stats={stats}
+          gameName="8 Second Trivia"
+          color="sky"
+          maxGuesses={totalQ}
+        />
       </div>
     );
   }

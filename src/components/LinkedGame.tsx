@@ -2,6 +2,9 @@
 
 import { useState, useCallback, useEffect } from "react";
 import type { Group, Puzzle, GuessEntry } from "@/types/puzzle";
+import { useGameStats } from "@/hooks/useGameStats";
+import StatsModal from "@/components/StatsModal";
+import StatsButton from "@/components/StatsButton";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -39,6 +42,9 @@ export default function LinkedGame({ puzzle, puzzleNumber }: Props) {
   const [showSplash, setShowSplash] = useState(true);
   const [fadeIn, setFadeIn] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+
+  const { stats, recordGame } = useGameStats("linked", puzzle.puzzle_date);
 
   const initPuzzle = useCallback(() => {
     const allWords = puzzle.groups.flatMap((g) => g.words);
@@ -86,10 +92,13 @@ export default function LinkedGame({ puzzle, puzzleNumber }: Props) {
       ]);
 
       if (newSolved.length === 4) {
+        const guessCount = guessHistory.length + 1;
+        recordGame(true, guessCount);
         setTimeout(() => {
           setWon(true);
           setGameOver(true);
         }, 500);
+        setTimeout(() => setShowStats(true), 800);
       }
     } else {
       const oneAway = puzzle.groups.some(
@@ -114,6 +123,7 @@ export default function LinkedGame({ puzzle, puzzleNumber }: Props) {
       ]);
 
       if (newMistakes >= MAX_MISTAKES) {
+        recordGame(false, guessHistory.length + 1);
         setTimeout(() => {
           setGameOver(true);
           let delay = 0;
@@ -124,6 +134,7 @@ export default function LinkedGame({ puzzle, puzzleNumber }: Props) {
             }
           });
         }, 600);
+        setTimeout(() => setShowStats(true), 800);
       }
     }
   };
@@ -389,9 +400,18 @@ export default function LinkedGame({ puzzle, puzzleNumber }: Props) {
             >
               {copied ? "Copied!" : "Share"}
             </button>
+            <StatsButton onClick={() => setShowStats(true)} />
           </div>
         </div>
       )}
+
+      <StatsModal
+        open={showStats}
+        onClose={() => setShowStats(false)}
+        stats={stats}
+        gameName="Linked"
+        color="coral"
+      />
 
       {/* Footer */}
       <div className="mt-auto pt-8 text-[rgba(255,255,255,0.15)] text-[11px] tracking-wider">
