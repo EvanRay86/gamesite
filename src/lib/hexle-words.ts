@@ -45,48 +45,7 @@ export const ANSWER_WORDS: string[] = [
 // Remove duplicates
 const uniqueAnswers = [...new Set(ANSWER_WORDS)];
 
-/** Extended list of valid 6-letter guesses (includes answer words + common English words). */
-export const VALID_GUESSES: Set<string> = new Set([
-  ...uniqueAnswers,
-  // Common 6-letter English words for valid guessing
-  "SCREEN", "PLAYER", "POINTS", "ENERGY", "HEALTH", "SHIELD", "ONLINE",
-  "MOBILE", "BUTTON", "SEARCH", "DESIGN", "SYSTEM", "ACTION", "CHANGE",
-  "BEFORE", "SCHOOL", "SHOULD", "PEOPLE", "REALLY", "THINGS", "AROUND",
-  "FAMILY", "LITTLE", "FRIEND", "ALWAYS", "NUMBER", "CALLED", "BETTER",
-  "ALMOST", "ENOUGH", "THOUGH", "SECOND", "OTHERS", "DURING", "MARKET",
-  "SIMPLE", "ACROSS", "WITHIN", "MAKING", "STRONG", "FOLLOW", "RETURN",
-  "GROUND", "LIKELY", "BEGINS", "MOTHER", "FATHER", "BROKEN", "GARDEN",
-  "STREAM", "WONDER", "BRIDGE", "DINNER", "PLANET", "FLOWER", "WINTER",
-  "SUMMER", "MIRROR", "SILVER", "GOLDEN", "RABBIT", "DRIVER", "PLAYED",
-  "TWENTY", "THANKS", "SINGLE", "TRAVEL", "TRYING", "HAPPEN", "MOVING",
-  "TOWARD", "ANIMAL", "INDEED", "FIGURE", "CHOICE", "REMAIN", "ACCEPT",
-  "MINUTE", "CHANCE", "FINGER", "BROKEN", "BOTTLE", "FUTURE", "APPEAR",
-  "METHOD", "RESULT", "EFFORT", "MEMBER", "BEYOND", "RATHER", "SAFETY",
-  "ENTIRE", "RECORD", "BELONG", "COFFEE", "HEAVEN", "NOTICE", "ANSWER",
-  "COUPLE", "LEADER", "STREET", "NATIVE", "FOREST", "DESERT", "ISLAND",
-  "WEIGHT", "HEIGHT", "LENGTH", "BREATH", "GROWTH", "DANGER", "SPEECH",
-  "SILENT", "GENTLE", "HIDDEN", "SACRED", "FIERCE", "CLEVER", "BITTER",
-  "NARROW", "HOLLOW", "FAMOUS", "HONEST", "GATHER", "DECIDE", "INVITE",
-  "ENABLE", "MANAGE", "EXPECT", "REVEAL", "IGNORE", "DEMAND", "SUPPLY",
-  "CREATE", "DESIRE", "GLOBAL", "REMOVE", "PERMIT", "OPPOSE", "AFFECT",
-  "BELIEF", "STRIKE", "DEFEND", "ATTACH", "DIVIDE", "OBTAIN", "INSIST",
-  "ASSUME", "INTEND", "RESIST", "DERIVE", "IMPOSE", "ABSORB", "REFUSE",
-  "EMERGE", "PURSUE", "EXCEED", "EXPAND", "OCCUPY", "SUBMIT", "RELATE",
-  "TENNIS", "SOCCER", "BOXING", "SPORTS", "JUMBLE", "PUZZLE", "ZOMBIE",
-  "SCORES", "MEDALS", "PREACH", "PICKLE", "FRIDGE", "PENCIL", "ERASER",
-  "MARKER", "CRAYON", "SKETCH", "CANVAS", "THIRST", "HUNGER", "JOYFUL",
-  "CLUMSY", "GRUMPY", "DRAGON", "SNIPER", "DAMAGE", "TURRET", "POTION",
-  "HUNTER", "SCROLL", "ATTACK", "CANNON", "ARMOUR", "SHADOW", "UNDEAD",
-  "SWORDS", "AMBUSH", "DAGGER", "COMBAT", "BOUNTY", "PATROL", "FLIGHT",
-  "SPRINT", "RACING", "BATTLE", "SENTRY", "GUNNER", "BLADES", "MORTAR",
-  "AVATAR", "METEOR", "PLAGUE", "RITUAL", "CHARGE", "BREACH", "VORTEX",
-  "BANDIT", "WRAITH", "GOBLIN", "VANDAL", "SLAYER", "RANSOM", "FAMINE",
-  "ARCANE", "BRAWLS", "VAULTS", "RUBBLE", "POUNCE", "BRUTAL", "STOKER",
-  "RANCID", "PLEDGE", "ORPHAN", "MAGNET", "THORNY", "GLIDER", "SALUTE",
-  "CRADLE", "BARREN", "QUENCH", "FIDGET", "SPLICE", "ABRUPT", "FLIMSY",
-  "CHUNKY", "GLOOMY", "TRICKY", "WOBBLY", "SNEAKY", "SLOPPY", "CRISPY",
-  "FROSTY", "FLUFFY", "WITCHY", "STORMY", "CLOUDY", "SLEEPY", "TRENDY",
-]);
+import { isValidEnglishWord } from "./dictionary";
 
 import { getSupabase } from "./supabase";
 
@@ -119,9 +78,9 @@ export function getFallbackHexleWord(date: string): string {
   return words[index];
 }
 
-/** Check if a word is a valid guess. */
+/** Check if a word is a valid guess (uses comprehensive 6-letter dictionary). */
 export function isValidGuess(word: string): boolean {
-  return VALID_GUESSES.has(word.toUpperCase());
+  return isValidEnglishWord(word, 6);
 }
 
 export function getTodayDate(): string {
