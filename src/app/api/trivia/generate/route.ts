@@ -1,12 +1,29 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { generateTriviaQuestions } from "@/lib/trivia-generate";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
-  // Optional secret to protect the endpoint
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`trivia-gen:${ip}`, { limit: 5, windowSeconds: 60 });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
+  // Require cron secret to prevent unauthorized access
+  const cronSecret = request.headers.get("x-cron-secret") || request.headers.get("authorization")?.replace("Bearer ", "");
+  if (!process.env.CRON_SECRET || cronSecret !== process.env.CRON_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const date =
     searchParams.get("date") || new Date().toISOString().split("T")[0];
+
+  // Validate date format
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
+  }
 
   const supabase = getSupabase();
   if (!supabase) {

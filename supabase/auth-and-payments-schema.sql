@@ -11,6 +11,7 @@ create table if not exists user_profiles (
   display_name text,
   stripe_customer_id text unique,
   credits integer not null default 0,
+  is_admin boolean not null default false,
   anonymous_player_id text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()

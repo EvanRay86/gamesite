@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 function getSafeRedirect(redirect: string | null): string {
   if (!redirect) return "/";
@@ -9,6 +10,12 @@ function getSafeRedirect(redirect: string | null): string {
 }
 
 export async function GET(request: Request) {
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`auth:${ip}`, { limit: 15, windowSeconds: 60 });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const redirect = getSafeRedirect(searchParams.get("redirect"));

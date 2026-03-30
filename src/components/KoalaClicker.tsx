@@ -634,17 +634,14 @@ export default function KoalaClicker() {
       } catch {
         // ignore
       }
-      // Best-effort cloud save via sendBeacon
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      if (supabaseUrl && supabaseKey && playerIdRef.current) {
+      // Best-effort cloud save via sendBeacon through API route
+      if (playerIdRef.current) {
         const body = JSON.stringify({
           player_id: playerIdRef.current,
           save_data: save,
-          updated_at: new Date().toISOString(),
         });
         navigator.sendBeacon(
-          `${supabaseUrl}/rest/v1/koala_saves?on_conflict=player_id`,
+          "/api/koala/save",
           new Blob([body], { type: "application/json" }),
         );
       }

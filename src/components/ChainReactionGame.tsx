@@ -649,30 +649,7 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
           </div>
         </div>
       )}
-      {/* Inline animations */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @keyframes chain-shake {
-          0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-6px); }
-          40% { transform: translateX(6px); }
-          60% { transform: translateX(-4px); }
-          80% { transform: translateX(4px); }
-        }
-        .animate-shake {
-          animation: chain-shake 0.4s ease-in-out;
-        }
-        @keyframes chain-fade-in {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: chain-fade-in 0.3s ease-out;
-        }
-      `,
-        }}
-      />
+      {/* Animations loaded via CSS module: src/styles/animations.module.css */}
     </div>
   );
 }
