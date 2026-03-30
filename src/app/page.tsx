@@ -59,6 +59,19 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Emoji Ticker ──────────────────────────────────────────────── */}
+      <div className="w-full max-w-3xl mb-10 animate-[fade-up_0.6s_ease_0.35s_forwards] opacity-0 relative z-10">
+        <div className="emoji-ticker py-3">
+          <div className="emoji-ticker-inner">
+            {[..."🧩🎯🎵🎬🌍🔢🔤📰🎸🧠🏆⏱️🎮🐨🐍🚀⚔️🕹️🧩🎯🎵🎬🌍🔢🔤📰🎸🧠🏆⏱️🎮🐨🐍🚀⚔️🕹️"].map((emoji, i) => (
+              <span key={i} className="text-2xl opacity-60 hover:opacity-100 hover:scale-125 transition-all duration-200 cursor-default select-none">
+                {emoji}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ── Featured Game ──────────────────────────────────────────────── */}
       {featuredGame && (
         <section className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.3s_forwards] opacity-0 relative z-10">
@@ -187,38 +200,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="w-full max-w-[1120px] pt-6 pb-8 animate-[fade-up_0.5s_ease_0.6s_forwards] opacity-0 relative z-10">
-        <div className="section-divider mb-8" />
-        <div className="clay-card p-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <span className="gradient-text-hero font-bold text-lg">Gamesite</span>
-              <p className="text-text-muted text-sm mt-1">
-                Built for quick breaks and long rivalries.
-              </p>
-            </div>
-            <nav className="flex items-center gap-5">
-              <Link href="/daily" className="text-sm font-medium text-text-dim hover:text-coral transition-colors no-underline">
-                Daily Puzzles
-              </Link>
-              <Link href="/arcade" className="text-sm font-medium text-text-dim hover:text-teal transition-colors no-underline">
-                Arcade
-              </Link>
-            </nav>
-          </div>
-          <div className="mt-4 pt-4 border-t border-border-light flex items-center justify-center gap-4">
-            <Link href="/privacy" className="text-xs text-text-dim hover:text-text-muted transition-colors no-underline">
-              Privacy Policy
-            </Link>
-            <span className="text-text-dim text-xs">&middot;</span>
-            <Link href="/terms" className="text-xs text-text-dim hover:text-text-muted transition-colors no-underline">
-              Terms of Service
-            </Link>
-          </div>
-          <p className="mt-3 text-center text-xs text-text-dim">&copy; 2026 Gamesite</p>
-        </div>
-      </footer>
     </main>
   );
 }
@@ -656,6 +637,123 @@ function Game2048Preview() {
   );
 }
 
+/* ─── Chain Reaction Mini Preview ────────────────────────────────────── */
+
+function ChainReactionPreview() {
+  const chain = [
+    { word: "FIRE", status: "solved" },
+    { link: "→", status: "solved" },
+    { word: "TRUCK", status: "solved" },
+    { link: "→", status: "active" },
+    { word: "???", status: "pending" },
+    { link: "→", status: "pending" },
+    { word: "???", status: "pending" },
+  ];
+  return (
+    <div className="mb-4 rounded-lg bg-coral/5 border border-coral/20 p-3">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-coral mb-2 block">
+        Complete the chain
+      </span>
+      <div className="flex items-center gap-1 flex-wrap">
+        {chain.map((item, i) =>
+          "link" in item && item.link ? (
+            <span
+              key={i}
+              className={`text-[10px] font-bold ${
+                item.status === "solved" ? "text-green" : item.status === "active" ? "text-coral animate-pulse" : "text-gray-300"
+              }`}
+            >
+              {item.link}
+            </span>
+          ) : (
+            <span
+              key={i}
+              className={`text-[10px] font-bold px-2 py-1 rounded ${
+                item.status === "solved"
+                  ? "bg-green/10 text-green"
+                  : item.status === "active"
+                    ? "bg-coral/10 text-coral border border-coral/30"
+                    : "bg-gray-100 text-text-dim"
+              }`}
+            >
+              {item.word}
+            </span>
+          ),
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Meteor Mayhem Mini Preview ─────────────────────────────────────── */
+
+function MeteorPreview() {
+  return (
+    <div className="mb-4 rounded-lg bg-coral/5 border border-coral/20 p-3 relative overflow-hidden">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-coral">Score: 2,450</span>
+        <span className="text-[10px] font-bold text-text-dim">Wave 3</span>
+      </div>
+      <div className="flex justify-center gap-3 py-2">
+        <span className="text-3xl" style={{ animation: "meteor-trail 1.5s ease-in-out infinite" }}>☄️</span>
+        <span className="text-3xl" style={{ animation: "meteor-trail 1.5s ease-in-out infinite 0.3s" }}>☄️</span>
+        <span className="text-2xl" style={{ animation: "float 2s ease-in-out infinite" }}>🚀</span>
+        <span className="text-3xl" style={{ animation: "meteor-trail 1.5s ease-in-out infinite 0.6s" }}>☄️</span>
+      </div>
+      <div className="flex justify-center gap-1 mt-1">
+        {[1, 2, 3].map((i) => (
+          <span key={i} className="text-[10px] text-coral">❤️</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Big Ah Sword Mini Preview ──────────────────────────────────────── */
+
+function SwordPreview() {
+  return (
+    <div className="mb-4 rounded-lg bg-coral/5 border border-coral/20 p-3">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-coral">Level 12</span>
+        <span className="text-[10px] font-bold text-amber">💰 340 gold</span>
+      </div>
+      <div className="flex justify-center py-2">
+        <span className="text-5xl" style={{ animation: "sword-swing 2s ease-in-out infinite", transformOrigin: "bottom center", display: "inline-block" }}>⚔️</span>
+      </div>
+      <div className="flex justify-between text-[9px] mt-1">
+        <span className="text-text-dim">ATK: <span className="text-coral font-bold">128</span></span>
+        <span className="text-text-dim">SIZE: <span className="text-purple font-bold">MEGA</span></span>
+        <span className="text-text-dim">SPD: <span className="text-teal font-bold">1.4x</span></span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Sky Hopper Mini Preview ────────────────────────────────────────── */
+
+function SkyHopperPreview() {
+  return (
+    <div className="mb-4 rounded-lg bg-sky/5 border border-sky/20 p-3 relative overflow-hidden">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-sky">Score: 47</span>
+        <span className="text-[10px] font-bold text-amber">Best: 112</span>
+      </div>
+      <div className="flex items-center justify-center gap-4 py-2">
+        <div className="flex flex-col gap-1">
+          <div className="w-4 h-10 bg-green/60 rounded-t-full" />
+          <div className="w-4 h-6 bg-green/60 rounded-b-full mt-6" />
+        </div>
+        <span className="text-3xl" style={{ animation: "bird-flap 0.8s ease-in-out infinite" }}>🐦</span>
+        <div className="flex flex-col gap-1">
+          <div className="w-4 h-6 bg-green/60 rounded-t-full" />
+          <div className="w-4 h-10 bg-green/60 rounded-b-full mt-6" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Image-based Previews ────────────────────────────────────────────── */
 
 function HeardlePreview() {
@@ -733,9 +831,12 @@ function FeaturedCard({ game }: { game: Game }) {
           <div className="flex items-center gap-2 mt-4">
             <span
               className={`text-sm font-semibold text-white ${colorMap[game.color]} rounded-full px-5 py-1.5
-                          group-hover:shadow-md transition-all duration-200`}
+                          group-hover:shadow-md transition-all duration-200 flex items-center gap-1.5`}
             >
               Play now
+              <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
             </span>
           </div>
         </div>
@@ -766,9 +867,17 @@ function GamePreview({ slug }: { slug: string }) {
     case "top-5": return <Top5Preview />;
     case "quotable": return <QuotablePreview />;
     case "timeline": return <TimelinePreview />;
+    case "chain-reaction": return <ChainReactionPreview />;
+    case "meteor-mayhem": return <MeteorPreview />;
+    case "ginormo-sword": return <SwordPreview />;
+    case "sky-hopper": return <SkyHopperPreview />;
     default: return null;
   }
 }
+
+/* ─── New games badge list ───────────────────────────────────────────────── */
+
+const newGameSlugs = new Set(["chain-reaction", "mathler", "timeline", "quotable", "top-5"]);
 
 /* ─── Card Components ────────────────────────────────────────────────────── */
 
@@ -786,18 +895,29 @@ function DailyCard({ game }: { game: Game }) {
 
       <GamePreview slug={game.slug} />
 
-      <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
-        {game.name}
-      </h3>
+      <div className="flex items-center gap-2">
+        <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
+          {game.name}
+        </h3>
+        {newGameSlugs.has(game.slug) && (
+          <span className="text-[9px] font-bold uppercase tracking-wider text-white bg-coral rounded-full px-2 py-0.5 animate-pulse">
+            New
+          </span>
+        )}
+      </div>
       <p className="text-text-dim text-sm mt-1 leading-relaxed">
         {game.description}
       </p>
 
       <div className="flex items-center gap-2 mt-auto pt-3">
         <span
-          className={`text-xs font-semibold ${textColorMap[game.color]} ${bgLightMap[game.color]} rounded-full px-3 py-1`}
+          className={`text-xs font-semibold ${textColorMap[game.color]} ${bgLightMap[game.color]} rounded-full px-3 py-1
+                      group-hover:shadow-sm transition-all duration-200 flex items-center gap-1`}
         >
           Play now
+          <svg className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
         </span>
       </div>
     </Link>
@@ -827,9 +947,13 @@ function ArcadeCard({ game }: { game: Game }) {
 
       <div className="flex items-center gap-2 mt-auto pt-3">
         <span
-          className={`text-xs font-semibold ${textColorMap[game.color]} ${bgLightMap[game.color]} rounded-full px-3 py-1`}
+          className={`text-xs font-semibold ${textColorMap[game.color]} ${bgLightMap[game.color]} rounded-full px-3 py-1
+                      group-hover:shadow-sm transition-all duration-200 flex items-center gap-1`}
         >
           {game.creditCost === 0 ? "Free to play" : `${game.creditCost} credits`}
+          <svg className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
         </span>
       </div>
     </Link>

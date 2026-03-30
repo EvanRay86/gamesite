@@ -396,3 +396,47 @@ body {
   border: none;
   opacity: 0.3;
 }
+
+/* Emoji ticker marquee */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.emoji-ticker {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+.emoji-ticker-inner {
+  display: flex;
+  gap: 2rem;
+  width: max-content;
+  animation: ticker-scroll 30s linear infinite;
+}
+.emoji-ticker:hover .emoji-ticker-inner {
+  animation-play-state: paused;
+}
+
+/* Chain link preview animation */
+@keyframes chain-link-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Meteor trail animation */
+@keyframes meteor-trail {
+  0% { transform: translate(0, 0) rotate(45deg); opacity: 1; }
+  100% { transform: translate(30px, 30px) rotate(45deg); opacity: 0; }
+}
+
+/* Sword swing animation */
+@keyframes sword-swing {
+  0%, 100% { transform: rotate(-15deg); }
+  50% { transform: rotate(15deg); }
+}
+
+/* Bird flap animation */
+@keyframes bird-flap {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
