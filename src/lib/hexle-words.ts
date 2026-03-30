@@ -1,6 +1,8 @@
 // Hexle — 6-letter word guessing game
 // Answer words are curated for broad appeal & recognition. Valid guesses is a superset.
 
+import { isValidEnglishWord } from "./dictionary";
+
 /** Words that can be chosen as the daily answer (common, recognizable 6-letter words). */
 export const ANSWER_WORDS: string[] = [
   // Nature & animals
@@ -44,8 +46,6 @@ export const ANSWER_WORDS: string[] = [
 
 // Remove duplicates
 const uniqueAnswers = [...new Set(ANSWER_WORDS)];
-
-import { isValidEnglishWord } from "./dictionary";
 
 import { getSupabase } from "./supabase";
 

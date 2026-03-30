@@ -264,6 +264,18 @@ export default function GinormoSword() {
       swingDir: 1,
       invincibleTimer: 0,
       stats: { ...BASE_STATS },
+      charging: false,
+      chargeTime: 0,
+      chargedRelease: false,
+      dashTimer: 0,
+      dashCooldown: 0,
+      dashDirX: 0,
+      dashDirY: 0,
+      whirlwindTimer: 0,
+      whirlwindCooldown: 0,
+      warcryCooldown: 0,
+      attackBuff: 0,
+      attackBuffTimer: 0,
     };
   }
 
@@ -289,6 +301,14 @@ export default function GinormoSword() {
       flashTimer: 0,
       dead: false,
       deathTimer: 0,
+      shape: template.shape,
+      isBoss: false,
+      bossAttackTimer: 0,
+      accentColor: "",
+      animTimer: 0,
+      slowTimer: 0,
+      burnTimer: 0,
+      burnDamage: 0,
     };
     enemiesRef.current.push(e);
   }
@@ -318,6 +338,13 @@ export default function GinormoSword() {
       deathTimer: 0,
       isBoss: true,
       title: boss.title,
+      shape: boss.shape,
+      bossAttackTimer: 0,
+      accentColor: "",
+      animTimer: 0,
+      slowTimer: 0,
+      burnTimer: 0,
+      burnDamage: 0,
     };
     enemiesRef.current.push(e);
   }

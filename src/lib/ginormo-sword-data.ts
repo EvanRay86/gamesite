@@ -85,19 +85,6 @@ export interface Projectile {
   life: number;
 }
 
-export interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  maxLife: number;
-  size: number;
-  color: string;
-  gravity: number;
-  shrink: boolean;
-}
-
 export interface GoldDrop {
   x: number;
   y: number;
@@ -428,12 +415,12 @@ export const AREAS: AreaDef[] = [
 
 // Boss templates per area (index matches AREAS)
 export const BOSSES: BossTemplate[] = [
-  { name: "King Slime",       title: "The Gelatinous Monarch", color: "#2e8b2e", hp: 80,   attack: 8,   speed: 20, gold: 50,  size: 32, xpReward: 40,  isBoss: true },
-  { name: "Alpha Wolf",       title: "Pack Leader",            color: "#404040", hp: 150,  attack: 18,  speed: 50, gold: 100, size: 28, xpReward: 70,  isBoss: true },
-  { name: "Desert Colossus",  title: "Eternal Sandstone",      color: "#b8860b", hp: 300,  attack: 30,  speed: 18, gold: 200, size: 36, xpReward: 120, isBoss: true },
-  { name: "Yeti",             title: "Mountain Terror",        color: "#e8f0f8", hp: 500,  attack: 45,  speed: 35, gold: 400, size: 34, xpReward: 200, isBoss: true },
-  { name: "Molten Dragon",    title: "Forge of Ruin",          color: "#ff2200", hp: 800,  attack: 65,  speed: 40, gold: 800, size: 38, xpReward: 350, isBoss: true },
-  { name: "Abyssal Overlord", title: "The Final Darkness",     color: "#3a005a", hp: 1500, attack: 90,  speed: 45, gold: 2000, size: 42, xpReward: 600, isBoss: true },
+  { name: "King Slime",       title: "The Gelatinous Monarch", color: "#2e8b2e", hp: 80,   attack: 8,   speed: 20, gold: 50,   size: 32, xpReward: 40,  isBoss: true, shape: "slime" },
+  { name: "Alpha Wolf",       title: "Pack Leader",            color: "#404040", hp: 150,  attack: 18,  speed: 50, gold: 100,  size: 28, xpReward: 70,  isBoss: true, shape: "beast" },
+  { name: "Desert Colossus",  title: "Eternal Sandstone",      color: "#b8860b", hp: 300,  attack: 30,  speed: 18, gold: 200,  size: 36, xpReward: 120, isBoss: true, shape: "golem" },
+  { name: "Yeti",             title: "Mountain Terror",        color: "#e8f0f8", hp: 500,  attack: 45,  speed: 35, gold: 400,  size: 34, xpReward: 200, isBoss: true, shape: "beast" },
+  { name: "Molten Dragon",    title: "Forge of Ruin",          color: "#ff2200", hp: 800,  attack: 65,  speed: 40, gold: 800,  size: 38, xpReward: 350, isBoss: true, shape: "demon" },
+  { name: "Abyssal Overlord", title: "The Final Darkness",     color: "#3a005a", hp: 1500, attack: 90,  speed: 45, gold: 2000, size: 42, xpReward: 600, isBoss: true, shape: "demon" },
 ];
 
 export const BOSS_SPAWN_KILLS = 20; // kills per boss spawn
