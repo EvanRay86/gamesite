@@ -251,6 +251,17 @@ export const games: Game[] = [
     creditCost: 0,
   },
 
+  {
+    slug: "rift",
+    name: "RIFT",
+    description:
+      "Join a faction and conquer the hex map through real-time puzzle duels. ELO rankings, seasons, and territory wars.",
+    category: "community",
+    color: "coral",
+    featured: true,
+    creditCost: 0,
+  },
+
   // ── Arcade Games ─────────────────────────────────────────────────────────
 
   {
