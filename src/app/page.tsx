@@ -138,29 +138,34 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {communityGames.map((game) => (
-              <Link
-                key={game.slug}
-                href={`/arcade/${game.slug}`}
-                className="group relative bg-white rounded-xl border border-border-light p-5 shadow-sm
-                           hover:shadow-md hover:border-green/40 transition-all duration-200 no-underline"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-green/10 flex items-center justify-center text-lg shrink-0">
-                    🏘️
+            {communityGames.map((game) => {
+              const gameHref = game.slug === "rift" ? "/rift" : `/arcade/${game.slug}`;
+              const gameIcon = game.slug === "rift" ? "\u2694\uFE0F" : "\u{1F3D8}\uFE0F";
+              const gameColor = game.slug === "rift" ? "coral" : "green";
+              return (
+                <Link
+                  key={game.slug}
+                  href={gameHref}
+                  className={`group relative bg-white rounded-xl border border-border-light p-5 shadow-sm
+                             hover:shadow-md hover:border-${gameColor}/40 transition-all duration-200 no-underline`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-10 h-10 rounded-lg bg-${gameColor}/10 flex items-center justify-center text-lg shrink-0`}>
+                      {gameIcon}
+                    </div>
+                    <div>
+                      <h3 className={`text-base font-semibold text-text-primary group-hover:text-${gameColor} transition-colors`}>
+                        {game.name}
+                      </h3>
+                      <p className="text-xs text-text-dim mt-0.5">{game.description}</p>
+                      <span className={`inline-block mt-2 text-[10px] font-semibold uppercase tracking-wide text-${gameColor} bg-${gameColor}/10 px-2 py-0.5 rounded-full`}>
+                        {game.slug === "rift" ? "Competitive" : "Multiplayer"}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-base font-semibold text-text-primary group-hover:text-green transition-colors">
-                      {game.name}
-                    </h3>
-                    <p className="text-xs text-text-dim mt-0.5">{game.description}</p>
-                    <span className="inline-block mt-2 text-[10px] font-semibold uppercase tracking-wide text-green bg-green/10 px-2 py-0.5 rounded-full">
-                      Multiplayer
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

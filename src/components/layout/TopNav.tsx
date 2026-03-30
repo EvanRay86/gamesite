@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const navLinks = [
   { label: "Daily", href: "/daily", color: "text-coral" },
   { label: "Arcade", href: "/arcade", color: "text-teal" },
+  { label: "RIFT", href: "/rift", color: "text-coral" },
 ];
 
 export default function TopNav() {
