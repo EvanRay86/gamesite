@@ -190,18 +190,32 @@ let aiReactionCounter = 0;
 let aiTargetX = CANVAS_W * 0.75;
 let aiShouldJump = false;
 let aiErrorOffset = 0;
+let aiBallOnMySideFrames = 0; // track how long ball stays on AI side
+let aiLastBallOnMySide = false;
 
 export function resetAIState(): void {
   aiReactionCounter = 0;
   aiTargetX = CANVAS_W * 0.75;
   aiShouldJump = false;
   aiErrorOffset = 0;
+  aiBallOnMySideFrames = 0;
+  aiLastBallOnMySide = false;
 }
 
 export function computeAIInput(state: GameState, level: AILevel): PlayerInput {
   const ai = state.p2;
   const ball = state.ball;
   const input: PlayerInput = { left: false, right: false, jump: false };
+
+  // Track how long ball has been on AI's side (anti-stalling)
+  const ballOnMySide = ball.x > NET_X;
+  if (ballOnMySide) {
+    aiBallOnMySideFrames++;
+  } else {
+    aiBallOnMySideFrames = 0;
+  }
+  // After ~2 seconds on AI side, AI should actively try to send it over
+  const stalling = aiBallOnMySideFrames > 120;
 
   // Reaction delay: only update target every N frames
   aiReactionCounter++;
@@ -215,7 +229,6 @@ export function computeAIInput(state: GameState, level: AILevel): PlayerInput {
       aiErrorOffset = (Math.random() - 0.5) * 20 * (1 - level.prediction);
     }
 
-    const ballOnMySide = ball.x > NET_X;
     const ballHeadingToMe = ball.vx > 0;
     const ballInAir = ball.y < GROUND_Y - 30;
 
@@ -225,37 +238,42 @@ export function computeAIInput(state: GameState, level: AILevel): PlayerInput {
       const blended =
         ball.x * (1 - level.prediction) + predictedX * level.prediction;
 
-      // Aggressive positioning: try to get under the ball to spike it over
-      if (level.aggression > 0 && ballInAir && ballOnMySide) {
-        // Position slightly behind the ball to hit it forward
-        const spikeOffset = (ball.vx > 0 ? -20 : 20) * level.aggression;
+      if (stalling && ballOnMySide && ballInAir) {
+        // Anti-stalling: position to the RIGHT of the ball so collision pushes it LEFT (toward net)
+        aiTargetX = blended + SLIME_RADIUS * 0.7 + aiErrorOffset * 0.3;
+        aiShouldJump = ball.y < GROUND_Y - SLIME_RADIUS * 0.5;
+      } else if (level.aggression > 0 && ballInAir && ballOnMySide) {
+        // Aggressive positioning: get to the right of the ball to spike it toward the net (left)
+        const spikeOffset = SLIME_RADIUS * 0.5 * level.aggression;
         aiTargetX = blended + spikeOffset + aiErrorOffset;
       } else {
         aiTargetX = blended + aiErrorOffset;
       }
 
-      // Jump decision
-      const distToBall = Math.sqrt(
-        (ai.x - ball.x) ** 2 + (ai.y - ball.y) ** 2
-      );
-      const ballDescending = ball.vy > 0;
-      const ballClose = distToBall < SLIME_RADIUS + BALL_RADIUS + 60;
+      // Jump decision (only when not stalling - stalling handles its own jump)
+      if (!stalling) {
+        const distToBall = Math.sqrt(
+          (ai.x - ball.x) ** 2 + (ai.y - ball.y) ** 2
+        );
+        const ballDescending = ball.vy > 0;
+        const ballClose = distToBall < SLIME_RADIUS + BALL_RADIUS + 60;
 
-      aiShouldJump =
-        ballClose &&
-        ballDescending &&
-        ball.y < GROUND_Y - SLIME_RADIUS &&
-        ballOnMySide;
+        aiShouldJump =
+          ballClose &&
+          ballDescending &&
+          ball.y < GROUND_Y - SLIME_RADIUS &&
+          ballOnMySide;
 
-      // Aggressive jump: jump early to spike
-      if (
-        level.aggression > 0.3 &&
-        ballOnMySide &&
-        ball.y < GROUND_Y - 80 &&
-        Math.abs(ai.x - ball.x) < 50 &&
-        Math.random() < level.aggression
-      ) {
-        aiShouldJump = true;
+        // Aggressive jump: jump early to spike
+        if (
+          level.aggression > 0.3 &&
+          ballOnMySide &&
+          ball.y < GROUND_Y - 80 &&
+          Math.abs(ai.x - ball.x) < 50 &&
+          Math.random() < level.aggression
+        ) {
+          aiShouldJump = true;
+        }
       }
     } else {
       // Ball is on opponent's side - return to defensive position

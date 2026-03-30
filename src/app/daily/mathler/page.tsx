@@ -1,3 +1,4 @@
+import Link from "next/link";
 import MathlerGame from "@/components/MathlerGame";
 import { getMathlerPuzzle, getTodayDate } from "@/lib/mathler-puzzles";
 
@@ -16,6 +17,14 @@ export default function MathlerPage() {
   return (
     <main>
       <MathlerGame puzzle={puzzle} date={today} />
+      <div className="flex justify-center py-6">
+        <Link
+          href="/daily/mathler/archive"
+          className="text-text-muted text-sm hover:text-teal transition-colors no-underline"
+        >
+          Play past puzzles &rarr;
+        </Link>
+      </div>
     </main>
   );
 }

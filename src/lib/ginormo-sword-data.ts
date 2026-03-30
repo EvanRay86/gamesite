@@ -71,6 +71,7 @@ export interface Enemy {
   slowTimer: number;
   burnTimer: number;
   burnDamage: number;
+  title?: string;
 }
 
 export interface Projectile {
@@ -111,6 +112,31 @@ export interface DamageNumber {
   amount: number;
   life: number;
   color: string;
+}
+
+export interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+  color: string;
+  type: "spark" | "death" | "trail" | "blood";
+}
+
+export interface BossTemplate extends EnemyTemplate {
+  isBoss: true;
+  title: string;
+}
+
+export interface SaveData {
+  gold: number;
+  upgradeLevels: number[];
+  unlockedAreas: boolean[];
+  totalKills: number;
+  highestCombo: number;
 }
 
 export interface PlayerStats {
@@ -400,6 +426,19 @@ export const AREAS: AreaDef[] = [
   },
 ];
 
+// Boss templates per area (index matches AREAS)
+export const BOSSES: BossTemplate[] = [
+  { name: "King Slime",       title: "The Gelatinous Monarch", color: "#2e8b2e", hp: 80,   attack: 8,   speed: 20, gold: 50,  size: 32, xpReward: 40,  isBoss: true },
+  { name: "Alpha Wolf",       title: "Pack Leader",            color: "#404040", hp: 150,  attack: 18,  speed: 50, gold: 100, size: 28, xpReward: 70,  isBoss: true },
+  { name: "Desert Colossus",  title: "Eternal Sandstone",      color: "#b8860b", hp: 300,  attack: 30,  speed: 18, gold: 200, size: 36, xpReward: 120, isBoss: true },
+  { name: "Yeti",             title: "Mountain Terror",        color: "#e8f0f8", hp: 500,  attack: 45,  speed: 35, gold: 400, size: 34, xpReward: 200, isBoss: true },
+  { name: "Molten Dragon",    title: "Forge of Ruin",          color: "#ff2200", hp: 800,  attack: 65,  speed: 40, gold: 800, size: 38, xpReward: 350, isBoss: true },
+  { name: "Abyssal Overlord", title: "The Final Darkness",     color: "#3a005a", hp: 1500, attack: 90,  speed: 45, gold: 2000, size: 42, xpReward: 600, isBoss: true },
+];
+
+export const BOSS_SPAWN_KILLS = 20; // kills per boss spawn
+export const COMBO_WINDOW = 2.0;    // seconds to chain kills
+
 // Helper: XP needed for a given level
 export function xpForLevel(level: number): number {
   return Math.floor(XP_PER_LEVEL * Math.pow(1.15, level - 1));
@@ -408,4 +447,23 @@ export function xpForLevel(level: number): number {
 // Helper: upgrade cost at a given purchased count
 export function upgradeCost(def: UpgradeDef, purchased: number): number {
   return Math.floor(def.baseCost * Math.pow(def.costScale, purchased));
+}
+
+// Save/Load helpers
+const SAVE_KEY = "ginormo-sword-save";
+
+export function saveGame(data: SaveData): void {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  } catch { /* quota exceeded, ignore */ }
+}
+
+export function loadGame(): SaveData | null {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as SaveData;
+  } catch {
+    return null;
+  }
 }

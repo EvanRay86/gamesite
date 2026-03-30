@@ -1,5 +1,7 @@
 // Mathler — "Find the hidden equation" game data layer
 
+import { getSupabase } from "@/lib/supabase";
+
 export interface MathlerPuzzle {
   /** The hidden equation (exactly 6 characters) */
   equation: string;
@@ -159,6 +161,10 @@ export function getTodayDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+export function getSeedPuzzleCount(): number {
+  return seedPuzzles.length;
+}
+
 /**
  * Deterministically pick a puzzle based on the date string.
  * Cycles through the puzzle pool using a hash so consecutive days vary.
@@ -167,4 +173,39 @@ export function getMathlerPuzzle(date: string): MathlerPuzzle {
   const day = dateToDayNumber(date);
   const hash = ((day * 2654435761) >>> 0) % seedPuzzles.length;
   return seedPuzzles[hash];
+}
+
+// ---------------------------------------------------------------------------
+// Supabase archive helpers
+// ---------------------------------------------------------------------------
+
+export async function getMathlerArchiveDates(): Promise<
+  { puzzle_date: string }[]
+> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  const { data } = await supabase
+    .from("mathler_puzzles")
+    .select("puzzle_date")
+    .lte("puzzle_date", getTodayDate())
+    .order("puzzle_date", { ascending: false });
+
+  return data ?? [];
+}
+
+export async function getMathlerPuzzleByDate(
+  date: string,
+): Promise<MathlerPuzzle | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+
+  const { data } = await supabase
+    .from("mathler_puzzles")
+    .select("equation, target")
+    .eq("puzzle_date", date)
+    .single();
+
+  if (!data) return null;
+  return { equation: data.equation, target: data.target };
 }
