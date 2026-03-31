@@ -146,7 +146,7 @@ export default function SubscribePage() {
                     handleCheckout(priceId, "payment");
                   }}
                   disabled={loading === priceId}
-                  className="w-full rounded-full bg-text-primary text-white py-2 text-sm font-semibold
+                  className="w-full rounded-full bg-text-primary text-white py-3 text-sm font-semibold
                              hover:bg-text-secondary transition-colors disabled:opacity-50"
                 >
                   {loading === priceId ? "…" : "Buy"}

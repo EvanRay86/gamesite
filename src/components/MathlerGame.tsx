@@ -571,7 +571,7 @@ function KeyButton({
   return (
     <button
       onClick={onClick}
-      className={`flex h-12 min-w-[36px] items-center justify-center rounded-lg
+      className={`flex h-12 min-w-[44px] items-center justify-center rounded-lg
                   text-lg font-bold transition-colors ${bg}`}
     >
       {char}

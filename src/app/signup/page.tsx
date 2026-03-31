@@ -137,7 +137,7 @@ function SignupContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-text-primary
+              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-base text-text-primary
                          focus:outline-none focus:ring-2 focus:ring-teal/50 focus:border-teal"
             />
           </div>
@@ -152,7 +152,7 @@ function SignupContent() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-text-primary
+              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-base text-text-primary
                          focus:outline-none focus:ring-2 focus:ring-teal/50 focus:border-teal"
             />
           </div>
@@ -167,7 +167,7 @@ function SignupContent() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-text-primary
+              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-base text-text-primary
                          focus:outline-none focus:ring-2 focus:ring-teal/50 focus:border-teal"
             />
           </div>
