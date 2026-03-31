@@ -33,16 +33,22 @@ export default function TopNav() {
   }, []);
 
   return (
-    <nav aria-label="Main navigation" className="sticky top-0 z-50 w-full glass-nav shadow-sm">
-      <div className="mx-auto flex h-12 max-w-7xl items-center justify-between px-4 md:h-14">
+    <nav aria-label="Main navigation" className="sticky top-0 z-50 w-full glass-nav">
+      <div className="mx-auto flex h-13 max-w-7xl items-center justify-between px-5 md:h-15">
         {/* Left: Logo */}
-        <Link href="/" className="flex-shrink-0 no-underline flex items-center gap-2">
+        <Link href="/" className="flex-shrink-0 no-underline flex items-center gap-2.5 group">
           {/* Scrabble tile */}
-          <svg width="26" height="28" viewBox="0 0 26 28" fill="none" className="flex-shrink-0">
-            <rect x="0" y="0" width="26" height="26" rx="4" fill="#FF6B6B"/>
-            <rect x="1.5" y="1.5" width="23" height="23" rx="3" fill="#FF8E8E"/>
-            <text x="13" y="19" textAnchor="middle" fill="white" fontSize="17" fontWeight="800" fontFamily="Georgia, serif">G</text>
-            <text x="22" y="25.5" textAnchor="middle" fill="white" fontSize="6" fontWeight="600" fontFamily="Georgia, serif">2</text>
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" className="flex-shrink-0 transition-transform duration-300 group-hover:scale-105 group-hover:rotate-[-3deg]">
+            <defs>
+              <linearGradient id="logo-grad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#FF6B6B"/>
+                <stop offset="100%" stopColor="#e05555"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="28" height="28" rx="7" fill="url(#logo-grad)"/>
+            <rect x="1.5" y="1.5" width="25" height="25" rx="6" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1"/>
+            <text x="14" y="20" textAnchor="middle" fill="white" fontSize="17" fontWeight="800" fontFamily="Georgia, serif">G</text>
+            <text x="23" y="26" textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize="6.5" fontWeight="600" fontFamily="Georgia, serif">2</text>
           </svg>
           <span className="flex items-baseline gap-1 leading-none">
             <span className="text-[21px] text-text-primary tracking-tight" style={{fontFamily: "'Russo One', sans-serif"}}>gamesite</span><span className="text-[11px] font-bold text-coral tracking-widest uppercase" style={{fontFamily: "'Space Grotesk', sans-serif"}}>.app</span>
@@ -59,11 +65,14 @@ export default function TopNav() {
                 href={link.href}
                 className={`relative rounded-full px-4 py-1.5 text-sm font-body font-semibold transition-all duration-200 no-underline ${
                   isActive
-                    ? `${link.color} bg-surface`
-                    : "text-text-muted hover:text-text-primary hover:bg-surface"
+                    ? `${link.color} bg-surface shadow-sm`
+                    : "text-text-muted hover:text-text-primary hover:bg-surface-hover"
                 }`}
               >
                 {link.label}
+                {isActive && (
+                  <span className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full ${link.color === "text-coral" ? "bg-coral" : link.color === "text-teal" ? "bg-teal" : "bg-coral"}`} />
+                )}
               </Link>
             );
           })}

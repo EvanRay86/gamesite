@@ -22,14 +22,14 @@ const clusterWords = [
 
 function ClusterPreview() {
   return (
-    <div className="grid grid-cols-5 gap-1.5 mb-4">
+    <div className="grid grid-cols-5 gap-1.5 mb-3">
       {clusterWords.map(({ word, selected }, i) => (
         <div
           key={i}
-          className={`rounded-lg py-2 px-1 text-center text-[9px] sm:text-[11px] font-bold uppercase tracking-wide transition-all
+          className={`rounded-lg py-2 px-1 text-center text-[9px] sm:text-[11px] font-bold uppercase tracking-wide transition-all duration-200
             ${selected
-              ? "bg-coral text-white shadow-sm"
-              : "bg-gray-100 text-text-secondary"
+              ? "bg-gradient-to-br from-coral to-coral-dark text-white shadow-[0_2px_8px_rgba(255,107,107,0.25)]"
+              : "bg-white/80 text-text-secondary border border-black/5"
             }`}
         >
           {word}
@@ -48,14 +48,14 @@ function HexlePreview() {
     { word: "SCREEN", colors: ["green", "gray", "gray", "green", "green", "green"] },
   ];
   return (
-    <div className="mb-4 flex flex-col items-center gap-1">
+    <div className="mb-3 flex flex-col items-center gap-1">
       {guesses.map((row, ri) => (
         <div key={ri} className="flex gap-0.5">
           {row.word.split("").map((ch, ci) => (
             <div
               key={ci}
-              className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded text-white
-                ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "amber" ? "bg-amber" : "bg-gray-400"}`}
+              className={`w-7 h-7 flex items-center justify-center text-[10px] font-bold rounded-md text-white shadow-sm
+                ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "amber" ? "bg-amber" : "bg-gray-300/80"}`}
             >
               {ch}
             </div>
@@ -70,19 +70,19 @@ function HexlePreview() {
 
 function TriviaPreview() {
   return (
-    <div className="mb-4 rounded-lg bg-sky/5 border border-sky/20 p-3">
-      <div className="flex items-center justify-between mb-2">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-sky/5 to-sky/10 border border-sky/15 p-3.5">
+      <div className="flex items-center justify-between mb-2.5">
         <span className="text-[10px] font-bold uppercase tracking-wider text-sky">Question 3 of 8</span>
-        <span className="text-[10px] font-bold text-coral tabular-nums">⏱ 5s</span>
+        <span className="text-[10px] font-bold text-coral tabular-nums bg-coral/8 px-2 py-0.5 rounded-full">5s</span>
       </div>
-      <p className="text-xs font-semibold text-text-primary leading-snug mb-2">
+      <p className="text-xs font-semibold text-text-primary leading-snug mb-2.5">
         What planet has the most moons in our solar system?
       </p>
       <div className="grid grid-cols-2 gap-1.5">
-        <div className="rounded bg-white border border-border-light px-2 py-1.5 text-[10px] font-medium text-text-secondary text-center">Jupiter</div>
-        <div className="rounded bg-sky text-white px-2 py-1.5 text-[10px] font-bold text-center">Saturn</div>
-        <div className="rounded bg-white border border-border-light px-2 py-1.5 text-[10px] font-medium text-text-secondary text-center">Neptune</div>
-        <div className="rounded bg-white border border-border-light px-2 py-1.5 text-[10px] font-medium text-text-secondary text-center">Uranus</div>
+        <div className="rounded-lg bg-white/80 border border-black/5 px-2 py-2 text-[10px] font-medium text-text-secondary text-center">Jupiter</div>
+        <div className="rounded-lg bg-sky text-white px-2 py-2 text-[10px] font-bold text-center shadow-[0_2px_8px_rgba(69,183,209,0.3)]">Saturn</div>
+        <div className="rounded-lg bg-white/80 border border-black/5 px-2 py-2 text-[10px] font-medium text-text-secondary text-center">Neptune</div>
+        <div className="rounded-lg bg-white/80 border border-black/5 px-2 py-2 text-[10px] font-medium text-text-secondary text-center">Uranus</div>
       </div>
     </div>
   );
@@ -91,7 +91,7 @@ function TriviaPreview() {
 /* ─── Crossword Mini Preview ────────────────────────────────────────────── */
 
 function CrosswordPreview() {
-  const mini = [
+  const mini: number[][] = [
     [0, 0, 1, 1, 1, 1, 0],
     [0, 0, 1, 0, 0, 0, 0],
     [1, 1, 1, 1, 1, 0, 0],
@@ -108,17 +108,17 @@ function CrosswordPreview() {
     ["", "", "", "", "F", "", ""],
   ];
   return (
-    <div className="mb-4 flex justify-center">
-      <div className="inline-grid gap-[2px] bg-text-primary/20 p-[2px] rounded">
+    <div className="mb-3 flex justify-center">
+      <div className="inline-grid gap-[2px] bg-text-primary/10 p-[3px] rounded-lg shadow-sm">
         {mini.map((row, ri) =>
           row.map((cell, ci) => (
             <div
               key={`${ri}-${ci}`}
-              className={`flex items-center justify-center text-[8px] sm:text-[9px] font-bold uppercase
+              className={`flex items-center justify-center text-[8px] sm:text-[9px] font-bold uppercase rounded-[2px]
                 ${cell ? "bg-white text-text-primary" : "bg-transparent"}`}
               style={{
-                width: 20,
-                height: 20,
+                width: 22,
+                height: 22,
                 gridRow: ri + 1,
                 gridColumn: ci + 1,
               }}
@@ -136,8 +136,8 @@ function CrosswordPreview() {
 
 function GeoGuessPreview() {
   return (
-    <div className="mb-4 rounded-lg bg-green/5 border border-green/20 p-3">
-      <div className="flex items-center gap-3 mb-2">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-green/5 to-green/10 border border-green/15 p-3.5">
+      <div className="flex items-center gap-3 mb-2.5">
         <span className="text-3xl">🇧🇷</span>
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-green">Hint 1</span>
@@ -145,8 +145,8 @@ function GeoGuessPreview() {
         </div>
       </div>
       <div className="flex gap-1.5">
-        <div className="rounded bg-white border border-border-light px-2 py-1 text-[10px] font-medium text-text-secondary flex-1 text-center">Argentina?</div>
-        <div className="rounded bg-green text-white px-2 py-1 text-[10px] font-bold flex-1 text-center">Brazil</div>
+        <div className="rounded-lg bg-white/80 border border-black/5 px-2 py-1.5 text-[10px] font-medium text-text-secondary flex-1 text-center">Argentina?</div>
+        <div className="rounded-lg bg-green text-white px-2 py-1.5 text-[10px] font-bold flex-1 text-center shadow-[0_2px_8px_rgba(34,197,94,0.3)]">Brazil</div>
       </div>
     </div>
   );
@@ -160,15 +160,15 @@ function MathlerPreview() {
     { chars: "18-3*2", colors: ["green", "green", "green", "green", "green", "green"] },
   ];
   return (
-    <div className="mb-4 flex flex-col items-center gap-1">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-purple mb-1">Target: 12</span>
+    <div className="mb-3 flex flex-col items-center gap-1.5">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-purple bg-purple/8 px-2.5 py-0.5 rounded-full mb-1">Target: 12</span>
       {rows.map((row, ri) => (
         <div key={ri} className="flex gap-1">
           {row.chars.split("").map((ch, ci) => (
             <div
               key={ci}
-              className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded text-white
-                ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "yellow" ? "bg-amber" : "bg-gray-400"}`}
+              className={`w-7 h-7 flex items-center justify-center text-[10px] font-bold rounded-md text-white shadow-sm
+                ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "yellow" ? "bg-amber" : "bg-gray-300/80"}`}
             >
               {ch}
             </div>
@@ -235,16 +235,16 @@ function EmojiDecoderPreview() {
     { emojis: "🏰👸🐉", answer: "???", solved: false },
   ];
   return (
-    <div className="mb-4 rounded-lg bg-amber/5 border border-amber/20 p-3">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-amber mb-2 block">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-amber/5 to-amber/10 border border-amber/15 p-3.5">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-amber mb-2.5 block">
         Round 3 of 5
       </span>
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         {rounds.map((r, i) => (
-          <div key={i} className="flex items-center gap-2">
+          <div key={i} className="flex items-center gap-2.5">
             <span className="text-base leading-none">{r.emojis}</span>
             <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+              className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                 r.solved
                   ? "bg-green/10 text-green"
                   : "bg-amber/10 text-amber"
@@ -270,23 +270,23 @@ function Top5Preview() {
     { rank: 5, label: "Brazil", status: "pending" },
   ];
   return (
-    <div className="mb-4 rounded-lg bg-amber/5 border border-amber/20 p-3">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-amber mb-2 block">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-amber/5 to-amber/10 border border-amber/15 p-3.5">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-amber mb-2.5 block">
         Most Populated Countries
       </span>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         {items.map((item) => (
           <div key={item.rank} className="flex items-center gap-2">
             <span className="text-[10px] font-bold text-text-dim w-3 text-right">
               {item.rank}
             </span>
             <div
-              className={`flex-1 rounded px-2 py-1 text-[10px] font-medium text-center ${
+              className={`flex-1 rounded-lg px-2 py-1.5 text-[10px] font-medium text-center ${
                 item.status === "correct"
                   ? "bg-green/10 text-green font-bold"
                   : item.status === "wrong"
                     ? "bg-coral/10 text-coral font-bold"
-                    : "bg-gray-100 text-text-secondary"
+                    : "bg-white/80 border border-black/5 text-text-secondary"
               }`}
             >
               {item.label}
@@ -311,18 +311,18 @@ function QuotablePreview() {
     { text: "see", revealed: false },
   ];
   return (
-    <div className="mb-4 rounded-lg bg-purple/5 border border-purple/20 p-3">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-purple mb-2 block">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-purple/5 to-purple/10 border border-purple/15 p-3.5">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-purple mb-2.5 block">
         Who said it?
       </span>
-      <div className="flex flex-wrap gap-1 mb-2">
+      <div className="flex flex-wrap gap-1 mb-2.5">
         {words.map((w, i) => (
           <span
             key={i}
-            className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
+            className={`text-xs font-semibold px-1.5 py-0.5 rounded-md ${
               w.revealed
                 ? "text-text-primary"
-                : "bg-purple/10 text-purple/40"
+                : "bg-purple/8 text-purple/40"
             }`}
           >
             {w.revealed ? w.text : "━━━"}
@@ -330,10 +330,10 @@ function QuotablePreview() {
         ))}
       </div>
       <div className="grid grid-cols-2 gap-1.5">
-        <div className="rounded bg-white border border-border-light px-2 py-1 text-[10px] font-medium text-text-secondary text-center">
+        <div className="rounded-lg bg-white/80 border border-black/5 px-2 py-1.5 text-[10px] font-medium text-text-secondary text-center">
           Einstein
         </div>
-        <div className="rounded bg-purple text-white px-2 py-1 text-[10px] font-bold text-center">
+        <div className="rounded-lg bg-purple text-white px-2 py-1.5 text-[10px] font-bold text-center shadow-[0_2px_8px_rgba(168,85,247,0.3)]">
           Gandhi
         </div>
       </div>
@@ -352,24 +352,24 @@ function TimelinePreview() {
     { year: "", label: "Mars Rover", status: "pending" },
   ];
   return (
-    <div className="mb-4 rounded-lg bg-teal/5 border border-teal/20 p-3">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-teal mb-2 block">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-teal/5 to-teal/10 border border-teal/15 p-3.5">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-teal mb-2.5 block">
         Put in order
       </span>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         {events.map((e, i) => (
           <div key={i} className="flex items-center gap-2">
             <span className="text-[9px] font-bold text-text-dim w-7 text-right tabular-nums">
               {e.year}
             </span>
-            <div className="flex-1 h-0.5 relative">
+            <div className="flex-1 h-[3px] relative rounded-full overflow-hidden bg-gray-100">
               <div
                 className={`absolute inset-0 rounded-full ${
                   e.status === "correct"
                     ? "bg-green"
                     : e.status === "active"
                       ? "bg-teal animate-pulse"
-                      : "bg-gray-200"
+                      : "bg-transparent"
                 }`}
               />
             </div>
@@ -394,7 +394,7 @@ function TimelinePreview() {
 /* ─── 2048 Mini Preview ────────────────────────────────────────────── */
 
 function Game2048Preview() {
-  const tiles = [
+  const tiles: number[][] = [
     [2, 0, 4, 0],
     [8, 16, 4, 2],
     [32, 64, 8, 4],
@@ -412,18 +412,18 @@ function Game2048Preview() {
     256: "bg-amber-400 text-white",
   };
   return (
-    <div className="mb-4 rounded-lg bg-amber/5 border border-amber/20 p-3">
-      <div className="flex items-center justify-between mb-2">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-amber/5 to-amber/10 border border-amber/15 p-3.5">
+      <div className="flex items-center justify-between mb-2.5">
         <span className="text-[10px] font-bold uppercase tracking-wider text-amber">
           Score: 1,024
         </span>
         <span className="text-[10px] font-bold text-text-dim">Best: 4,096</span>
       </div>
-      <div className="grid grid-cols-4 gap-1 bg-stone-300 rounded-md p-1">
+      <div className="grid grid-cols-4 gap-1 bg-stone-200/80 rounded-lg p-1.5">
         {tiles.flat().map((v, i) => (
           <div
             key={i}
-            className={`${tileColor[v] ?? "bg-purple-500 text-white"} aspect-square flex items-center justify-center rounded text-[9px] font-bold`}
+            className={`${tileColor[v] ?? "bg-purple-500 text-white"} aspect-square flex items-center justify-center rounded-md text-[9px] font-bold shadow-sm`}
           >
             {v > 0 ? v : ""}
           </div>
@@ -446,11 +446,11 @@ function ChainReactionPreview() {
     { word: "???", status: "pending" },
   ];
   return (
-    <div className="mb-4 rounded-lg bg-coral/5 border border-coral/20 p-3">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-coral mb-2 block">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-coral/5 to-coral/10 border border-coral/15 p-3.5">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-coral mb-2.5 block">
         Complete the chain
       </span>
-      <div className="flex items-center gap-1 flex-wrap">
+      <div className="flex items-center gap-1.5 flex-wrap">
         {chain.map((item, i) =>
           "link" in item && item.link ? (
             <span
@@ -464,12 +464,12 @@ function ChainReactionPreview() {
           ) : (
             <span
               key={i}
-              className={`text-[10px] font-bold px-2 py-1 rounded ${
+              className={`text-[10px] font-bold px-2.5 py-1 rounded-lg ${
                 item.status === "solved"
                   ? "bg-green/10 text-green"
                   : item.status === "active"
-                    ? "bg-coral/10 text-coral border border-coral/30"
-                    : "bg-gray-100 text-text-dim"
+                    ? "bg-coral/10 text-coral border border-coral/25"
+                    : "bg-white/80 border border-black/5 text-text-dim"
               }`}
             >
               {"word" in item ? item.word : ""}
@@ -487,30 +487,30 @@ function WordsmithPreview() {
   const tiles = ["F", "O", "R", "G", "E", "D", "S"];
   const powerUps = ["\u{1F525}", "\u26A1", "\u{1F48E}"];
   return (
-    <div className="mb-4 rounded-lg bg-amber/5 border border-amber/20 p-3">
-      <div className="flex items-center justify-between mb-2">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-amber/5 to-amber/10 border border-amber/15 p-3.5">
+      <div className="flex items-center justify-between mb-2.5">
         <span className="text-[10px] font-bold uppercase tracking-wider text-amber">
           Round 3 of 5
         </span>
         <span className="text-[10px] font-bold text-amber">Score: 247</span>
       </div>
-      <div className="flex gap-1 mb-2">
+      <div className="flex gap-1 mb-2.5">
         {tiles.map((letter, i) => (
           <span
             key={i}
-            className={`w-8 h-8 flex items-center justify-center rounded-md text-xs font-bold border ${
+            className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold border shadow-sm ${
               i < 4
-                ? "bg-amber/10 border-amber/30 text-amber"
-                : "bg-white border-gray-200 text-text-primary"
+                ? "bg-amber/10 border-amber/25 text-amber"
+                : "bg-white/80 border-black/5 text-text-primary"
             }`}
           >
             {letter}
           </span>
         ))}
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         {powerUps.map((emoji, i) => (
-          <span key={i} className="text-xs bg-amber/10 rounded-full px-1.5 py-0.5">
+          <span key={i} className="text-xs bg-amber/10 rounded-full px-2 py-0.5">
             {emoji}
           </span>
         ))}
@@ -524,12 +524,12 @@ function WordsmithPreview() {
 
 function MeteorPreview() {
   return (
-    <div className="mb-4 rounded-lg bg-coral/5 border border-coral/20 p-3 relative overflow-hidden">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 border border-coral/20 p-3.5 relative overflow-hidden">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] font-bold uppercase tracking-wider text-coral">Score: 2,450</span>
-        <span className="text-[10px] font-bold text-text-dim">Wave 3</span>
+        <span className="text-[10px] font-bold text-gray-400">Wave 3</span>
       </div>
-      <div className="flex justify-center gap-3 py-2">
+      <div className="flex justify-center gap-3 py-3">
         <span className="text-3xl" style={{ animation: "meteor-trail 1.5s ease-in-out infinite" }}>☄️</span>
         <span className="text-3xl" style={{ animation: "meteor-trail 1.5s ease-in-out infinite 0.3s" }}>☄️</span>
         <span className="text-2xl" style={{ animation: "float 2s ease-in-out infinite" }}>🚀</span>
@@ -540,6 +540,8 @@ function MeteorPreview() {
           <span key={i} className="text-[10px] text-coral">❤️</span>
         ))}
       </div>
+      {/* Neon glow overlay */}
+      <div className="absolute inset-0 pointer-events-none rounded-xl" style={{background: "radial-gradient(ellipse at 50% 80%, rgba(255,107,107,0.1) 0%, transparent 60%)"}} />
     </div>
   );
 }
@@ -548,15 +550,15 @@ function MeteorPreview() {
 
 function SwordPreview() {
   return (
-    <div className="mb-4 rounded-lg bg-coral/5 border border-coral/20 p-3">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-coral/5 to-coral/10 border border-coral/15 p-3.5">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] font-bold uppercase tracking-wider text-coral">Level 12</span>
-        <span className="text-[10px] font-bold text-amber">💰 340 gold</span>
+        <span className="text-[10px] font-bold text-amber bg-amber/8 px-2 py-0.5 rounded-full">340 gold</span>
       </div>
-      <div className="flex justify-center py-2">
+      <div className="flex justify-center py-3">
         <span className="text-5xl" style={{ animation: "sword-swing 2s ease-in-out infinite", transformOrigin: "bottom center", display: "inline-block" }}>⚔️</span>
       </div>
-      <div className="flex justify-between text-[9px] mt-1">
+      <div className="flex justify-between text-[9px] mt-1 bg-white/60 rounded-lg px-3 py-1.5">
         <span className="text-text-dim">ATK: <span className="text-coral font-bold">128</span></span>
         <span className="text-text-dim">SIZE: <span className="text-purple font-bold">MEGA</span></span>
         <span className="text-text-dim">SPD: <span className="text-teal font-bold">1.4x</span></span>
@@ -569,22 +571,24 @@ function SwordPreview() {
 
 function SkyHopperPreview() {
   return (
-    <div className="mb-4 rounded-lg bg-sky/5 border border-sky/20 p-3 relative overflow-hidden">
+    <div className="mb-3 rounded-xl bg-gradient-to-b from-sky/10 to-sky/5 border border-sky/15 p-3.5 relative overflow-hidden">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] font-bold uppercase tracking-wider text-sky">Score: 47</span>
-        <span className="text-[10px] font-bold text-amber">Best: 112</span>
+        <span className="text-[10px] font-bold text-amber bg-amber/8 px-2 py-0.5 rounded-full">Best: 112</span>
       </div>
-      <div className="flex items-center justify-center gap-4 py-2">
+      <div className="flex items-center justify-center gap-5 py-3">
         <div className="flex flex-col gap-1">
-          <div className="w-4 h-10 bg-green/60 rounded-t-full" />
-          <div className="w-4 h-6 bg-green/60 rounded-b-full mt-6" />
+          <div className="w-5 h-10 bg-green/50 rounded-t-full shadow-sm" />
+          <div className="w-5 h-6 bg-green/50 rounded-b-full mt-6 shadow-sm" />
         </div>
         <span className="text-3xl" style={{ animation: "bird-flap 0.8s ease-in-out infinite" }}>🐦</span>
         <div className="flex flex-col gap-1">
-          <div className="w-4 h-6 bg-green/60 rounded-t-full" />
-          <div className="w-4 h-10 bg-green/60 rounded-b-full mt-6" />
+          <div className="w-5 h-6 bg-green/50 rounded-t-full shadow-sm" />
+          <div className="w-5 h-10 bg-green/50 rounded-b-full mt-6 shadow-sm" />
         </div>
       </div>
+      {/* Sky glow */}
+      <div className="absolute inset-0 pointer-events-none rounded-xl" style={{background: "radial-gradient(ellipse at 50% 20%, rgba(69,183,209,0.08) 0%, transparent 60%)"}} />
     </div>
   );
 }
@@ -636,24 +640,24 @@ function SnakePreview() {
 function LexiconPreview() {
   const tiles = ["Q", "U", "E", "S", "T"];
   return (
-    <div className="mb-4 rounded-lg bg-teal/5 border border-teal/20 p-3">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-teal">Stage 4</span>
-        <span className="text-[10px] font-bold text-teal">Score: 580</span>
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-purple/5 to-purple/10 border border-purple/15 p-3.5">
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-purple">Stage 4</span>
+        <span className="text-[10px] font-bold text-purple">Score: 580</span>
       </div>
-      <div className="flex gap-1 justify-center mb-2">
+      <div className="flex gap-1 justify-center mb-2.5">
         {tiles.map((letter, i) => (
           <span
             key={i}
-            className="w-8 h-8 flex items-center justify-center rounded-md text-xs font-bold bg-teal/10 border border-teal/30 text-teal"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-xs font-bold bg-purple/10 border border-purple/20 text-purple shadow-sm"
           >
             {letter}
           </span>
         ))}
       </div>
-      <div className="flex justify-center gap-2 text-[9px] text-text-dim">
-        <span>Words: <span className="text-teal font-bold">12</span></span>
-        <span>Letters: <span className="text-teal font-bold">7</span></span>
+      <div className="flex justify-center gap-3 text-[9px] text-text-dim">
+        <span>Words: <span className="text-purple font-bold">12</span></span>
+        <span>Letters: <span className="text-purple font-bold">7</span></span>
       </div>
     </div>
   );
@@ -710,13 +714,13 @@ function RiftPreview() {
   const territory = { crimson: 38, verdant: 31, azure: 31 };
 
   return (
-    <div className="mb-4 rounded-lg bg-purple/5 border border-purple/20 p-3">
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 border border-purple/20 p-3.5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-2.5">
         <span className="text-[10px] font-bold uppercase tracking-wider text-purple">
           Territory War
         </span>
-        <span className="text-[10px] font-bold text-text-dim">Season 4</span>
+        <span className="text-[10px] font-bold text-gray-400">Season 4</span>
       </div>
 
       {/* Mini hex grid */}
@@ -759,22 +763,22 @@ function RiftPreview() {
       </div>
 
       {/* Faction labels */}
-      <div className="flex justify-between text-[9px] mb-2">
+      <div className="flex justify-between text-[9px] mb-2.5">
         <span className="text-[#FF6B6B] font-bold">Crimson {territory.crimson}%</span>
         <span className="text-[#22C55E] font-bold">Verdant {territory.verdant}%</span>
         <span className="text-[#45B7D1] font-bold">Azure {territory.azure}%</span>
       </div>
 
       {/* Duel preview */}
-      <div className="flex items-center justify-between bg-white/60 rounded-md px-2 py-1.5 border border-purple/10">
+      <div className="flex items-center justify-between bg-white/10 rounded-lg px-2.5 py-2 border border-white/10">
         <div className="flex items-center gap-1.5">
           <span className="text-[9px] font-bold text-purple uppercase">Duel</span>
-          <span className="text-[10px] font-semibold text-text-primary">Word Blitz</span>
+          <span className="text-[10px] font-semibold text-gray-200">Word Blitz</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-[9px] text-text-dim">ELO</span>
+          <span className="text-[9px] text-gray-400">ELO</span>
           <span className="text-[10px] font-bold text-amber">1247</span>
-          <span className="text-[8px] px-1 py-0.5 rounded bg-amber/10 text-amber font-bold uppercase">Captain</span>
+          <span className="text-[8px] px-1 py-0.5 rounded bg-amber/20 text-amber font-bold uppercase">Captain</span>
         </div>
       </div>
     </div>
