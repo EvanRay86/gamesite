@@ -7,26 +7,26 @@ const clusterWords = [
   { word: "LOVER", selected: true },
   { word: "TABLE", selected: false },
   { word: "RADIO", selected: false },
-  { word: "FOLKLORE", selected: true },
+  { word: "FOLK", selected: true },
   { word: "HEAT", selected: false },
   { word: "PHOTO", selected: false },
-  { word: "MIDNIGHTS", selected: true },
-  { word: "LICENSE", selected: false },
-  { word: "BURRITO", selected: false },
+  { word: "NIGHT", selected: true },
+  { word: "CARD", selected: false },
+  { word: "SALSA", selected: false },
   { word: "SOUND", selected: false },
   { word: "POKER", selected: false },
   { word: "CLUB", selected: false },
-  { word: "BRIDGE", selected: false },
+  { word: "RIDGE", selected: false },
   { word: "RUMMY", selected: false },
 ];
 
 function ClusterPreview() {
   return (
-    <div className="grid grid-cols-5 gap-1.5 mb-3">
+    <div className="grid grid-cols-5 gap-1 sm:gap-1.5 mb-3 overflow-hidden">
       {clusterWords.map(({ word, selected }, i) => (
         <div
           key={i}
-          className={`rounded-lg py-2 px-1 text-center text-[9px] sm:text-[11px] font-bold uppercase tracking-wide transition-all duration-200
+          className={`rounded-lg py-1.5 sm:py-2 px-0.5 text-center text-[7px] sm:text-[11px] font-bold uppercase tracking-wide transition-all duration-200 truncate
             ${selected
               ? "bg-gradient-to-br from-coral to-coral-dark text-white shadow-[0_2px_8px_rgba(255,107,107,0.25)]"
               : "bg-white/80 text-text-secondary border border-black/5"
@@ -54,7 +54,7 @@ function HexlePreview() {
           {row.word.split("").map((ch, ci) => (
             <div
               key={ci}
-              className={`w-7 h-7 flex items-center justify-center text-[10px] font-bold rounded-md text-white shadow-sm
+              className={`w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center text-[8px] sm:text-[10px] font-bold rounded-md text-white shadow-sm
                 ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "amber" ? "bg-amber" : "bg-gray-300/80"}`}
             >
               {ch}
@@ -163,11 +163,11 @@ function MathlerPreview() {
     <div className="mb-3 flex flex-col items-center gap-1.5">
       <span className="text-[10px] font-bold uppercase tracking-wider text-purple bg-purple/8 px-2.5 py-0.5 rounded-full mb-1">Target: 12</span>
       {rows.map((row, ri) => (
-        <div key={ri} className="flex gap-1">
+        <div key={ri} className="flex gap-0.5 sm:gap-1">
           {row.chars.split("").map((ch, ci) => (
             <div
               key={ci}
-              className={`w-7 h-7 flex items-center justify-center text-[10px] font-bold rounded-md text-white shadow-sm
+              className={`w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center text-[8px] sm:text-[10px] font-bold rounded-md text-white shadow-sm
                 ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "yellow" ? "bg-amber" : "bg-gray-300/80"}`}
             >
               {ch}
@@ -195,7 +195,7 @@ function WordLadderPreview() {
               return (
                 <div
                   key={ci}
-                  className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded ${
+                  className={`w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-[8px] sm:text-[10px] font-bold rounded ${
                     wi === 0
                       ? "bg-teal/10 text-teal"
                       : wi === words.length - 1
@@ -498,7 +498,7 @@ function WordsmithPreview() {
         {tiles.map((letter, i) => (
           <span
             key={i}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold border shadow-sm ${
+            className={`w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg text-[10px] sm:text-xs font-bold border shadow-sm ${
               i < 4
                 ? "bg-amber/10 border-amber/25 text-amber"
                 : "bg-white/80 border-black/5 text-text-primary"
@@ -649,7 +649,7 @@ function LexiconPreview() {
         {tiles.map((letter, i) => (
           <span
             key={i}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-xs font-bold bg-purple/10 border border-purple/20 text-purple shadow-sm"
+            className="w-6 h-6 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg text-[10px] sm:text-xs font-bold bg-purple/10 border border-purple/20 text-purple shadow-sm"
           >
             {letter}
           </span>
