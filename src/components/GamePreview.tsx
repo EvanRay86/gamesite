@@ -2,26 +2,39 @@ import Image from "next/image";
 
 /* ─── Cluster Mini Preview ───────────────────────────────────────────────── */
 
+const clusterWords = [
+  { word: "CASH", selected: false },
+  { word: "LOVER", selected: true },
+  { word: "TABLE", selected: false },
+  { word: "RADIO", selected: false },
+  { word: "FOLK", selected: true },
+  { word: "HEAT", selected: false },
+  { word: "PHOTO", selected: false },
+  { word: "NIGHT", selected: true },
+  { word: "CARD", selected: false },
+  { word: "SALSA", selected: false },
+  { word: "SOUND", selected: false },
+  { word: "POKER", selected: false },
+  { word: "CLUB", selected: false },
+  { word: "RIDGE", selected: false },
+  { word: "RUMMY", selected: false },
+];
+
 function ClusterPreview() {
-  /* Solved group + remaining words — compact visual that works at any width */
   return (
-    <div className="mb-3">
-      {/* Solved group example */}
-      <div className="rounded-lg bg-coral/90 px-3 py-2 mb-2 text-center">
-        <div className="text-[9px] sm:text-[11px] font-extrabold text-white uppercase tracking-wider">Taylor Swift Albums</div>
-        <div className="text-[8px] sm:text-[10px] text-white/70 mt-0.5">Lover, Folklore, Midnights</div>
-      </div>
-      {/* Remaining word tiles — 3 cols that always fit */}
-      <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
-        {["CASH", "TABLE", "HEAT", "POKER", "CLUB", "RUMMY"].map((word, i) => (
-          <div
-            key={i}
-            className="rounded-lg py-1.5 px-1 text-center text-[8px] sm:text-[11px] font-bold uppercase tracking-wide bg-white/80 text-text-secondary border border-black/5"
-          >
-            {word}
-          </div>
-        ))}
-      </div>
+    <div className="grid grid-cols-5 gap-1 sm:gap-1.5 mb-4">
+      {clusterWords.map(({ word, selected }, i) => (
+        <div
+          key={i}
+          className={`rounded-lg py-1.5 sm:py-2 px-0.5 text-center text-[7px] sm:text-[11px] font-bold uppercase tracking-wide transition-all
+            ${selected
+              ? "bg-coral text-white shadow-sm"
+              : "bg-gray-100 text-text-secondary"
+            }`}
+        >
+          {word}
+        </div>
+      ))}
     </div>
   );
 }
