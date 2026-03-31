@@ -8,6 +8,7 @@ import {
   hoverBorder,
   hoverBg,
 } from "@/lib/color-maps";
+import GamePreview from "@/components/GamePreview";
 
 function GameCard({ game }: { game: Game }) {
   const inner = (
@@ -16,6 +17,8 @@ function GameCard({ game }: { game: Game }) {
       <div className={`absolute top-0 left-6 right-6 h-1 ${colorBg[game.color]} rounded-b-full`} />
 
       <div className="p-6 pt-5">
+        <GamePreview slug={game.slug} />
+
         <div className="flex items-center gap-2 mb-1">
           <h2 className="text-xl font-bold text-text-primary">{game.name}</h2>
           {game.comingSoon && (
