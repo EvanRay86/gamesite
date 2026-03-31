@@ -20,7 +20,6 @@ import { getWordTier, TIER_COLORS } from "@/lib/lexicon-quest/word-scoring";
 import { shareOrCopy } from "@/lib/share";
 import type {
   GamePhase,
-  LetterTile,
   EnemyState,
   WordResult,
   MetaProgress,
@@ -42,6 +41,8 @@ export default function LexiconQuest() {
   const [copied, setCopied] = useState(false);
   const [meta, setMeta] = useState<MetaProgress | null>(null);
   const [lastWordResult, setLastWordResult] = useState<WordResult | null>(null);
+  const [wordInput, setWordInput] = useState("");
+  const wordInputRef = useRef<HTMLInputElement>(null);
 
   // ── Initialize engine ─────────────────────────────────────────────────
 
@@ -87,53 +88,19 @@ export default function LexiconQuest() {
     });
   }, []);
 
-  // ── Keyboard handler ──────────────────────────────────────────────────
+  // ── Word input handler ─────────────────────────────────────────────────
 
-  useEffect(() => {
+  const handleWordInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+    setWordInput(value);
     const engine = engineRef.current;
-    if (!engine) return;
-
-    const handleKey = (e: KeyboardEvent) => {
-      if (engine.state.phase !== "combat" || !engine.state.combat) return;
-
-      const key = e.key.toUpperCase();
-
-      if (key === "ENTER") {
-        e.preventDefault();
-        handleSubmitWord();
-        return;
-      }
-
-      if (key === "BACKSPACE") {
-        e.preventDefault();
-        const ids = engine.state.combat.selectedTileIds;
-        if (ids.length > 0) {
-          engine.deselectTile(ids[ids.length - 1]);
-        }
-        return;
-      }
-
-      if (key === "ESCAPE") {
-        e.preventDefault();
-        engine.clearSelection();
-        return;
-      }
-
-      // Type a letter to select matching tile
-      if (/^[A-Z]$/.test(key)) {
-        const selected = new Set(engine.state.combat.selectedTileIds);
-        const tile = engine.state.combat.tiles.find(
-          (t: LetterTile) =>
-            !selected.has(t.id) &&
-            (t.letter === key || t.modifier === "wildcard"),
-        );
-        if (tile) engine.selectTile(tile.id);
-      }
-    };
-
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  });
+    if (!engine?.state.combat) return;
+    if (value.length > 0) {
+      engine.selectTilesForWord(value);
+    } else {
+      engine.clearSelection();
+    }
+  }, []);
 
   // ── Actions ───────────────────────────────────────────────────────────
 
@@ -156,6 +123,7 @@ export default function LexiconQuest() {
     if (!engine || !renderer) return;
 
     const { result, enemyResults, error } = engine.submitWord();
+    setWordInput("");
 
     if (error) {
       setToast(error);
@@ -230,6 +198,17 @@ export default function LexiconQuest() {
       setTimeout(() => setLastWordResult(null), 2000);
     }
   }, []);
+
+  const handleWordInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSubmitWord();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      engineRef.current?.clearSelection();
+      setWordInput("");
+    }
+  }, [handleSubmitWord]);
 
   const handleMapClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -421,28 +400,33 @@ export default function LexiconQuest() {
                 </div>
               )}
 
-              {/* Selected Word Preview */}
+              {/* Word Input */}
               <div className="text-center min-h-[40px]">
-                {selectedWord.length > 0 && (
-                  <div className={`inline-block ${shake ? "animate-shake" : ""}`}>
-                    <span
-                      className="text-2xl font-bold tracking-wider"
-                      style={{
-                        color:
-                          selectedWord.length >= 3
-                            ? TIER_COLORS[wordTier]
-                            : "#9ca3af",
-                      }}
-                    >
-                      {selectedWord}
+                <div className={`inline-flex items-center gap-2 ${shake ? "animate-shake" : ""}`}>
+                  <input
+                    ref={wordInputRef}
+                    type="text"
+                    value={wordInput}
+                    onChange={handleWordInputChange}
+                    onKeyDown={handleWordInputKeyDown}
+                    placeholder="Type a word…"
+                    autoFocus
+                    className="w-48 sm:w-56 px-3 py-2 text-center text-xl font-bold tracking-wider
+                               rounded-lg border-2 border-border-light bg-white/80
+                               focus:border-purple focus:outline-none transition-colors uppercase"
+                    style={{
+                      color:
+                        selectedWord.length >= 3
+                          ? TIER_COLORS[wordTier]
+                          : "#374151",
+                    }}
+                  />
+                  {selectedWord.length >= 3 && (
+                    <span className="text-sm text-text-dim">
+                      ({wordTier})
                     </span>
-                    {selectedWord.length >= 3 && (
-                      <span className="ml-2 text-sm text-text-dim">
-                        ({wordTier})
-                      </span>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               {/* Toast */}
@@ -460,11 +444,18 @@ export default function LexiconQuest() {
                   return (
                     <button
                       key={tile.id}
-                      onClick={() =>
-                        selected
-                          ? engine?.deselectTile(tile.id)
-                          : engine?.selectTile(tile.id)
-                      }
+                      onClick={() => {
+                        if (selected) {
+                          engine?.deselectTile(tile.id);
+                        } else {
+                          engine?.selectTile(tile.id);
+                        }
+                        // Sync text input with tile selection
+                        setTimeout(() => {
+                          setWordInput(engineRef.current?.getSelectedWord() ?? "");
+                          wordInputRef.current?.focus();
+                        }, 0);
+                      }}
                       className={`
                         w-11 h-14 sm:w-12 sm:h-16 rounded-lg border-2 font-bold text-lg
                         flex flex-col items-center justify-center transition-all duration-150
@@ -497,7 +488,11 @@ export default function LexiconQuest() {
                   Submit Word
                 </button>
                 <button
-                  onClick={() => engine?.clearSelection()}
+                  onClick={() => {
+                    engine?.clearSelection();
+                    setWordInput("");
+                    wordInputRef.current?.focus();
+                  }}
                   className="px-4 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg
                              hover:bg-gray-300 transition-colors"
                 >
@@ -528,8 +523,8 @@ export default function LexiconQuest() {
 
               {/* Keyboard hint */}
               <p className="text-center text-text-dim text-xs">
-                Type letters to select tiles &middot; Enter to submit &middot;
-                Backspace to undo &middot; Esc to clear
+                Type your word and press Enter &middot; Click tiles to
+                select &middot; Esc to clear
               </p>
             </div>
           )}

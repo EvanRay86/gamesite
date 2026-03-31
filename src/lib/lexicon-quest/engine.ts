@@ -258,6 +258,28 @@ export class LexiconQuestEngine {
     this.emit();
   }
 
+  /** Batch-select tiles matching a full word. Returns true if all letters matched. */
+  selectTilesForWord(word: string): boolean {
+    if (!this.state.combat) return false;
+    const used = new Set<number>();
+    const ids: number[] = [];
+
+    for (const ch of word.toUpperCase()) {
+      const tile = this.state.combat.tiles.find(
+        (t) =>
+          !used.has(t.id) &&
+          (t.letter === ch || t.modifier === "wildcard"),
+      );
+      if (!tile) return false;
+      used.add(tile.id);
+      ids.push(tile.id);
+    }
+
+    this.state.combat.selectedTileIds = ids;
+    this.emit();
+    return true;
+  }
+
   getSelectedWord(): string {
     if (!this.state.combat) return "";
     return this.state.combat.selectedTileIds
