@@ -587,24 +587,55 @@ function SwordPreview() {
 
 function SkyHopperPreview() {
   return (
-    <div className="mb-3 rounded-xl bg-gradient-to-b from-sky/10 to-sky/5 border border-sky/15 p-3.5 relative overflow-hidden">
+    <div className="mb-3 rounded-xl bg-gradient-to-b from-[#87CEEB]/30 to-[#E0F7FA]/30 border border-sky/15 p-3.5 relative overflow-hidden">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] font-bold uppercase tracking-wider text-sky">Score: 47</span>
         <span className="text-[10px] font-bold text-amber bg-amber/8 px-2 py-0.5 rounded-full">Best: 112</span>
       </div>
-      <div className="flex items-center justify-center gap-5 py-3">
-        <div className="flex flex-col gap-1">
-          <div className="w-5 h-10 bg-green/50 rounded-t-full shadow-sm" />
-          <div className="w-5 h-6 bg-green/50 rounded-b-full mt-6 shadow-sm" />
+
+      {/* Game scene */}
+      <div className="relative flex items-end justify-center h-24 sm:h-28">
+        {/* Pipe 1 - left */}
+        <div className="absolute left-[18%] top-0 bottom-3 flex flex-col items-center gap-7">
+          <div className="w-6 flex-1 bg-[#4CAF50] rounded-b-sm shadow-sm relative">
+            <div className="absolute bottom-0 left-[-2px] right-[-2px] h-3 bg-[#43A047] rounded-sm" />
+          </div>
+          <div className="w-6 flex-1 bg-[#4CAF50] rounded-t-sm shadow-sm relative">
+            <div className="absolute top-0 left-[-2px] right-[-2px] h-3 bg-[#43A047] rounded-sm" />
+          </div>
         </div>
-        <span className="text-3xl" style={{ animation: "bird-flap 0.8s ease-in-out infinite" }}>🐦</span>
-        <div className="flex flex-col gap-1">
-          <div className="w-5 h-6 bg-green/50 rounded-t-full shadow-sm" />
-          <div className="w-5 h-10 bg-green/50 rounded-b-full mt-6 shadow-sm" />
+
+        {/* Bird - yellow circle facing right */}
+        <div className="absolute left-[42%] top-[30%] z-10">
+          <svg width="32" height="28" viewBox="0 0 32 28" fill="none">
+            {/* Body */}
+            <ellipse cx="14" cy="14" rx="12" ry="11" fill="#F7B731" />
+            {/* Wing */}
+            <ellipse cx="10" cy="16" rx="7" ry="5" fill="#FF9800" />
+            {/* Eye white */}
+            <circle cx="19" cy="10" r="5" fill="white" />
+            {/* Eye pupil */}
+            <circle cx="20.5" cy="10" r="2.5" fill="#333" />
+            {/* Beak */}
+            <polygon points="26,13 32,15 26,17" fill="#FF5722" />
+          </svg>
+        </div>
+
+        {/* Pipe 2 - right */}
+        <div className="absolute right-[18%] top-0 bottom-3 flex flex-col items-center gap-10">
+          <div className="w-6 flex-1 bg-[#4CAF50] rounded-b-sm shadow-sm relative">
+            <div className="absolute bottom-0 left-[-2px] right-[-2px] h-3 bg-[#43A047] rounded-sm" />
+          </div>
+          <div className="w-6 flex-1 bg-[#4CAF50] rounded-t-sm shadow-sm relative">
+            <div className="absolute top-0 left-[-2px] right-[-2px] h-3 bg-[#43A047] rounded-sm" />
+          </div>
+        </div>
+
+        {/* Ground */}
+        <div className="absolute bottom-0 left-0 right-0 h-3 bg-[#8B6914] rounded-b-lg">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[#4CAF50]" />
         </div>
       </div>
-      {/* Sky glow */}
-      <div className="absolute inset-0 pointer-events-none rounded-xl" style={{background: "radial-gradient(ellipse at 50% 20%, rgba(69,183,209,0.08) 0%, transparent 60%)"}} />
     </div>
   );
 }
