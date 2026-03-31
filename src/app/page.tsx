@@ -118,7 +118,7 @@ export default function HomePage() {
                 <Link
                   key={game.slug}
                   href={gameHref}
-                  className={`group relative game-card game-card-${gameColor} p-6 no-underline`}
+                  className={`group relative game-card ${gameColor === "coral" ? "game-card-coral" : "game-card-green"} p-6 no-underline`}
                 >
                   <div className="flex items-start gap-4 relative z-10">
                     <div className={`w-12 h-12 rounded-xl bg-${gameColor}/10 flex items-center justify-center text-xl shrink-0
@@ -227,7 +227,7 @@ function FeaturedCard({ game }: { game: Game }) {
       {/* Color accent strip */}
       <div className={`game-card-accent ${colorMap[game.color]}`} />
 
-      <div className="flex flex-col sm:flex-row relative z-10">
+      <div className="flex flex-col sm:flex-row">
         {/* Preview — left side on desktop */}
         <div className="sm:w-2/5 p-6 flex items-center justify-center">
           <GamePreview slug={game.slug} />
@@ -277,10 +277,8 @@ function DailyCard({ game }: { game: Game }) {
       {/* Color accent strip */}
       <div className={`absolute top-0 left-6 right-6 game-card-accent ${colorMap[game.color]} rounded-b-full`} />
 
-      <div className="relative z-10">
-        <div className="preview-container">
-          <GamePreview slug={game.slug} />
-        </div>
+      <div>
+        <GamePreview slug={game.slug} />
 
         <div className="flex items-center gap-2">
           <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
@@ -321,10 +319,8 @@ function ArcadeCard({ game }: { game: Game }) {
       {/* Color accent strip */}
       <div className={`absolute top-0 left-6 right-6 game-card-accent ${colorMap[game.color]} rounded-b-full`} />
 
-      <div className="relative z-10">
-        <div className="preview-container">
-          <GamePreview slug={game.slug} />
-        </div>
+      <div>
+        <GamePreview slug={game.slug} />
 
         <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
           {game.name}
