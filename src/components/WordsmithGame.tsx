@@ -35,9 +35,14 @@ const STATS_KEY = "wordsmith-stats";
 
 interface Props {
   dateStr: string;
+  mode?: "daily" | "quickplay";
 }
 
-export default function WordsmithGame({ dateStr }: Props) {
+export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
+  const isQuickplay = mode === "quickplay";
+  const [quickplaySeed, setQuickplaySeed] = useState(() =>
+    isQuickplay ? Date.now().toString() : "",
+  );
   // ── Core game state ──────────────────────────────────────────────────────
   const [phase, setPhase] = useState<GamePhase>("splash");
   const [currentRound, setCurrentRound] = useState(0);
@@ -84,7 +89,8 @@ export default function WordsmithGame({ dateStr }: Props) {
   // ── Initialization ─────────────────────────────────────────────────────
 
   const initGame = useCallback(() => {
-    const rng = seededRandom(dateToSeed(dateStr));
+    const seed = isQuickplay ? dateToSeed(quickplaySeed) : dateToSeed(dateStr);
+    const rng = seededRandom(seed);
     rngRef.current = rng;
 
     // Pre-generate all round tiles (deterministic for everyone)
@@ -110,7 +116,7 @@ export default function WordsmithGame({ dateStr }: Props) {
     setEchoUsed(false);
 
     return { roundTiles, roundOfferings };
-  }, [dateStr]);
+  }, [dateStr, isQuickplay, quickplaySeed]);
 
   // Load saved game or stats on mount
   useEffect(() => {
@@ -122,6 +128,12 @@ export default function WordsmithGame({ dateStr }: Props) {
       const raw = localStorage.getItem(STATS_KEY);
       if (raw) setStats(JSON.parse(raw));
     } catch { /* ignore */ }
+
+    // Quickplay: skip save/restore, just init fresh
+    if (isQuickplay) {
+      initGame();
+      return;
+    }
 
     // Check for saved game
     try {
@@ -160,12 +172,13 @@ export default function WordsmithGame({ dateStr }: Props) {
 
     // No saved game — start fresh
     initGame();
-  }, [dateStr, initGame]);
+  }, [dateStr, initGame, quickplaySeed]);
 
   // ── Save game state ────────────────────────────────────────────────────
 
   const saveGame = useCallback(
     (overrides?: Partial<WordsmithSavedGame>) => {
+      if (isQuickplay) return; // Don't persist quickplay games
       const data: WordsmithSavedGame = {
         date: dateStr,
         rounds: roundResults,
@@ -191,6 +204,7 @@ export default function WordsmithGame({ dateStr }: Props) {
 
   const saveStats = useCallback(
     (finalScore: number) => {
+      if (isQuickplay) return; // Quickplay doesn't affect daily stats
       try {
         const raw = localStorage.getItem(STATS_KEY);
         const prev: WordsmithStats = raw
@@ -415,7 +429,8 @@ export default function WordsmithGame({ dateStr }: Props) {
       });
     } else {
       // Generate power-up offerings on-the-fly, filtering already-chosen
-      const offeringRng = seededRandom(dateToSeed(dateStr + "-pu-" + currentRound));
+      const offeringSeedStr = isQuickplay ? quickplaySeed + "-pu-" + currentRound : dateStr + "-pu-" + currentRound;
+      const offeringRng = seededRandom(dateToSeed(offeringSeedStr));
       const offerings = generatePowerUpOfferings(offeringRng, activePowerUps);
       setPowerUpOfferings(offerings);
 
@@ -525,7 +540,8 @@ export default function WordsmithGame({ dateStr }: Props) {
     const indices = rerollSelected.map((id) =>
       tiles.findIndex((t) => t.id === id),
     );
-    const rng = seededRandom(dateToSeed(dateStr + "-reroll-" + currentRound));
+    const rerollSeedStr = isQuickplay ? quickplaySeed + "-reroll-" + currentRound : dateStr + "-reroll-" + currentRound;
+    const rng = seededRandom(dateToSeed(rerollSeedStr));
     const newTiles = applyReroll(tiles, indices, rng);
     setTiles(newTiles);
     setRerollAvailable(false);
@@ -543,10 +559,21 @@ export default function WordsmithGame({ dateStr }: Props) {
   // ── Share ──────────────────────────────────────────────────────────────
 
   const handleShare = async () => {
-    const text = buildShareText(roundResults, totalScore, dateStr);
+    const text = isQuickplay
+      ? buildShareText(roundResults, totalScore, dateStr).replace(
+          /WORDSMITH .*? #\d+/,
+          "WORDSMITH \u2692\uFE0F Quickplay",
+        )
+      : buildShareText(roundResults, totalScore, dateStr);
     await shareOrCopy(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const startNewQuickplay = () => {
+    initialized.current = false;
+    setQuickplaySeed(Date.now().toString());
+    setPhase("splash");
   };
 
   // ── Helpers ────────────────────────────────────────────────────────────
@@ -573,14 +600,14 @@ export default function WordsmithGame({ dateStr }: Props) {
             WORDSMITH
           </h1>
           <p className="text-text-secondary mb-1 text-sm">
-            Day #{dayNumber}
+            {isQuickplay ? "Quickplay" : `Day #${dayNumber}`}
           </p>
           <p className="text-text-secondary mb-6 text-sm leading-relaxed">
             Form the best word from 7 letters across 5 rounds.
             <br />
             Collect power-ups that stack and synergize.
             <br />
-            Chase the high score.
+            {isQuickplay ? "A fresh puzzle every time." : "Chase the high score."}
           </p>
 
           {stats.streak > 0 && (
@@ -613,7 +640,7 @@ export default function WordsmithGame({ dateStr }: Props) {
         <div className="clay-card mx-auto w-full max-w-md p-6 text-center">
           <div className="mb-1 text-4xl">{"\u2692\uFE0F"}</div>
           <h2 className="font-display mb-1 text-2xl font-bold text-amber">
-            WORDSMITH #{dayNumber}
+            {isQuickplay ? "WORDSMITH Quickplay" : `WORDSMITH #${dayNumber}`}
           </h2>
 
           {/* Round breakdown */}
@@ -709,13 +736,23 @@ export default function WordsmithGame({ dateStr }: Props) {
             </div>
           </div>
 
-          {/* Share button */}
-          <button
-            onClick={handleShare}
-            className="rounded-xl bg-amber px-8 py-3 font-semibold text-white transition-transform hover:scale-105 active:scale-95"
-          >
-            {copied ? "Copied!" : "Share Results"}
-          </button>
+          {/* Action buttons */}
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={handleShare}
+              className="rounded-xl bg-amber px-8 py-3 font-semibold text-white transition-transform hover:scale-105 active:scale-95"
+            >
+              {copied ? "Copied!" : "Share Results"}
+            </button>
+            {isQuickplay && (
+              <button
+                onClick={startNewQuickplay}
+                className="rounded-xl border-2 border-amber px-6 py-2.5 font-semibold text-amber transition-transform hover:scale-105 active:scale-95"
+              >
+                New Game
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -776,10 +813,10 @@ export default function WordsmithGame({ dateStr }: Props) {
             return (
               <span
                 key={`${id}-${idx}`}
-                className="rounded-full bg-amber/10 px-2 py-0.5 text-xs font-medium text-amber"
-                title={`${pu.name}: ${pu.description}`}
+                className="rounded-full bg-amber/10 px-2.5 py-1 text-xs font-medium text-amber"
               >
-                {pu.emoji} {pu.name}
+                {pu.emoji} {pu.name}{" "}
+                <span className="font-normal opacity-70">— {pu.description}</span>
               </span>
             );
           })}
