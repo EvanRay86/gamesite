@@ -636,9 +636,43 @@ function SlimePreview() {
 }
 
 function KoalaPreview() {
+  const upgrades = [
+    { emoji: "🌿", name: "Baby Koala", count: 12, lps: "2.4" },
+    { emoji: "🪺", name: "Cozy Nest", count: 5, lps: "8.0" },
+    { emoji: "🌳", name: "Eucalyptus Grove", count: 2, lps: "15.0" },
+  ];
+
   return (
-    <div className="mb-4 rounded-xl overflow-hidden">
-      <Image src="/images/koala-clicker.jpg" alt="Koala Clicker" width={688} height={384} className="w-full h-auto" />
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-green/5 to-green/10 border border-green/15 p-3.5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-green">Koala Colony</span>
+        <span className="text-[10px] font-bold text-green tabular-nums bg-green/8 px-2 py-0.5 rounded-full">🍃 12,847</span>
+      </div>
+
+      {/* Koala click target */}
+      <div className="flex justify-center mb-2.5">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-green/15 to-green/25 border-2 border-green/30 flex items-center justify-center shadow-sm">
+          <span className="text-3xl sm:text-4xl select-none">🐨</span>
+        </div>
+      </div>
+
+      {/* Per-second indicator */}
+      <div className="text-center mb-2.5">
+        <span className="text-[10px] text-text-dim">+25.4 leaves/sec</span>
+      </div>
+
+      {/* Mini upgrade list */}
+      <div className="flex flex-col gap-1">
+        {upgrades.map((u, i) => (
+          <div key={i} className="flex items-center gap-2 bg-white/60 rounded-lg px-2 py-1 border border-green/10">
+            <span className="text-xs">{u.emoji}</span>
+            <span className="text-[9px] sm:text-[10px] font-semibold text-text-primary flex-1">{u.name}</span>
+            <span className="text-[8px] text-text-dim">x{u.count}</span>
+            <span className="text-[8px] font-bold text-green">+{u.lps}/s</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
