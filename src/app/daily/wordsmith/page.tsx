@@ -1,4 +1,5 @@
 import WordsmithGame from "@/components/WordsmithGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 
 export const metadata = {
   title: "Wordsmith — Gamesite",
@@ -12,6 +13,7 @@ export default function WordsmithPage() {
   return (
     <main>
       <WordsmithGame dateStr={today} />
+      <MoreDailyGames currentSlug="wordsmith" />
     </main>
   );
 }

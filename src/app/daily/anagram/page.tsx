@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AnagramGame from "@/components/AnagramGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import {
   getAnagramPuzzleByDate,
   getTodayDate,
@@ -33,6 +34,7 @@ export default async function AnagramPage() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="anagram" />
     </main>
   );
 }

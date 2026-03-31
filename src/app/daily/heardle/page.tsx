@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HeardleGame from "@/components/HeardleGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import { getHeardlePuzzleAsync, getTodayDate } from "@/lib/heardle-puzzles";
 
 export const revalidate = 60;
@@ -24,6 +25,7 @@ export default async function HeardlePage() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="heardle" />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TimelineGame from "@/components/TimelineGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import {
   getTimelinePuzzleByDate,
   getTodayDate,
@@ -33,6 +34,7 @@ export default async function TimelinePage() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="timeline" />
     </main>
   );
 }

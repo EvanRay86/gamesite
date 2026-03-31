@@ -1,4 +1,5 @@
 import PixelVilleGame from "@/components/pixelville/PixelVilleGame";
+import MoreCommunityGames from "@/components/MoreCommunityGames";
 
 export const metadata = {
   title: "PixelVille — Community Sim World",
@@ -8,8 +9,11 @@ export const metadata = {
 
 export default function PixelVillePage() {
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
-      <PixelVilleGame />
-    </div>
+    <main>
+      <div className="fixed inset-0 z-50 overflow-hidden">
+        <PixelVilleGame />
+      </div>
+      <MoreCommunityGames currentSlug="pixelville" />
+    </main>
   );
 }

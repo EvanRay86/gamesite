@@ -1,5 +1,6 @@
 import Link from "next/link";
 import FramedGame from "@/components/FramedGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import { getFramedPuzzleAsync, getTodayDate } from "@/lib/framed-puzzles";
 
 export const revalidate = 60;
@@ -24,6 +25,7 @@ export default async function FramedPage() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="framed" />
     </main>
   );
 }

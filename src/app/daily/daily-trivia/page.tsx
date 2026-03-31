@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TriviaGame from "@/components/TriviaGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import {
   getTriviaPuzzleByDate,
   getTodayDate,
@@ -41,6 +42,7 @@ export default async function TriviaPage() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="daily-trivia" />
     </main>
   );
 }

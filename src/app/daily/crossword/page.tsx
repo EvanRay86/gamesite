@@ -1,4 +1,5 @@
 import CrosswordGame from "@/components/CrosswordGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import { getCrosswordPuzzle } from "@/lib/crossword-puzzles";
 
 export const revalidate = 60;
@@ -16,6 +17,7 @@ export default async function CrosswordPage() {
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8">
       <CrosswordGame puzzle={puzzle} />
+      <MoreDailyGames currentSlug="crossword" />
     </div>
   );
 }

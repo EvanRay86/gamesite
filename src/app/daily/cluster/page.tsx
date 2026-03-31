@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ClusterGame from "@/components/ClusterGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import { getPuzzleByDate, getTodayDate, getFallbackPuzzle } from "@/lib/puzzles";
 
 export const revalidate = 60;
@@ -29,6 +30,7 @@ export default async function ClusterPage() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="cluster" />
     </main>
   );
 }

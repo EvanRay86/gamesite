@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Top5Game from "@/components/Top5Game";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import {
   getTop5PuzzleByDate,
   getTodayDate,
@@ -33,6 +34,7 @@ export default async function Top5Page() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="top-5" />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import EmojiWordGame from "@/components/EmojiWordGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import {
   getEmojiWordPuzzleByDate,
   getTodayDate,
@@ -34,6 +35,7 @@ export default async function EmojiWordPage() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="emoji-word" />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import MathlerGame from "@/components/MathlerGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import { getMathlerPuzzle, getTodayDate } from "@/lib/mathler-puzzles";
 
 export const revalidate = 60;
@@ -25,6 +26,7 @@ export default function MathlerPage() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="mathler" />
     </main>
   );
 }

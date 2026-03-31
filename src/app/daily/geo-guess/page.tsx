@@ -1,4 +1,5 @@
 import GeoGuessGame from "@/components/GeoGuessGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import { getGeoPuzzle } from "@/lib/geo-puzzles";
 
 export const revalidate = 60;
@@ -16,6 +17,7 @@ export default function GeoGuessPage() {
   return (
     <main>
       <GeoGuessGame puzzle={puzzle} />
+      <MoreDailyGames currentSlug="geo-guess" />
     </main>
   );
 }
