@@ -80,14 +80,14 @@ export default function StatsModal({
         <button
           onClick={onClose}
           className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full
-                     text-text-dim hover:text-text-primary hover:bg-white/10 transition-colors text-xl"
+                     text-gray-400 hover:text-white hover:bg-white/10 transition-colors text-xl"
           aria-label="Close stats"
         >
           &times;
         </button>
 
         {/* Title */}
-        <h2 className="font-display text-2xl text-text-primary text-center mb-5">
+        <h2 className="font-display text-2xl text-white text-center mb-5">
           {gameName} Stats
         </h2>
 
@@ -100,8 +100,8 @@ export default function StatsModal({
             { value: stats.maxStreak, label: "Best" },
           ].map(({ value, label }) => (
             <div key={label} className="text-center">
-              <div className="text-xl sm:text-2xl font-bold text-text-primary">{value}</div>
-              <div className="text-[10px] sm:text-xs text-text-dim mt-0.5 uppercase tracking-wider">
+              <div className="text-xl sm:text-2xl font-bold text-white">{value}</div>
+              <div className="text-[10px] sm:text-xs text-gray-400 mt-0.5 uppercase tracking-wider">
                 {label}
               </div>
             </div>
@@ -111,7 +111,7 @@ export default function StatsModal({
         {/* Guess distribution */}
         {distKeys.some((k) => (dist[k] || 0) > 0) && (
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-text-dim mb-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
               Guess Distribution
             </h3>
             <div className="space-y-1.5">
@@ -121,7 +121,7 @@ export default function StatsModal({
 
                 return (
                   <div key={key} className="flex items-center gap-2 text-sm">
-                    <span className="w-4 text-right text-text-dim font-mono text-xs shrink-0">
+                    <span className="w-4 text-right text-gray-400 font-mono text-xs shrink-0">
                       {key}
                     </span>
                     <div className="flex-1 h-5 relative">
@@ -145,7 +145,7 @@ export default function StatsModal({
 
         {/* Empty state */}
         {stats.gamesPlayed === 0 && (
-          <p className="text-center text-text-dim text-sm mt-2">
+          <p className="text-center text-gray-400 text-sm mt-2">
             Play your first game to see stats here!
           </p>
         )}
