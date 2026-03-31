@@ -2,39 +2,26 @@ import Image from "next/image";
 
 /* ─── Cluster Mini Preview ───────────────────────────────────────────────── */
 
-const clusterWords = [
-  { word: "CASH", selected: false },
-  { word: "LOVER", selected: true },
-  { word: "TABLE", selected: false },
-  { word: "RADIO", selected: false },
-  { word: "FOLK", selected: true },
-  { word: "HEAT", selected: false },
-  { word: "PHOTO", selected: false },
-  { word: "NIGHT", selected: true },
-  { word: "CARD", selected: false },
-  { word: "SALSA", selected: false },
-  { word: "SOUND", selected: false },
-  { word: "POKER", selected: false },
-  { word: "CLUB", selected: false },
-  { word: "RIDGE", selected: false },
-  { word: "RUMMY", selected: false },
-];
-
 function ClusterPreview() {
+  /* Solved group + remaining words — compact visual that works at any width */
   return (
-    <div className="grid grid-cols-5 gap-1 sm:gap-1.5 mb-3 overflow-hidden">
-      {clusterWords.map(({ word, selected }, i) => (
-        <div
-          key={i}
-          className={`rounded-lg py-1.5 sm:py-2 px-0.5 text-center text-[7px] sm:text-[11px] font-bold uppercase tracking-wide transition-all duration-200 truncate
-            ${selected
-              ? "bg-gradient-to-br from-coral to-coral-dark text-white shadow-[0_2px_8px_rgba(255,107,107,0.25)]"
-              : "bg-white/80 text-text-secondary border border-black/5"
-            }`}
-        >
-          {word}
-        </div>
-      ))}
+    <div className="mb-3">
+      {/* Solved group example */}
+      <div className="rounded-lg bg-coral/90 px-3 py-2 mb-2 text-center">
+        <div className="text-[9px] sm:text-[11px] font-extrabold text-white uppercase tracking-wider">Taylor Swift Albums</div>
+        <div className="text-[8px] sm:text-[10px] text-white/70 mt-0.5">Lover, Folklore, Midnights</div>
+      </div>
+      {/* Remaining word tiles — 3 cols that always fit */}
+      <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
+        {["CASH", "TABLE", "HEAT", "POKER", "CLUB", "RUMMY"].map((word, i) => (
+          <div
+            key={i}
+            className="rounded-lg py-1.5 px-1 text-center text-[8px] sm:text-[11px] font-bold uppercase tracking-wide bg-white/80 text-text-secondary border border-black/5"
+          >
+            {word}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -219,9 +206,27 @@ function WordLadderPreview() {
 /* ─── Anagram Mini Preview ────────────────────────────────────────────── */
 
 function AnagramPreview() {
+  const letters = "RAPTOR".split("");
   return (
-    <div className="mb-4 rounded-xl overflow-hidden">
-      <Image src="/images/anagram.jpg" alt="Anagram Scramble - unscramble the words" width={688} height={384} className="w-full h-auto" />
+    <div className="mb-3 rounded-lg bg-teal/5 border border-teal/20 p-3">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-teal">Word 2 of 5</span>
+        <span className="text-[10px] font-bold text-coral tabular-nums">⏱ 42s</span>
+      </div>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[9px] text-text-dim">Hint: Bird</span>
+      </div>
+      <div className="flex gap-1 justify-center mb-2">
+        {letters.map((ch, i) => (
+          <div key={i} className="w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-white border border-teal/20 text-[9px] sm:text-[11px] font-bold text-text-primary shadow-sm">
+            {ch}
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-1.5 justify-center">
+        <span className="text-[9px] font-semibold text-white bg-teal rounded-full px-2 py-0.5">Submit</span>
+        <span className="text-[9px] font-semibold text-text-dim bg-gray-100 rounded-full px-2 py-0.5">Skip</span>
+      </div>
     </div>
   );
 }
