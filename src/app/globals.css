@@ -382,18 +382,6 @@ body {
     0 4px 16px rgba(0, 0, 0, 0.02);
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
-}
-
-.game-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  pointer-events: none;
-  z-index: 0;
 }
 
 .game-card:hover {
@@ -403,27 +391,22 @@ body {
     0 20px 48px rgba(0, 0, 0, 0.04);
 }
 
-.game-card:hover::before {
-  opacity: 1;
-}
-
-/* Color-specific hover glow overlays */
-.game-card-coral::before { background: radial-gradient(ellipse at 50% 0%, rgba(255,107,107,0.06) 0%, transparent 70%); }
-.game-card-teal::before { background: radial-gradient(ellipse at 50% 0%, rgba(78,205,196,0.06) 0%, transparent 70%); }
-.game-card-sky::before { background: radial-gradient(ellipse at 50% 0%, rgba(69,183,209,0.06) 0%, transparent 70%); }
-.game-card-amber::before { background: radial-gradient(ellipse at 50% 0%, rgba(247,183,49,0.06) 0%, transparent 70%); }
-.game-card-purple::before { background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.06) 0%, transparent 70%); }
-.game-card-green::before { background: radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.06) 0%, transparent 70%); }
+/* Color-specific hover border tinting */
+.game-card-coral:hover { border-color: rgba(255,107,107,0.3); }
+.game-card-teal:hover { border-color: rgba(78,205,196,0.3); }
+.game-card-sky:hover { border-color: rgba(69,183,209,0.3); }
+.game-card-amber:hover { border-color: rgba(247,183,49,0.3); }
+.game-card-purple:hover { border-color: rgba(168,85,247,0.3); }
+.game-card-green:hover { border-color: rgba(34,197,94,0.3); }
 
 /* Accent bar at top of game cards */
 .game-card-accent {
   height: 3px;
   border-radius: 0 0 8px 8px;
-  transition: height 0.3s ease, opacity 0.3s ease;
-  opacity: 0.8;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
 }
 .game-card:hover .game-card-accent {
-  height: 4px;
   opacity: 1;
 }
 
@@ -768,26 +751,6 @@ body {
   background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent);
 }
 
-/* Game page container with subtle border glow */
-.game-container {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.03);
-}
-
-/* Mini preview container polish */
-.preview-container {
-  background: rgba(0, 0, 0, 0.015);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 12px;
-  transition: background 0.3s ease;
-}
-.game-card:hover .preview-container {
-  background: rgba(0, 0, 0, 0.025);
-}
 
 /* Page header hero cards */
 .page-hero {

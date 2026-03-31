@@ -15,10 +15,8 @@ function GameCard({ game }: { game: Game }) {
       {/* Accent strip */}
       <div className={`game-card-accent ${colorBg[game.color]}`} />
 
-      <div className="p-6 pt-5 relative z-10">
-        <div className="preview-container">
-          <GamePreview slug={game.slug} />
-        </div>
+      <div className="p-6 pt-5">
+        <GamePreview slug={game.slug} />
 
         <div className="flex items-center gap-2 mb-1">
           <h2 className={`text-xl font-bold text-text-primary ${hoverText[game.color]} transition-colors duration-200`}>

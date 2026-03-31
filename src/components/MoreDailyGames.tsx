@@ -17,10 +17,8 @@ function MiniCard({ game }: { game: Game }) {
                   transition-all duration-300 no-underline`}
     >
       <div className={`game-card-accent ${colorBg[game.color]}`} />
-      <div className="p-4 relative z-10">
-        <div className="preview-container">
-          <GamePreview slug={game.slug} />
-        </div>
+      <div className="p-4">
+        <GamePreview slug={game.slug} />
         <h3 className={`text-sm font-bold text-text-primary ${hoverText[game.color]} transition-colors duration-200`}>
           {game.name}
         </h3>
