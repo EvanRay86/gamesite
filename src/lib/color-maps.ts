@@ -39,13 +39,3 @@ export const hoverText: Record<GameColor, string> = {
   coral: "group-hover:text-coral", teal: "group-hover:text-teal", sky: "group-hover:text-sky",
   amber: "group-hover:text-amber", purple: "group-hover:text-purple", green: "group-hover:text-green",
 };
-
-export const gameCardColor: Record<GameColor, string> = {
-  coral: "game-card-coral", teal: "game-card-teal", sky: "game-card-sky",
-  amber: "game-card-amber", purple: "game-card-purple", green: "game-card-green",
-};
-
-export const statCardColor: Record<GameColor, string> = {
-  coral: "stat-card-coral", teal: "stat-card-teal", sky: "stat-card-sky",
-  amber: "stat-card-amber", purple: "stat-card-purple", green: "stat-card-green",
-};
