@@ -20,6 +20,8 @@ export interface Game {
   color: GameColor;
   comingSoon?: boolean;
   featured?: boolean;
+  /** Hidden games are excluded from all listings but routes still work. */
+  hidden?: boolean;
   variants?: GameVariant[];
   /** Credits required to play (arcade games only). 0 = free. */
   creditCost?: number;
@@ -258,6 +260,7 @@ export const games: Game[] = [
     category: "community",
     color: "coral",
     featured: true,
+    hidden: true,
     creditCost: 0,
   },
 
@@ -309,6 +312,7 @@ export const games: Game[] = [
       "Blast meteors, grab power-ups, and chase your high score in this neon space shooter.",
     category: "arcade",
     color: "coral",
+    hidden: true,
     creditCost: 3,
   },
 
@@ -319,6 +323,7 @@ export const games: Game[] = [
       "Slay monsters, collect gold, and grow your sword to absurd proportions in this action RPG.",
     category: "arcade",
     color: "coral",
+    hidden: true,
     creditCost: 0,
   },
 
@@ -339,6 +344,7 @@ export const games: Game[] = [
       "Spell words to slay monsters in this roguelike dungeon crawler. How deep can you go?",
     category: "arcade",
     color: "purple",
+    hidden: true,
     creditCost: 0,
     featured: true,
   },
@@ -358,24 +364,27 @@ export const games: Game[] = [
 // Helpers
 // ---------------------------------------------------------------------------
 
+/** All games that should appear in listings (excludes hidden). */
+const visible = (g: Game) => !g.hidden;
+
 /** The featured game, if any. */
 export function getFeaturedGame(): Game | undefined {
-  return games.find((g) => g.featured && !g.comingSoon);
+  return games.find((g) => g.featured && !g.comingSoon && visible(g));
 }
 
 /** All daily-category games. */
 export function getDailyGames(): Game[] {
-  return games.filter((g) => g.category === "daily");
+  return games.filter((g) => g.category === "daily" && visible(g));
 }
 
 /** All arcade-category games. */
 export function getArcadeGames(): Game[] {
-  return games.filter((g) => g.category === "arcade");
+  return games.filter((g) => g.category === "arcade" && visible(g));
 }
 
 /** All community-category games. */
 export function getCommunityGames(): Game[] {
-  return games.filter((g) => g.category === "community");
+  return games.filter((g) => g.category === "community" && visible(g));
 }
 
 /** Look up a game by its slug. Returns `undefined` if not found. */
