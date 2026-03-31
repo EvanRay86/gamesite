@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import Link from "next/link";
 import { shareOrCopy } from "@/lib/share";
 import type { ChainReactionPuzzle } from "@/lib/chain-reaction-puzzles";
 
@@ -23,12 +24,22 @@ interface SavedState {
   revealedLetters: string[][]; // per-slot revealed letters
 }
 
+interface StatsData {
+  streak: number;
+  maxStreak: number;
+  lastDate: string;
+  gamesPlayed: number;
+  gamesWon: number;
+  totalStars: number;
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 const MAX_ATTEMPTS = 3;
 const STORAGE_PREFIX = "chain-reaction-";
+const STATS_KEY = "chain-reaction-stats";
 
 function getStorageKey(date: string) {
   return `${STORAGE_PREFIX}${date}`;
@@ -48,48 +59,66 @@ function saveState(date: string, state: SavedState) {
   } catch {}
 }
 
-// Streak management
-interface StreakData {
-  current: number;
-  max: number;
-  lastDate: string;
-}
-
-function loadStreak(): StreakData {
+// Stats management (replaces old streak-only system)
+function loadStats(): StatsData {
   try {
-    const raw = localStorage.getItem("chain-reaction-streak");
+    const raw = localStorage.getItem(STATS_KEY);
     if (raw) return JSON.parse(raw);
+    // Migrate from old streak-only key
+    const oldRaw = localStorage.getItem("chain-reaction-streak");
+    if (oldRaw) {
+      const old = JSON.parse(oldRaw);
+      return {
+        streak: old.current || 0,
+        maxStreak: old.max || 0,
+        lastDate: old.lastDate || "",
+        gamesPlayed: 0,
+        gamesWon: 0,
+        totalStars: 0,
+      };
+    }
   } catch {}
-  return { current: 0, max: 0, lastDate: "" };
+  return { streak: 0, maxStreak: 0, lastDate: "", gamesPlayed: 0, gamesWon: 0, totalStars: 0 };
 }
 
-function saveStreak(date: string, won: boolean) {
-  const streak = loadStreak();
+function saveStats(date: string, won: boolean, earnedStars: number): StatsData {
+  const stats = loadStats();
   const yesterday = new Date(date);
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().slice(0, 10);
 
   if (won) {
-    if (streak.lastDate === yesterdayStr) {
-      streak.current += 1;
-    } else if (streak.lastDate !== date) {
-      streak.current = 1;
+    if (stats.lastDate === yesterdayStr) {
+      stats.streak += 1;
+    } else if (stats.lastDate !== date) {
+      stats.streak = 1;
     }
-    streak.max = Math.max(streak.max, streak.current);
-    streak.lastDate = date;
+    stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
+    stats.gamesWon += 1;
+    stats.totalStars += earnedStars;
   } else {
-    streak.current = 0;
-    streak.lastDate = date;
+    stats.streak = 0;
   }
 
+  stats.lastDate = date;
+  stats.gamesPlayed += 1;
+
   try {
-    localStorage.setItem("chain-reaction-streak", JSON.stringify(streak));
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+    // Also keep old key in sync for backwards compat
+    localStorage.setItem("chain-reaction-streak", JSON.stringify({
+      current: stats.streak,
+      max: stats.maxStreak,
+      lastDate: stats.lastDate,
+    }));
   } catch {}
+
+  return stats;
 }
 
 function getStars(attempts: number, won: boolean): number {
   if (!won) return 0;
-  return MAX_ATTEMPTS - attempts + 1; // 3★ first try, 2★ second, 1★ third
+  return Math.min(MAX_ATTEMPTS, Math.max(1, MAX_ATTEMPTS - attempts + 1));
 }
 
 function buildShareText(
@@ -137,8 +166,14 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
   const [showSplash, setShowSplash] = useState(true);
   const [copied, setCopied] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [stats, setStats] = useState<StatsData | null>(null);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Load stats on mount
+  useEffect(() => {
+    setStats(loadStats());
+  }, []);
 
   // Restore saved state
   useEffect(() => {
@@ -187,22 +222,24 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       if (!guess) return;
       if (slotStatuses[slotIndex] === "correct") return;
 
-      // Per-word check via Enter does NOT cost an attempt.
-      // Attempts are only consumed by the "Check Chain" button.
       setIsChecking(true);
       const newStatuses = [...slotStatuses];
 
       if (guess === chain[slotIndex].toLowerCase()) {
         newStatuses[slotIndex] = "correct";
 
-        // Check if all words are now correct — win without costing an attempt
         const allCorrect = blankIndices.every(
           (i) => newStatuses[i] === "correct",
         );
         setSlotStatuses(newStatuses);
         if (allCorrect) {
+          // Fix: ensure at least 1 attempt is recorded when winning via Enter
+          const finalAttempts = Math.max(1, attempts);
+          setAttempts(finalAttempts);
           setGameState("won");
-          saveStreak(date, true);
+          const earnedStars = getStars(finalAttempts, true);
+          const newStats = saveStats(date, true, earnedStars);
+          setStats(newStats);
         } else {
           // Move to next unsolved slot
           const nextUnsolved = blankIndices.find(
@@ -246,6 +283,7 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       isChecking,
       chain,
       guesses,
+      attempts,
       slotStatuses,
       revealedLetters,
       blankIndices,
@@ -315,7 +353,9 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
 
     if (allCorrect) {
       setGameState("won");
-      saveStreak(date, true);
+      const earnedStars = getStars(newAttempts, true);
+      const newStats = saveStats(date, true, earnedStars);
+      setStats(newStats);
     } else if (newAttempts >= MAX_ATTEMPTS) {
       const finalStatuses = [...newStatuses];
       for (const i of blankIndices) {
@@ -325,7 +365,8 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       }
       setSlotStatuses(finalStatuses);
       setGameState("lost");
-      saveStreak(date, false);
+      const newStats = saveStats(date, false, 0);
+      setStats(newStats);
       setGuesses((prev) => {
         const filled = [...prev];
         for (const i of blankIndices) {
@@ -356,8 +397,6 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
     blankIndices,
     date,
   ]);
-
-  // No global Enter handler — Enter is handled per-input in onKeyDown
 
   // Share
   const handleShare = async () => {
@@ -408,7 +447,7 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
               <span className="font-bold text-emerald-600">CHARM</span>
             </div>
             <p className="text-xs text-zinc-400">
-              Answer: sun<strong>flower</strong> \u2192 flower<strong>pot</strong> \u2192 pot<strong>luck</strong> \u2192 luck charm
+              Answer: sun<strong>flower</strong> {"\u2192"} flower<strong>pot</strong> {"\u2192"} pot<strong>luck</strong> {"\u2192"} luck charm
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Press <strong>Enter</strong> to check a word instantly — no attempt cost.</li>
@@ -419,7 +458,7 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
 
           <button
             onClick={dismissSplash}
-            className="w-full rounded-xl bg-[#FF6B6B] py-3 text-lg font-semibold text-white transition-transform hover:scale-[1.02] active:scale-95"
+            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3 text-lg font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/30 active:scale-95"
           >
             Play
           </button>
@@ -432,47 +471,62 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
 
   const stars = getStars(attempts, gameState === "won");
   const isFinished = gameState !== "playing";
+  const streakCount = stats?.streak ?? 0;
 
   return (
-    <div className="mx-auto flex min-h-[80vh] max-w-lg flex-col items-center px-4 py-8 animate-fade-in">
+    <div
+      className="mx-auto flex min-h-[80vh] max-w-lg flex-col items-center px-4 py-8 animate-fade-in"
+      style={{
+        background: "linear-gradient(180deg, #f0fdf4 0%, #fefce8 40%, #fffbeb 100%)",
+      }}
+    >
       {/* Header */}
-      <h1 className="mb-1 text-2xl font-bold tracking-tight">
+      <h1 className="mb-1 text-2xl font-bold tracking-tight text-zinc-800">
+        <span className="mr-1.5">&#x26D3;&#xFE0F;</span>
         Chain Reaction
       </h1>
-      <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mb-2 text-sm text-zinc-500">
         {date} &middot; {isFinished ? `${attempts}/${MAX_ATTEMPTS} check${attempts === 1 ? "" : "s"}` : `${MAX_ATTEMPTS - attempts} check${MAX_ATTEMPTS - attempts === 1 ? "" : "s"} remaining`}
       </p>
 
+      {/* Streak badge (during gameplay) */}
+      {streakCount > 0 && !isFinished && (
+        <div className="flex items-center gap-1.5 mb-4 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold dark:bg-amber-900/30 dark:text-amber-400">
+          &#x1F525; {streakCount} day streak
+        </div>
+      )}
+      {streakCount === 0 && !isFinished && <div className="mb-4" />}
+
       {/* Chain slots */}
-      <div className="mb-8 flex w-full flex-col items-center gap-3">
+      <div className="mb-8 flex w-full flex-col items-center gap-2">
         {chain.map((word, i) => {
           const isLocked = i === 0 || i === chain.length - 1;
           const status = slotStatuses[i];
           const isActive = activeSlot === i && !isFinished;
           const isShaking = shakeSlots.has(i);
           const revealed = revealedLetters[i];
-
-          // Connector arrow
           const showArrow = i < chain.length - 1;
+          const prevCorrect = i > 0 && (slotStatuses[i - 1] === "correct" || slotStatuses[i - 1] === "locked");
+          const thisCorrect = status === "correct" || isLocked;
 
           return (
             <div key={i} className="flex w-full flex-col items-center">
               <div
                 className={`
                   relative flex w-full max-w-xs items-center justify-center
-                  rounded-xl border-2 px-4 py-3 text-lg font-semibold
+                  rounded-2xl border-2 px-5 py-4 text-lg font-semibold
                   transition-all duration-200
                   ${isShaking ? "animate-shake" : ""}
                   ${
                     isLocked
-                      ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:border-emerald-600 dark:bg-emerald-950 dark:text-emerald-300"
+                      ? "border-emerald-400 bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-700 shadow-sm dark:border-emerald-600 dark:from-emerald-950 dark:to-emerald-900 dark:text-emerald-300"
                       : status === "correct"
-                        ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:border-emerald-600 dark:bg-emerald-950 dark:text-emerald-300"
+                        ? "border-emerald-400 bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-700 shadow-sm dark:border-emerald-600 dark:from-emerald-950 dark:to-emerald-900 dark:text-emerald-300"
                         : status === "wrong"
-                          ? "border-red-400 bg-red-50 text-red-700 dark:border-red-600 dark:bg-red-950 dark:text-red-300"
+                          ? "border-red-400 bg-red-50 text-red-700 shadow-sm dark:border-red-600 dark:bg-red-950 dark:text-red-300"
                           : isActive
-                            ? "border-[#FF6B6B] bg-white shadow-md dark:bg-zinc-800"
-                            : "border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800"
+                            ? "border-emerald-400 bg-white shadow-lg shadow-emerald-500/10 ring-2 ring-emerald-200 dark:bg-zinc-800 dark:ring-emerald-800"
+                            : "border-zinc-200/80 bg-white/80 shadow-sm dark:border-zinc-700 dark:bg-zinc-800/80"
                   }
                 `}
                 onClick={() => {
@@ -482,7 +536,11 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
                 }}
               >
                 {/* Slot number badge */}
-                <span className="absolute -left-3 -top-3 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-200 text-xs font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                <span className={`absolute -left-3 -top-3 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold shadow-sm ${
+                  thisCorrect
+                    ? "bg-emerald-500 text-white"
+                    : "bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300"
+                }`}>
                   {i + 1}
                 </span>
 
@@ -548,9 +606,9 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
                   </div>
                 )}
 
-                {/* Compound word label between this and next slot */}
-                {status === "correct" && i > 0 && slotStatuses[i - 1] === "correct" || (status === "correct" && i > 0 && (i - 1 === 0)) ? (
-                  <span className="absolute -top-2 right-2 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400">
+                {/* Compound word label */}
+                {(status === "correct" || isLocked) && i > 0 && prevCorrect ? (
+                  <span className="absolute -top-2.5 right-2 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
                     {chain[i - 1].toLowerCase()}{chain[i].toLowerCase()}
                   </span>
                 ) : null}
@@ -558,10 +616,14 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
 
               {/* Arrow connector */}
               {showArrow && (
-                <div className="my-1 text-zinc-300 dark:text-zinc-600">
+                <div className={`my-0.5 transition-colors duration-300 ${
+                  thisCorrect && (i + 1 < chain.length && (slotStatuses[i + 1] === "correct" || slotStatuses[i + 1] === "locked"))
+                    ? "text-emerald-400"
+                    : "text-zinc-300 dark:text-zinc-600"
+                }`}>
                   <svg
-                    width="16"
-                    height="16"
+                    width="20"
+                    height="20"
                     viewBox="0 0 16 16"
                     fill="none"
                     className="mx-auto"
@@ -586,7 +648,7 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
         <button
           onClick={handleSubmit}
           disabled={isChecking}
-          className="w-full max-w-xs rounded-xl bg-[#FF6B6B] py-3 text-lg font-semibold text-white transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+          className="w-full max-w-xs rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3.5 text-lg font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/30 active:scale-95 disabled:opacity-50"
         >
           Check Chain
         </button>
@@ -594,27 +656,54 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
         <div className="flex w-full max-w-xs flex-col items-center gap-4">
           {/* Result */}
           <div
-            className={`w-full rounded-xl p-4 text-center ${
+            className={`w-full rounded-2xl border-2 p-5 text-center ${
               gameState === "won"
-                ? "bg-emerald-50 dark:bg-emerald-950"
-                : "bg-red-50 dark:bg-red-950"
+                ? "border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:border-emerald-800 dark:from-emerald-950 dark:to-teal-950"
+                : "border-red-200 bg-gradient-to-br from-red-50 to-orange-50 dark:border-red-800 dark:from-red-950 dark:to-orange-950"
             }`}
           >
             {gameState === "won" ? (
               <>
-                <p className="text-2xl mb-1">
-                  {"\u2B50".repeat(stars)}
-                </p>
+                {/* Animated stars */}
+                <div className="flex justify-center gap-1 mb-2">
+                  {Array.from({ length: stars }).map((_, i) => (
+                    <span
+                      key={i}
+                      className="inline-block text-3xl"
+                      style={{
+                        animation: `starPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 200}ms both`,
+                      }}
+                    >
+                      {"\u2B50"}
+                    </span>
+                  ))}
+                </div>
                 <p className="font-semibold text-emerald-700 dark:text-emerald-300">
                   Solved in {attempts} {attempts === 1 ? "attempt" : "attempts"}!
                 </p>
+                {/* Stats line */}
+                {stats && streakCount > 0 && (
+                  <p className="mt-1 text-sm text-emerald-600/80 dark:text-emerald-400/80">
+                    &#x1F525; {streakCount} day streak &middot; &#x2B50; {stats.totalStars} total stars
+                  </p>
+                )}
+                {stats && streakCount === 0 && (
+                  <p className="mt-1 text-sm text-emerald-600/80 dark:text-emerald-400/80">
+                    &#x2B50; {stats.totalStars} total stars
+                  </p>
+                )}
               </>
             ) : (
               <>
-                <p className="text-2xl mb-1">{"\uD83D\uDE14"}</p>
+                <p className="text-3xl mb-2">{"\uD83D\uDE14"}</p>
                 <p className="font-semibold text-red-700 dark:text-red-300">
                   Not this time — the chain is revealed above.
                 </p>
+                {stats && stats.gamesPlayed > 1 && (
+                  <p className="mt-1 text-sm text-red-600/70 dark:text-red-400/70">
+                    {stats.gamesWon}/{stats.gamesPlayed} games won &middot; Best streak: {stats.maxStreak}
+                  </p>
+                )}
               </>
             )}
           </div>
@@ -622,10 +711,18 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
           {/* Share */}
           <button
             onClick={handleShare}
-            className="w-full rounded-xl border-2 border-zinc-200 py-3 text-lg font-semibold transition-transform hover:scale-[1.02] active:scale-95 dark:border-zinc-700"
+            className="w-full rounded-2xl border-2 border-emerald-200 bg-white py-3.5 text-lg font-semibold text-emerald-700 shadow-sm transition-all hover:scale-[1.02] hover:bg-emerald-50 hover:shadow-md active:scale-95 dark:border-emerald-800 dark:bg-zinc-900 dark:text-emerald-300 dark:hover:bg-emerald-950"
           >
             {copied ? "Copied!" : "Share Result"}
           </button>
+
+          {/* Past puzzles link — centered, inline */}
+          <Link
+            href="/daily/chain-reaction/archive"
+            className="rounded-full border border-zinc-200 bg-white/80 px-5 py-2 text-sm font-medium text-zinc-500 no-underline transition-all hover:bg-white hover:text-zinc-700 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+          >
+            Past puzzles
+          </Link>
         </div>
       )}
 
@@ -649,7 +746,24 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
           </div>
         </div>
       )}
-      {/* Animations loaded via CSS module: src/styles/animations.module.css */}
+
+      {/* Star pop animation */}
+      <style jsx>{`
+        @keyframes starPop {
+          0% {
+            opacity: 0;
+            transform: scale(0) rotate(-20deg);
+          }
+          60% {
+            opacity: 1;
+            transform: scale(1.3) rotate(5deg);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+          }
+        }
+      `}</style>
     </div>
   );
 }
