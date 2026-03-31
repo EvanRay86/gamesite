@@ -55,11 +55,21 @@ export default function LexiconQuest() {
     setMeta(engine.loadMeta());
   }, [rerender]);
 
-  // ── Initialize renderer ───────────────────────────────────────────────
+  // ── Initialize renderer when canvas mounts ─────────────────────────────
 
-  useEffect(() => {
-    if (!canvasRef.current) return;
-    const renderer = new LexiconQuestRenderer(canvasRef.current);
+  const canvasCallbackRef = useCallback((canvas: HTMLCanvasElement | null) => {
+    // Store in the regular ref for other code to access
+    canvasRef.current = canvas;
+
+    // Tear down previous renderer if any
+    if (rendererRef.current) {
+      rendererRef.current.stopLoop();
+      rendererRef.current = null;
+    }
+
+    if (!canvas) return;
+
+    const renderer = new LexiconQuestRenderer(canvas);
     rendererRef.current = renderer;
 
     renderer.startLoop((dt) => {
@@ -75,8 +85,6 @@ export default function LexiconQuest() {
         );
       }
     });
-
-    return () => renderer.stopLoop();
   }, []);
 
   // ── Keyboard handler ──────────────────────────────────────────────────
@@ -382,7 +390,7 @@ export default function LexiconQuest() {
 
           {/* Canvas */}
           <canvas
-            ref={canvasRef}
+            ref={canvasCallbackRef}
             onClick={phase === "map" ? handleMapClick : undefined}
             className={`w-full rounded-xl border border-border-light ${
               phase === "map" ? "cursor-pointer" : ""
