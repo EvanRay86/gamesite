@@ -219,26 +219,24 @@ function WordLadderPreview() {
 /* ─── Anagram Mini Preview ────────────────────────────────────────────── */
 
 function AnagramPreview() {
-  const letters = "RAPTOR".split("");
+  const scrambled = "RAPTOR".split("");
   return (
-    <div className="mb-3 rounded-lg bg-teal/5 border border-teal/20 p-3">
+    <div className="mb-4 rounded-lg bg-teal/10 border border-teal/30 p-3">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] font-bold uppercase tracking-wider text-teal">Word 2 of 5</span>
         <span className="text-[10px] font-bold text-coral tabular-nums">⏱ 42s</span>
       </div>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[9px] text-text-dim">Hint: Bird</span>
-      </div>
+      <p className="text-[9px] text-text-dim mb-2">Hint: Bird</p>
       <div className="flex gap-1 justify-center mb-2">
-        {letters.map((ch, i) => (
-          <div key={i} className="w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-white border border-teal/20 text-[9px] sm:text-[11px] font-bold text-text-primary shadow-sm">
+        {scrambled.map((ch, i) => (
+          <div key={i} className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-100 border border-gray-200 text-[9px] sm:text-[11px] font-bold text-text-primary">
             {ch}
           </div>
         ))}
       </div>
       <div className="flex gap-1.5 justify-center">
-        <span className="text-[9px] font-semibold text-white bg-teal rounded-full px-2 py-0.5">Submit</span>
-        <span className="text-[9px] font-semibold text-text-dim bg-gray-100 rounded-full px-2 py-0.5">Skip</span>
+        <span className="text-[9px] font-semibold text-white bg-teal rounded-full px-2.5 py-0.5">Submit</span>
+        <span className="text-[9px] font-semibold text-text-dim bg-gray-100 border border-gray-200 rounded-full px-2.5 py-0.5">Skip</span>
       </div>
     </div>
   );

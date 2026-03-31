@@ -353,23 +353,23 @@ body {
 
 /* Claymorphism card style */
 .clay-card {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 2.5px solid rgba(255, 255, 255, 0.6);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    0 4px 12px rgba(0, 0, 0, 0.03),
+    8px 8px 16px rgba(0, 0, 0, 0.06),
+    -2px -2px 8px rgba(255, 255, 255, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   border-radius: 20px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s ease-out;
 }
 
 .clay-card:hover {
   box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    0 12px 32px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  transform: translateY(-4px);
+    12px 12px 24px rgba(0, 0, 0, 0.08),
+    -3px -3px 12px rgba(255, 255, 255, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-3px);
 }
 
 /* Richer card for game cards with color accent glow on hover */
