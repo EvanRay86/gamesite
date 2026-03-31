@@ -298,6 +298,14 @@ body {
   min-height: 100vh;
 }
 
+/* Animated mesh gradient background for hero sections */
+.mesh-gradient {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255,107,107,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(78,205,196,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(168,85,247,0.08) 0%, transparent 50%);
+}
+
 /* Masonry card layout using CSS columns */
 .masonry-cards {
   columns: 2;
@@ -345,29 +353,86 @@ body {
 
 /* Claymorphism card style */
 .clay-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  border: 2.5px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow:
-    8px 8px 16px rgba(0, 0, 0, 0.06),
-    -2px -2px 8px rgba(255, 255, 255, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   border-radius: 20px;
-  transition: all 0.25s ease-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .clay-card:hover {
   box-shadow:
-    12px 12px 24px rgba(0, 0, 0, 0.08),
-    -3px -3px 12px rgba(255, 255, 255, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  transform: translateY(-3px);
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transform: translateY(-4px);
+}
+
+/* Richer card for game cards with color accent glow on hover */
+.game-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.game-card:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    0 20px 48px rgba(0, 0, 0, 0.04);
+}
+
+.game-card:hover::before {
+  opacity: 1;
+}
+
+/* Color-specific hover glow overlays */
+.game-card-coral::before { background: radial-gradient(ellipse at 50% 0%, rgba(255,107,107,0.06) 0%, transparent 70%); }
+.game-card-teal::before { background: radial-gradient(ellipse at 50% 0%, rgba(78,205,196,0.06) 0%, transparent 70%); }
+.game-card-sky::before { background: radial-gradient(ellipse at 50% 0%, rgba(69,183,209,0.06) 0%, transparent 70%); }
+.game-card-amber::before { background: radial-gradient(ellipse at 50% 0%, rgba(247,183,49,0.06) 0%, transparent 70%); }
+.game-card-purple::before { background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.06) 0%, transparent 70%); }
+.game-card-green::before { background: radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.06) 0%, transparent 70%); }
+
+/* Accent bar at top of game cards */
+.game-card-accent {
+  height: 3px;
+  border-radius: 0 0 8px 8px;
+  transition: height 0.3s ease, opacity 0.3s ease;
+  opacity: 0.8;
+}
+.game-card:hover .game-card-accent {
+  height: 4px;
+  opacity: 1;
 }
 
 /* Frosted glass nav */
 .glass-nav {
-  background: rgb(255, 255, 255);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px) saturate(1.8);
+  -webkit-backdrop-filter: blur(16px) saturate(1.8);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 /* Gradient text utility */
@@ -545,4 +610,212 @@ body {
 @keyframes ws-shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
+}
+
+/* ── Enhanced Visual Polish ──────────────────────────────────────────── */
+
+/* Shimmer effect for featured elements */
+@keyframes shimmer-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.shimmer-on-hover {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-on-hover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: translateX(-100%);
+  transition: none;
+  pointer-events: none;
+}
+.shimmer-on-hover:hover::after {
+  animation: shimmer-slide 0.6s ease forwards;
+}
+
+/* Stagger animation delay helpers */
+.stagger-1 { animation-delay: 0.05s !important; }
+.stagger-2 { animation-delay: 0.1s !important; }
+.stagger-3 { animation-delay: 0.15s !important; }
+.stagger-4 { animation-delay: 0.2s !important; }
+.stagger-5 { animation-delay: 0.25s !important; }
+.stagger-6 { animation-delay: 0.3s !important; }
+
+/* Smooth scale-up on appear */
+@keyframes scale-up {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Subtle pulse for live/active indicators */
+@keyframes soft-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.97); }
+}
+
+/* Page header gradient bar */
+.page-header-bar {
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #FF6B6B, #A855F7, #4ECDC4, #F7B731);
+  background-size: 200% 100%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Section header with animated underline */
+.section-heading {
+  position: relative;
+  display: inline-block;
+}
+.section-heading::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Play button with animated arrow */
+.play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  transition: all 0.25s ease;
+}
+.play-btn svg {
+  transition: transform 0.25s ease;
+}
+.play-btn:hover svg {
+  transform: translateX(3px);
+}
+
+/* Featured card ribbon effect */
+.featured-ribbon {
+  background: linear-gradient(135deg, #FF6B6B 0%, #A855F7 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 16px;
+  border-radius: 0 0 10px 10px;
+}
+
+/* Improved stat cards */
+.stat-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 1.25rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+.stat-card:hover::before {
+  opacity: 1;
+}
+.stat-card-coral::before { background: #FF6B6B; }
+.stat-card-teal::before { background: #4ECDC4; }
+.stat-card-sky::before { background: #45B7D1; }
+.stat-card-amber::before { background: #F7B731; }
+.stat-card-purple::before { background: #A855F7; }
+.stat-card-green::before { background: #22C55E; }
+
+/* Footer with subtle gradient top */
+.footer-enhanced {
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 20%);
+  position: relative;
+}
+.footer-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent);
+}
+
+/* Game page container with subtle border glow */
+.game-container {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.03);
+}
+
+/* Mini preview container polish */
+.preview-container {
+  background: rgba(0, 0, 0, 0.015);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  transition: background 0.3s ease;
+}
+.game-card:hover .preview-container {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+/* Page header hero cards */
+.page-hero {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 8px 24px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+.page-hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #FF6B6B, #A855F7, #4ECDC4, #F7B731);
+  background-size: 200% 100%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* Variant pill with better hover */
+.variant-pill {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.variant-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
