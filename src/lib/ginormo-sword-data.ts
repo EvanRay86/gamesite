@@ -1,5 +1,148 @@
 // Ginormo Sword – Game Types & Constants
 
+// ── Utility functions ─────────────────────────────────────────────────────
+
+export function clamp(v: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, v));
+}
+
+export function dist(x1: number, y1: number, x2: number, y2: number): number {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+export function randRange(min: number, max: number): number {
+  return min + Math.random() * (max - min);
+}
+
+export function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number, r: number,
+): void {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fill();
+}
+
+export function darkenColor(hex: string, amount: number): string {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const r = Math.max(0, Math.floor(((num >> 16) & 0xff) * (1 - amount)));
+  const g = Math.max(0, Math.floor(((num >> 8) & 0xff) * (1 - amount)));
+  const b = Math.max(0, Math.floor((num & 0xff) * (1 - amount)));
+  return `rgb(${r},${g},${b})`;
+}
+
+export function lineCircleIntersect(
+  x1: number, y1: number, x2: number, y2: number,
+  cx: number, cy: number, r: number, lineWidth?: number,
+): boolean {
+  if (lineWidth) r += lineWidth / 2;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const fx = x1 - cx;
+  const fy = y1 - cy;
+  const a = dx * dx + dy * dy;
+  const b = 2 * (fx * dx + fy * dy);
+  const c = fx * fx + fy * fy - r * r;
+  let disc = b * b - 4 * a * c;
+  if (disc < 0) return false;
+  disc = Math.sqrt(disc);
+  const t1 = (-b - disc) / (2 * a);
+  const t2 = (-b + disc) / (2 * a);
+  return (t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1);
+}
+
+// ── Game screen states ────────────────────────────────────────────────────
+
+export type GameScreen = "title" | "overworld" | "combat" | "shop" | "zone-transition" | "gameover";
+
+// ── Camera ────────────────────────────────────────────────────────────────
+
+export interface Camera {
+  x: number;
+  y: number;
+  targetX: number;
+  targetY: number;
+}
+
+// ── Combat State ──────────────────────────────────────────────────────────
+
+export interface CombatState {
+  zone: CombatZone;
+  currentWave: number;
+  waveEnemiesSpawned: number;
+  waveEnemiesKilled: number;
+  waveEnemiesTotal: number;
+  waveClearDelay: number;
+  bossSpawned: boolean;
+  zoneComplete: boolean;
+  retreating: boolean;
+}
+
+// ── Combat Zone ───────────────────────────────────────────────────────────
+
+export interface CombatZone {
+  id: string;
+  regionId: string;
+  name: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  enemyPool: EnemyTemplate[];
+  waveCount: number;
+  enemiesPerWave: number;
+  miniBoss?: EnemyTemplate;
+  boss?: BossDef;
+  isBossZone: boolean;
+  recommendedLevel: number;
+  completionReward: { gold: number; xp: number };
+  arenaColor: string;
+}
+
+// ── Decoration & World Region ─────────────────────────────────────────────
+
+export interface Decoration {
+  type: "tree" | "bush" | "mushroom" | "rock" | "cactus" | "ruin" | "pillar" | "ice_crystal" | "lava_pool";
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+}
+
+export interface WorldRegion {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  groundColor: string;
+  accentColor: string;
+  decorations: Decoration[];
+  blockers: unknown[];
+  unlockBoss: string | null;
+}
+
+// ── Town markers ──────────────────────────────────────────────────────────
+
+export interface TownMarker {
+  regionId: string;
+  x: number;
+  y: number;
+  name: string;
+}
+
 // ── Shape types for enemy visuals ──────────────────────────────────────────
 
 export type EnemyShape = "slime" | "beast" | "humanoid" | "flying" | "serpent" | "golem" | "elemental" | "demon";
@@ -25,12 +168,21 @@ export interface EnemyTemplate {
   size: number;
   xpReward: number;
   shape: EnemyShape;
+  behavior?: string;
+  projectileColor?: string;
+  projectileSpeed?: number;
+  projectileDamage?: number;
+  chargeSpeed?: number;
+  summonName?: string;
+  healAmount?: number;
+  teleportInterval?: number;
 }
 
 export type BossAttack = "charge" | "projectile" | "aoe" | "summon";
 
 export interface BossDef {
   name: string;
+  title?: string;
   color: string;
   accentColor: string;
   hp: number;
@@ -40,7 +192,7 @@ export interface BossDef {
   size: number;
   xpReward: number;
   shape: EnemyShape;
-  killsToSpawn: number;
+  killsToSpawn?: number;
   attacks: BossAttack[];
   attackInterval: number;
   enragedInterval: number;
@@ -64,6 +216,7 @@ export interface Enemy {
   dead: boolean;
   deathTimer: number;
   shape: EnemyShape;
+  behavior?: string;
   isBoss: boolean;
   bossAttackTimer: number;
   accentColor: string;
@@ -71,6 +224,17 @@ export interface Enemy {
   slowTimer: number;
   burnTimer: number;
   burnDamage: number;
+  behaviorTimer: number;
+  behaviorState: string;
+  projectileColor?: string;
+  projectileSpeed?: number;
+  projectileDamage?: number;
+  chargeSpeed?: number;
+  chargeDirX?: number;
+  chargeDirY?: number;
+  summonName?: string;
+  healAmount?: number;
+  teleportInterval?: number;
   title?: string;
 }
 
@@ -83,6 +247,7 @@ export interface Projectile {
   damage: number;
   color: string;
   life: number;
+  fromEnemy?: boolean;
 }
 
 export interface GoldDrop {
@@ -120,10 +285,18 @@ export interface BossTemplate extends EnemyTemplate {
 
 export interface SaveData {
   gold: number;
+  xp?: number;
+  level?: number;
   upgradeLevels: number[];
   unlockedAreas: boolean[];
+  clearedZones?: string[];
+  defeatedBosses?: string[];
   totalKills: number;
   highestCombo: number;
+  overworldX?: number;
+  overworldY?: number;
+  totalPlayTime?: number;
+  lastTown?: string;
 }
 
 export interface PlayerStats {
@@ -425,6 +598,12 @@ export const BOSSES: BossTemplate[] = [
 
 export const BOSS_SPAWN_KILLS = 20; // kills per boss spawn
 export const COMBO_WINDOW = 2.0;    // seconds to chain kills
+export const ARENA_MARGIN = 40;     // px inset from canvas edge
+export const OVERWORLD_SPEED = 160; // px/s player speed on world map
+export const ZONE_INTERACT_DIST = 60;  // px proximity to enter a zone
+export const TOWN_INTERACT_DIST = 50;  // px proximity to interact with town
+export const WORLD_W = 3200;        // world map width
+export const WORLD_H = 2400;        // world map height
 
 // Helper: XP needed for a given level
 export function xpForLevel(level: number): number {
@@ -453,4 +632,22 @@ export function loadGame(): SaveData | null {
   } catch {
     return null;
   }
+}
+
+export function defaultSave(): SaveData {
+  return {
+    gold: 0,
+    xp: 0,
+    level: 1,
+    upgradeLevels: UPGRADES.map(() => 0),
+    unlockedAreas: [],
+    clearedZones: [],
+    defeatedBosses: [],
+    totalKills: 0,
+    highestCombo: 0,
+    overworldX: 600,
+    overworldY: 2200,
+    totalPlayTime: 0,
+    lastTown: "Millbrook",
+  };
 }

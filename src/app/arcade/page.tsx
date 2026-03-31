@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getArcadeGames, type Game } from "@/lib/game-registry";
+
+export const metadata: Metadata = {
+  title: "Arcade Games",
+  description:
+    "Play free arcade games in your browser — Slime Volleyball, 2048, Snake Arena, Sky Hopper, and more.",
+};
 import {
   colorBg,
   colorText,

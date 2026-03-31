@@ -1,0 +1,16 @@
+{
+  "name": "Gamesite",
+  "short_name": "Gamesite",
+  "description": "Daily word puzzles, trivia, arcade games, and more — free in your browser.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF6B6B",
+  "icons": [
+    {
+      "src": "/images/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    }
+  ]
+}

@@ -40,6 +40,19 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Gamesite",
+  url: siteUrl,
+  description:
+    "Play daily word puzzles, trivia, arcade games, and more — free in your browser.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${siteUrl}/daily`,
+  },
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -49,6 +62,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="google-adsense-account" content="ca-pub-9472092135896672" />
+        <link rel="manifest" href="/manifest.json" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -57,6 +71,10 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <AuthProvider>
           <a href="#main-content" className="skip-to-content">
             Skip to content

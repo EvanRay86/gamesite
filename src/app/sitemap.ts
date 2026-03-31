@@ -9,12 +9,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: siteUrl, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${siteUrl}/daily`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${siteUrl}/arcade`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${siteUrl}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${siteUrl}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     { url: `${siteUrl}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${siteUrl}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 
   const gamePages: MetadataRoute.Sitemap = games
-    .filter((g) => !g.comingSoon)
+    .filter((g) => !g.comingSoon && !g.hidden)
     .map((game) => ({
       url: `${siteUrl}/${game.category === "daily" ? "daily" : "arcade"}/${game.slug}`,
       lastModified: now,

@@ -309,6 +309,8 @@ export default function GinormoSword() {
       slowTimer: 0,
       burnTimer: 0,
       burnDamage: 0,
+      behaviorTimer: 0,
+      behaviorState: "idle",
     };
     enemiesRef.current.push(e);
   }
@@ -345,6 +347,8 @@ export default function GinormoSword() {
       slowTimer: 0,
       burnTimer: 0,
       burnDamage: 0,
+      behaviorTimer: 0,
+      behaviorState: "idle",
     };
     enemiesRef.current.push(e);
   }

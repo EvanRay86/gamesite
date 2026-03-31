@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getDailyGames, type Game } from "@/lib/game-registry";
+
+export const metadata: Metadata = {
+  title: "Daily Puzzles",
+  description:
+    "Play a fresh set of word puzzles, trivia, and brain teasers every day — free in your browser.",
+};
 import {
   colorBg,
   colorText,
