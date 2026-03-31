@@ -306,48 +306,37 @@ body {
     radial-gradient(ellipse at 40% 80%, rgba(168,85,247,0.08) 0%, transparent 50%);
 }
 
-/* Masonry card layout using CSS columns */
+/* Card grid layout — balanced columns */
 .masonry-cards {
-  columns: 2;
-  column-gap: 0.75rem;
-}
-.masonry-cards > * {
-  break-inside: avoid;
-  margin-bottom: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
 }
 @media (min-width: 640px) {
   .masonry-cards {
-    columns: 2;
-    column-gap: 1.25rem;
-  }
-  .masonry-cards > * {
-    margin-bottom: 1.25rem;
+    gap: 1.25rem;
   }
 }
 @media (min-width: 1024px) {
   .masonry-cards {
-    columns: 3;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-/* More games masonry - starts at 2 cols, goes to 4 */
+/* More games grid - starts at 2 cols, goes to 4 */
 .masonry-cards-more {
-  columns: 2;
-  column-gap: 0.75rem;
-}
-.masonry-cards-more > * {
-  break-inside: avoid;
-  margin-bottom: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
 }
 @media (min-width: 640px) {
   .masonry-cards-more {
-    columns: 3;
-    column-gap: 0.75rem;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 @media (min-width: 1024px) {
   .masonry-cards-more {
-    columns: 4;
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
