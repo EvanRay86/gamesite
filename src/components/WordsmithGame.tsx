@@ -28,6 +28,7 @@ import {
 } from "@/lib/wordsmith-engine";
 import { isValidEnglishWord } from "@/lib/dictionary";
 import { shareOrCopy } from "@/lib/share";
+import Link from "next/link";
 
 const TOTAL_ROUNDS = 5;
 const SAVE_KEY_PREFIX = "wordsmith-";
@@ -753,6 +754,16 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
               </button>
             )}
           </div>
+
+          {/* Quickplay link on daily results */}
+          {!isQuickplay && (
+            <Link
+              href="/daily/wordsmith/quickplay"
+              className="mt-4 inline-block rounded-xl border-2 border-amber px-6 py-2.5 text-sm font-semibold text-amber transition-transform hover:scale-105 active:scale-95 no-underline"
+            >
+              Want more? Try Quickplay &rarr;
+            </Link>
+          )}
         </div>
       </div>
     );
