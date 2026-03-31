@@ -8,6 +8,7 @@ import {
   hoverBorder,
   hoverBg,
 } from "@/lib/color-maps";
+import GamePreview from "@/components/GamePreview";
 
 function MiniCard({ game }: { game: Game }) {
   return (
@@ -19,6 +20,7 @@ function MiniCard({ game }: { game: Game }) {
     >
       <div className={`h-1 rounded-t-xl ${colorBg[game.color]}`} />
       <div className="p-4">
+        <GamePreview slug={game.slug} />
         <h3 className="text-sm font-bold text-text-primary">{game.name}</h3>
         <p className="text-text-dim text-xs mt-0.5 leading-relaxed line-clamp-2">
           {game.description}
