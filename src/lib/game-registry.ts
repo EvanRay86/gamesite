@@ -249,6 +249,7 @@ export const games: Game[] = [
       "Farm, build, chat, and hang out in a pixel-art community world.",
     category: "community",
     color: "green",
+    hidden: true,
     creditCost: 0,
   },
 
