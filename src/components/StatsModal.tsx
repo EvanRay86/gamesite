@@ -79,8 +79,8 @@ export default function StatsModal({
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full
-                     text-text-dim hover:text-text-primary hover:bg-white/10 transition-colors text-lg"
+          className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full
+                     text-text-dim hover:text-text-primary hover:bg-white/10 transition-colors text-xl"
           aria-label="Close stats"
         >
           &times;
@@ -92,7 +92,7 @@ export default function StatsModal({
         </h2>
 
         {/* Stat boxes */}
-        <div className="grid grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-6">
           {[
             { value: stats.gamesPlayed, label: "Played" },
             { value: `${winRate}%`, label: "Win %" },
@@ -100,8 +100,8 @@ export default function StatsModal({
             { value: stats.maxStreak, label: "Best" },
           ].map(({ value, label }) => (
             <div key={label} className="text-center">
-              <div className="text-2xl font-bold text-text-primary">{value}</div>
-              <div className="text-[11px] text-text-dim mt-0.5 uppercase tracking-wider">
+              <div className="text-xl sm:text-2xl font-bold text-text-primary">{value}</div>
+              <div className="text-[10px] sm:text-xs text-text-dim mt-0.5 uppercase tracking-wider">
                 {label}
               </div>
             </div>

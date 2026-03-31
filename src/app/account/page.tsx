@@ -100,7 +100,7 @@ function AccountContent() {
               <button
                 onClick={handlePortal}
                 disabled={portalLoading}
-                className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-text-secondary
+                className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-text-secondary
                            hover:bg-surface-hover transition-colors disabled:opacity-50"
               >
                 {portalLoading ? "Loading…" : "Manage Subscription"}

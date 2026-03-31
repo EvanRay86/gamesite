@@ -997,7 +997,7 @@ export default function KoalaClicker() {
             {/* Portal swirl */}
             {hasPortal > 0 && (
               <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-20"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[500px] max-h-[500px] rounded-full opacity-20"
                 style={{
                   background: hasKoalaGod
                     ? "conic-gradient(from 0deg, transparent, #f59e0b, transparent, #ef4444, transparent)"
@@ -1021,7 +1021,7 @@ export default function KoalaClicker() {
             {/* Time-warp vortex ring */}
             {hasTimeWarp > 0 && (
               <div
-                className="absolute top-1/2 left-1/2 w-[300px] h-[300px] rounded-full border-2 border-purple-400/20"
+                className="absolute top-1/2 left-1/2 w-[60vw] h-[60vw] max-w-[300px] max-h-[300px] rounded-full border-2 border-purple-400/20"
                 style={{ animation: "koala-warp 6s ease-in-out infinite" }}
               />
             )}
@@ -1038,7 +1038,7 @@ export default function KoalaClicker() {
             {/* Koala God — radiant halo */}
             {hasKoalaGod > 0 && (
               <div
-                className="absolute top-1/2 left-1/2 w-[400px] h-[400px] rounded-full"
+                className="absolute top-1/2 left-1/2 w-[80vw] h-[80vw] max-w-[400px] max-h-[400px] rounded-full"
                 style={{
                   background: "radial-gradient(circle, rgba(245,158,11,0.2) 0%, rgba(245,158,11,0.05) 50%, transparent 70%)",
                   animation: "koala-halo 5s ease-in-out infinite",

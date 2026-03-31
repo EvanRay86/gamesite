@@ -535,15 +535,15 @@ export default function WordLadderGame({ puzzle, date }: Props) {
 
         {/* On-screen keyboard */}
         {!isFinished && (
-          <div className="flex flex-col items-center gap-1.5 mt-2">
+          <div className="flex flex-col items-center gap-1.5 mt-2 w-full max-w-lg mx-auto">
             {/* Row 1 */}
-            <div className="flex gap-1">
+            <div className="flex gap-1 w-full">
               {["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"].map(
                 (ch) => (
                   <button
                     key={ch}
                     onClick={() => handleChar(ch)}
-                    className="flex h-11 w-[32px] sm:w-[36px] items-center justify-center rounded-lg bg-gray-200 text-sm font-bold text-text-primary hover:bg-gray-300 transition-colors uppercase"
+                    className="flex h-11 flex-1 min-w-0 items-center justify-center rounded-lg bg-gray-200 text-sm font-bold text-text-primary hover:bg-gray-300 transition-colors uppercase"
                   >
                     {ch}
                   </button>
@@ -551,19 +551,19 @@ export default function WordLadderGame({ puzzle, date }: Props) {
               )}
             </div>
             {/* Row 2 */}
-            <div className="flex gap-1">
+            <div className="flex gap-1 w-full px-3">
               {["a", "s", "d", "f", "g", "h", "j", "k", "l"].map((ch) => (
                 <button
                   key={ch}
                   onClick={() => handleChar(ch)}
-                  className="flex h-11 w-[32px] sm:w-[36px] items-center justify-center rounded-lg bg-gray-200 text-sm font-bold text-text-primary hover:bg-gray-300 transition-colors uppercase"
+                  className="flex h-11 flex-1 min-w-0 items-center justify-center rounded-lg bg-gray-200 text-sm font-bold text-text-primary hover:bg-gray-300 transition-colors uppercase"
                 >
                   {ch}
                 </button>
               ))}
             </div>
             {/* Row 3 */}
-            <div className="flex gap-1">
+            <div className="flex gap-1 w-full">
               <button
                 onClick={handleUndo}
                 className="flex h-11 min-w-[48px] items-center justify-center rounded-lg bg-gray-200 text-xs font-bold text-text-primary hover:bg-gray-300 transition-colors"
@@ -574,7 +574,7 @@ export default function WordLadderGame({ puzzle, date }: Props) {
                 <button
                   key={ch}
                   onClick={() => handleChar(ch)}
-                  className="flex h-11 w-[32px] sm:w-[36px] items-center justify-center rounded-lg bg-gray-200 text-sm font-bold text-text-primary hover:bg-gray-300 transition-colors uppercase"
+                  className="flex h-11 flex-1 min-w-0 items-center justify-center rounded-lg bg-gray-200 text-sm font-bold text-text-primary hover:bg-gray-300 transition-colors uppercase"
                 >
                   {ch}
                 </button>

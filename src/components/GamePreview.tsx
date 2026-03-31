@@ -26,7 +26,7 @@ function ClusterPreview() {
       {clusterWords.map(({ word, selected }, i) => (
         <div
           key={i}
-          className={`rounded-lg py-1.5 sm:py-2 px-0.5 text-center text-[7px] sm:text-[11px] font-bold uppercase tracking-wide transition-all
+          className={`rounded-lg py-1.5 sm:py-2 px-0.5 text-center text-[9px] sm:text-[11px] font-bold uppercase tracking-wide transition-all
             ${selected
               ? "bg-coral text-white shadow-sm"
               : "bg-gray-100 text-text-secondary"
@@ -54,7 +54,7 @@ function HexlePreview() {
           {row.word.split("").map((ch, ci) => (
             <div
               key={ci}
-              className={`w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center text-[8px] sm:text-[10px] font-bold rounded-md text-white shadow-sm
+              className={`w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center text-[9px] sm:text-[11px] font-bold rounded-md text-white shadow-sm
                 ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "amber" ? "bg-amber" : "bg-gray-300/80"}`}
             >
               {ch}
@@ -114,7 +114,7 @@ function CrosswordPreview() {
           row.map((cell, ci) => (
             <div
               key={`${ri}-${ci}`}
-              className={`flex items-center justify-center text-[8px] sm:text-[9px] font-bold uppercase rounded-[2px]
+              className={`flex items-center justify-center text-[9px] sm:text-[10px] font-bold uppercase rounded-[2px]
                 ${cell ? "bg-white text-text-primary" : "bg-transparent"}`}
               style={{
                 width: 22,
@@ -167,7 +167,7 @@ function MathlerPreview() {
           {row.chars.split("").map((ch, ci) => (
             <div
               key={ci}
-              className={`w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center text-[8px] sm:text-[10px] font-bold rounded-md text-white shadow-sm
+              className={`w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center text-[9px] sm:text-[11px] font-bold rounded-md text-white shadow-sm
                 ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "yellow" ? "bg-amber" : "bg-gray-300/80"}`}
             >
               {ch}
@@ -195,7 +195,7 @@ function WordLadderPreview() {
               return (
                 <div
                   key={ci}
-                  className={`w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-[8px] sm:text-[10px] font-bold rounded ${
+                  className={`w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-[9px] sm:text-[11px] font-bold rounded ${
                     wi === 0
                       ? "bg-teal/10 text-teal"
                       : wi === words.length - 1
@@ -226,10 +226,10 @@ function AnagramPreview() {
         <span className="text-[10px] font-bold uppercase tracking-wider text-teal">Word 2 of 5</span>
         <span className="text-[10px] font-bold text-coral tabular-nums">⏱ 42s</span>
       </div>
-      <p className="text-[9px] text-text-dim mb-2">Hint: Bird</p>
+      <p className="text-[10px] text-text-dim mb-2">Hint: Bird</p>
       <div className="flex gap-1 justify-center mb-2">
         {scrambled.map((ch, i) => (
-          <div key={i} className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-100 border border-gray-200 text-[9px] sm:text-[11px] font-bold text-text-primary">
+          <div key={i} className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-100 border border-gray-200 text-[10px] sm:text-[11px] font-bold text-text-primary">
             {ch}
           </div>
         ))}
