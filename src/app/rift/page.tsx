@@ -1,4 +1,5 @@
 import RiftGame from "@/components/RiftGame";
+import MoreCommunityGames from "@/components/MoreCommunityGames";
 
 export const metadata = {
   title: "RIFT — Conquer the Map Through Brain Power",
@@ -10,6 +11,7 @@ export default function RiftPage() {
   return (
     <main>
       <RiftGame />
+      <MoreCommunityGames currentSlug="rift" />
     </main>
   );
 }

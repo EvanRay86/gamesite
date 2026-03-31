@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HexleGame from "@/components/HexleGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import { getHexlePuzzle, getFallbackHexleWord } from "@/lib/hexle-words";
 
 export const revalidate = 60;
@@ -33,6 +34,7 @@ export default async function HexlePage() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="hexle" />
     </main>
   );
 }

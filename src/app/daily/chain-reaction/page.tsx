@@ -1,4 +1,5 @@
 import ChainReactionGame from "@/components/ChainReactionGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import {
   getChainReactionPuzzle,
   getTodayDate,
@@ -31,6 +32,7 @@ export default function ChainReactionPage() {
           Past puzzles
         </Link>
       </div>
+      <MoreDailyGames currentSlug="chain-reaction" />
     </main>
   );
 }

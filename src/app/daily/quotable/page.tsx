@@ -1,5 +1,6 @@
 import Link from "next/link";
 import QuotableGame from "@/components/QuotableGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import {
   getQuotablePuzzleByDate,
   getTodayDate,
@@ -33,6 +34,7 @@ export default async function QuotablePage() {
           Play past puzzles &rarr;
         </Link>
       </div>
+      <MoreDailyGames currentSlug="quotable" />
     </main>
   );
 }

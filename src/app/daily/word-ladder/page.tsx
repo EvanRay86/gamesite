@@ -1,4 +1,5 @@
 import WordLadderGame from "@/components/WordLadderGame";
+import MoreDailyGames from "@/components/MoreDailyGames";
 import { getWordLadderPuzzle, getTodayDate } from "@/lib/word-ladder-puzzles";
 
 export const revalidate = 60;
@@ -16,6 +17,7 @@ export default function WordLadderPage() {
   return (
     <main>
       <WordLadderGame puzzle={puzzle} date={today} />
+      <MoreDailyGames currentSlug="word-ladder" />
     </main>
   );
 }
