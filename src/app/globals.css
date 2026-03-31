@@ -301,7 +301,7 @@ body {
 /* Card grid layout — balanced columns */
 .masonry-cards {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 @media (min-width: 640px) {
@@ -311,24 +311,24 @@ body {
 }
 @media (min-width: 1024px) {
   .masonry-cards {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 /* More games grid - starts at 2 cols, goes to 4 */
 .masonry-cards-more {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 @media (min-width: 640px) {
   .masonry-cards-more {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 @media (min-width: 1024px) {
   .masonry-cards-more {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -343,6 +343,8 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   border-radius: 20px;
   transition: all 0.25s ease-out;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .clay-card:hover {
