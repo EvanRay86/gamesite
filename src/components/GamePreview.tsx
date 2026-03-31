@@ -659,6 +659,128 @@ function LexiconPreview() {
   );
 }
 
+/* ─── Rift Mini Preview ─────────────────────────────────────────────────── */
+
+function RiftPreview() {
+  // Mini hex grid data: a small snapshot of faction-controlled territory
+  // Each row is offset to create a honeycomb pattern
+  const hexRows: { faction: "crimson" | "verdant" | "azure" | null; type: "plains" | "fortress" | "capital" }[][] = [
+    [
+      { faction: "crimson", type: "plains" },
+      { faction: "crimson", type: "fortress" },
+      { faction: "crimson", type: "plains" },
+      { faction: null, type: "plains" },
+      { faction: "azure", type: "plains" },
+    ],
+    [
+      { faction: "crimson", type: "capital" },
+      { faction: "crimson", type: "plains" },
+      { faction: null, type: "plains" },
+      { faction: "azure", type: "plains" },
+      { faction: "azure", type: "fortress" },
+    ],
+    [
+      { faction: "crimson", type: "plains" },
+      { faction: "verdant", type: "plains" },
+      { faction: "verdant", type: "plains" },
+      { faction: null, type: "plains" },
+      { faction: "azure", type: "capital" },
+    ],
+    [
+      { faction: "verdant", type: "fortress" },
+      { faction: "verdant", type: "capital" },
+      { faction: "verdant", type: "plains" },
+      { faction: "verdant", type: "plains" },
+      { faction: "azure", type: "plains" },
+    ],
+  ];
+
+  const factionColors = {
+    crimson: { bg: "bg-[#FF6B6B]", text: "text-[#FF6B6B]", light: "bg-[#FF6B6B]/15" },
+    verdant: { bg: "bg-[#22C55E]", text: "text-[#22C55E]", light: "bg-[#22C55E]/15" },
+    azure: { bg: "bg-[#45B7D1]", text: "text-[#45B7D1]", light: "bg-[#45B7D1]/15" },
+  };
+
+  const typeIcons: Record<string, string> = {
+    capital: "♚",
+    fortress: "♞",
+    plains: "",
+  };
+
+  const territory = { crimson: 38, verdant: 31, azure: 31 };
+
+  return (
+    <div className="mb-4 rounded-lg bg-purple/5 border border-purple/20 p-3">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-purple">
+          Territory War
+        </span>
+        <span className="text-[10px] font-bold text-text-dim">Season 4</span>
+      </div>
+
+      {/* Mini hex grid */}
+      <div className="flex flex-col items-center gap-[3px] mb-3">
+        {hexRows.map((row, ri) => (
+          <div
+            key={ri}
+            className="flex gap-[3px]"
+            style={{ marginLeft: ri % 2 === 1 ? 14 : 0 }}
+          >
+            {row.map((hex, ci) => {
+              const color = hex.faction ? factionColors[hex.faction] : null;
+              return (
+                <div
+                  key={ci}
+                  className={`w-6 h-5 flex items-center justify-center text-[8px] font-bold rounded-sm ${
+                    color
+                      ? `${color.bg} text-white/90`
+                      : "bg-gray-200 text-gray-400"
+                  }`}
+                  style={{
+                    clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
+                    width: 26,
+                    height: 24,
+                  }}
+                >
+                  {typeIcons[hex.type]}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      {/* Territory control bars */}
+      <div className="flex gap-0.5 rounded-full overflow-hidden h-2 mb-2">
+        <div className="bg-[#FF6B6B]" style={{ width: `${territory.crimson}%` }} />
+        <div className="bg-[#22C55E]" style={{ width: `${territory.verdant}%` }} />
+        <div className="bg-[#45B7D1]" style={{ width: `${territory.azure}%` }} />
+      </div>
+
+      {/* Faction labels */}
+      <div className="flex justify-between text-[9px] mb-2">
+        <span className="text-[#FF6B6B] font-bold">Crimson {territory.crimson}%</span>
+        <span className="text-[#22C55E] font-bold">Verdant {territory.verdant}%</span>
+        <span className="text-[#45B7D1] font-bold">Azure {territory.azure}%</span>
+      </div>
+
+      {/* Duel preview */}
+      <div className="flex items-center justify-between bg-white/60 rounded-md px-2 py-1.5 border border-purple/10">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[9px] font-bold text-purple uppercase">Duel</span>
+          <span className="text-[10px] font-semibold text-text-primary">Word Blitz</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-[9px] text-text-dim">ELO</span>
+          <span className="text-[10px] font-bold text-amber">1247</span>
+          <span className="text-[8px] px-1 py-0.5 rounded bg-amber/10 text-amber font-bold uppercase">Captain</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Game Preview Router ───────────────────────────────────────────────── */
 
 export default function GamePreview({ slug }: { slug: string }) {
@@ -687,6 +809,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "ginormo-sword": return <SwordPreview />;
     case "sky-hopper": return <SkyHopperPreview />;
     case "lexicon-quest": return <LexiconPreview />;
+    case "rift": return <RiftPreview />;
     default: return null;
   }
 }
