@@ -1,5 +1,5 @@
 import Link from "next/link";
-import WordsmithGame from "@/components/WordsmithGame";
+import WordsmithModeSelect from "@/components/WordsmithModeSelect";
 import MoreDailyGames from "@/components/MoreDailyGames";
 
 export const metadata = {
@@ -13,7 +13,7 @@ export default function WordsmithPage() {
 
   return (
     <main>
-      <WordsmithGame dateStr={today} />
+      <WordsmithModeSelect dateStr={today} />
       <div className="flex justify-center py-6">
         <Link
           href="/daily/wordsmith/archive"
