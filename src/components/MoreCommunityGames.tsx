@@ -65,7 +65,7 @@ export default function MoreCommunityGames({ currentSlug }: { currentSlug: strin
             View all &rarr;
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="masonry-cards-more">
           {allGames.map((game) => (
             <MiniCard key={game.slug} game={game} href={getHref(game)} />
           ))}

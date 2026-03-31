@@ -98,16 +98,11 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* Horizontal scroll on mobile, grid on larger screens */}
-        <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-5 sm:overflow-visible sm:pb-0">
+        <div className="masonry-cards">
           {dailyGames.map((game) => (
-            <div key={game.slug} className="min-w-[280px] snap-start sm:min-w-0">
-              <DailyCard game={game} />
-            </div>
+            <DailyCard key={game.slug} game={game} />
           ))}
         </div>
-        {/* Mobile scroll hint */}
-        <p className="text-xs text-text-dim text-center mt-2 sm:hidden">Swipe for more →</p>
       </section>
 
       {/* ── Arcade ───────────────────────────────────────────────────────── */}
@@ -123,7 +118,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="masonry-cards">
           {arcadeGames.map((game) => (
             <ArcadeCard key={game.slug} game={game} />
           ))}
@@ -137,7 +132,7 @@ export default function HomePage() {
             <h2 className="text-xl font-bold text-text-primary">Community</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="masonry-cards">
             {communityGames.map((game) => {
               const gameHref = game.slug === "rift" ? "/rift" : `/arcade/${game.slug}`;
               const gameIcon = game.slug === "rift" ? "\u2694\uFE0F" : "\u{1F3D8}\uFE0F";
