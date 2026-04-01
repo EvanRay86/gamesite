@@ -221,14 +221,12 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
 
   const addLetter = useCallback((letter: string) => {
     setInput((prev) => prev + letter);
-    inputRef.current?.focus();
   }, []);
 
   const handleShuffle = useCallback(() => {
     // We don't mutate puzzle data — just shuffle the outer petals visually
     // This is handled by shuffling the render order
     setShuffleKey((k) => k + 1);
-    inputRef.current?.focus();
   }, []);
 
   const [shuffleKey, setShuffleKey] = useState(0);
@@ -373,7 +371,8 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
               value={input}
               onChange={(e) => setInput(e.target.value.toUpperCase())}
               onKeyDown={handleKeyDown}
-              placeholder="Type or tap letters..."
+              inputMode="none"
+              placeholder="Tap the petals..."
               autoComplete="off"
               autoCapitalize="characters"
               className={`flex-1 rounded-xl border-2 px-4 py-3 text-center text-lg
@@ -384,15 +383,12 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
           </div>
           <div className="flex gap-2 justify-center">
             <button
-              onClick={() => {
-                setInput("");
-                inputRef.current?.focus();
-              }}
+              onClick={() => setInput((prev) => prev.slice(0, -1))}
               className="rounded-full border border-border-light px-5 py-2
                          text-sm font-semibold text-text-muted hover:bg-surface
                          transition-colors"
             >
-              Clear
+              Delete
             </button>
             <button
               onClick={handleShuffle}
