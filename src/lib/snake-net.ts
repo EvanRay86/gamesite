@@ -37,6 +37,7 @@ export async function quickPlaySnake(): Promise<SnakeRoomInfo | null> {
     .from("rooms")
     .select("room_code")
     .eq("status", "waiting")
+    .eq("game_type", "snake")
     .gte("created_at", cutoff)
     .order("created_at", { ascending: true })
     .limit(1);
@@ -52,6 +53,8 @@ export async function quickPlaySnake(): Promise<SnakeRoomInfo | null> {
     room_code: roomCode,
     status: "waiting",
     host_id: playerId,
+    game_type: "snake",
+    max_players: 10,
   });
 
   if (error) return null;
@@ -70,6 +73,8 @@ export async function createPrivateSnakeRoom(): Promise<SnakeRoomInfo | null> {
     room_code: roomCode,
     status: "waiting",
     host_id: playerId,
+    game_type: "snake",
+    max_players: 10,
   });
 
   if (error) return null;
@@ -82,15 +87,15 @@ export async function joinPrivateSnakeRoom(
   const supabase = getSupabase();
   if (!supabase) return null;
 
-  // Verify the room exists and is joinable
+  // Verify the room exists and is a snake room
   const { data } = await supabase
     .from("rooms")
-    .select("room_code, status")
+    .select("room_code, game_type, status")
     .eq("room_code", roomCode.toUpperCase())
     .in("status", ["waiting", "playing"])
     .single();
 
-  if (!data) return null;
+  if (!data || data.game_type !== "snake") return null;
 
   const playerId = generatePlayerId();
   return { roomCode: roomCode.toUpperCase(), isHost: false, playerId };
