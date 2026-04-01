@@ -98,8 +98,7 @@ export default function DailyPage() {
           Daily Puzzles
         </h1>
         <p className="mt-2 text-text-muted">
-          A fresh challenge every day. Free to play today — subscribe to unlock
-          the archive.
+          A fresh challenge every day. Play today or explore the full archive.
         </p>
       </div>
 

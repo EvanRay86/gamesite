@@ -44,6 +44,9 @@ interface FreePlaysGateProps {
 }
 
 export default function FreePlaysGate({ creditCost, gameSlug, children }: FreePlaysGateProps) {
+  // Paywall disabled — unlimited free plays (monetised via ads)
+  return <>{children}</>;
+
   const { user, credits, loading, refreshProfile } = useAuth();
   const [playsToday, setPlaysToday] = useState(() => {
     if (typeof window === "undefined") return 0;

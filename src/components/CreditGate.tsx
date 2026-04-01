@@ -11,6 +11,9 @@ interface CreditGateProps {
 }
 
 export default function CreditGate({ creditCost, gameSlug, children }: CreditGateProps) {
+  // Paywall disabled — all arcade games are free (monetised via ads)
+  return <>{children}</>;
+
   const { user, credits, loading, refreshProfile } = useAuth();
   const [unlocked, setUnlocked] = useState(false);
   const [deducting, setDeducting] = useState(false);
