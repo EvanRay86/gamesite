@@ -7,18 +7,6 @@ const PROTECTED_PAGES = ["/account", "/subscribe"];
 // Auth pages that logged-in users should skip
 const AUTH_PAGES = ["/login", "/signup"];
 
-// Cron endpoints authenticated by CRON_SECRET header, not user session
-const CRON_ENDPOINTS = ["/api/trivia/generate", "/api/crossword/generate"];
-
-// API routes that require a valid user session
-const AUTH_REQUIRED_API = [
-  "/api/credits",
-  "/api/stripe/checkout",
-  "/api/stripe/portal",
-  "/api/koala/save",
-  "/api/rift",
-];
-
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   let response = NextResponse.next({ request });
@@ -49,11 +37,6 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // ── Cron endpoints — skip user auth (verified by CRON_SECRET in handler)
-  if (CRON_ENDPOINTS.some((ep) => pathname === ep)) {
-    return response;
-  }
-
   // ── Redirect logged-in users away from login/signup
   if (user && AUTH_PAGES.some((p) => pathname === p)) {
     const url = request.nextUrl.clone();
@@ -62,7 +45,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // ── Protect pages that require authentication
+  // ── Protect pages that require authentication (server-side redirect)
   if (!user && PROTECTED_PAGES.some((p) => pathname.startsWith(p))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -70,26 +53,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // ── Protect admin API routes (fine-grained is_admin check in requireAdmin())
-  if (pathname.startsWith("/api/admin")) {
-    if (!user) {
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 },
-      );
-    }
-  }
-
-  // ── Protect user-specific API routes
-  if (
-    !user &&
-    AUTH_REQUIRED_API.some((prefix) => pathname.startsWith(prefix))
-  ) {
-    return NextResponse.json(
-      { error: "Not authenticated" },
-      { status: 401 },
-    );
-  }
+  // API route auth is handled by each route's own auth check (requireAdmin,
+  // getUser, etc.) — not duplicated here to avoid cookie-reading mismatches
+  // between the proxy and route handler on Vercel's edge/serverless split.
 
   return response;
 }
