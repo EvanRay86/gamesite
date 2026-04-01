@@ -866,6 +866,55 @@ function RiftPreview() {
   );
 }
 
+/* ─── Word Bloom Mini Preview ──────────────────────────────────────────── */
+
+function WordBloomPreview() {
+  const center = "R";
+  const petals = ["T", "A", "E", "S", "L", "N"];
+  const petalPositions = [
+    { x: 0, y: -28 },
+    { x: 24, y: -14 },
+    { x: 24, y: 14 },
+    { x: 0, y: 28 },
+    { x: -24, y: 14 },
+    { x: -24, y: -14 },
+  ];
+
+  return (
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-green/5 to-green/10 border border-green/15 p-3.5">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-green">Word Bloom</span>
+        <span className="text-[10px] font-bold text-green">Bloom 🌸</span>
+      </div>
+      <div className="flex justify-center mb-2">
+        <div className="relative" style={{ width: 80, height: 80 }}>
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-green text-white font-bold text-[11px] flex items-center justify-center shadow-sm">
+            {center}
+          </div>
+          {petals.map((letter, i) => {
+            const pos = petalPositions[i];
+            return (
+              <div
+                key={i}
+                className="absolute left-1/2 top-1/2 w-6 h-6 rounded-full bg-white border border-border-light text-text-primary font-bold text-[10px] flex items-center justify-center shadow-sm"
+                style={{
+                  transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`,
+                }}
+              >
+                {letter}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="flex justify-center gap-3 text-[9px] text-text-dim">
+        <span>Found: <span className="text-green font-bold">8</span></span>
+        <span>Score: <span className="text-green font-bold">42</span></span>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Game Preview Router ───────────────────────────────────────────────── */
 
 export default function GamePreview({ slug }: { slug: string }) {
@@ -895,6 +944,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "sky-hopper": return <SkyHopperPreview />;
     case "lexicon-quest": return <LexiconPreview />;
     case "rift": return <RiftPreview />;
+    case "word-bloom": return <WordBloomPreview />;
     default: return null;
   }
 }
