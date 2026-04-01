@@ -30,7 +30,7 @@ export default async function EmojiWordPage() {
       <div className="flex justify-center py-6">
         <Link
           href="/daily/emoji-word/archive"
-          className="text-text-muted text-sm hover:text-amber transition-colors no-underline"
+          className="inline-flex items-center gap-2 rounded-full bg-amber px-6 py-3 text-sm font-semibold text-white shadow-md hover:brightness-90 hover:shadow-lg active:scale-95 transition-all no-underline"
         >
           Play past puzzles &rarr;
         </Link>
