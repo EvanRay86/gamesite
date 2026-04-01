@@ -3,7 +3,7 @@ import {
   saveSelectedFrames,
   cleanupSession,
 } from "@/lib/trailer-frames";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { requireAdmin } from "@/lib/admin-auth";
 
 interface SaveBody {
@@ -51,24 +51,27 @@ export async function POST(req: NextRequest) {
     );
 
     // 2. Save puzzle metadata to Supabase
-    const supabase = getSupabase();
-    if (supabase) {
-      const { error } = await supabase.from("framed_puzzles").upsert(
-        {
-          puzzle_date: date,
-          variant,
-          tmdb_id: body.tmdbId || null,
-          title,
-          year,
-          frames: framePaths,
-          movie_slug: movieSlug,
-        },
-        { onConflict: "puzzle_date,variant" },
-      );
+    const supabase = getSupabaseAdmin();
+    if (!supabase) {
+      return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
+    }
 
-      if (error) {
-        console.warn("Supabase save failed (puzzle still saved locally):", error);
-      }
+    const { error } = await supabase.from("framed_puzzles").upsert(
+      {
+        puzzle_date: date,
+        variant,
+        tmdb_id: body.tmdbId || null,
+        title,
+        year,
+        frames: framePaths,
+        movie_slug: movieSlug,
+      },
+      { onConflict: "puzzle_date,variant" },
+    );
+
+    if (error) {
+      console.error("Supabase save failed:", error);
+      return NextResponse.json({ error: "Database save failed" }, { status: 500 });
     }
 
     // 3. Clean up temp session

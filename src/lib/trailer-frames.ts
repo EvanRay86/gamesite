@@ -145,7 +145,7 @@ export async function readFrameImage(
 }
 
 /**
- * Save selected frames to public/framed/{slug}/ and return the public paths.
+ * Save selected frames to Supabase Storage and return the public URLs.
  */
 export async function saveSelectedFrames(
   sessionId: string,
@@ -156,10 +156,11 @@ export async function saveSelectedFrames(
     throw new Error("Must select exactly 6 frames");
   }
 
-  const destDir = path.join(PUBLIC_FRAMED, movieSlug);
-  await fs.mkdir(destDir, { recursive: true });
+  const { getSupabaseAdmin } = await import("@/lib/supabase-admin");
+  const supabase = getSupabaseAdmin();
+  if (!supabase) throw new Error("Supabase admin client not available");
 
-  const publicPaths: string[] = [];
+  const publicUrls: string[] = [];
 
   for (let i = 0; i < 6; i++) {
     const srcPath = path.join(
@@ -168,12 +169,26 @@ export async function saveSelectedFrames(
       "frames",
       selectedFrameFilenames[i],
     );
-    const destPath = path.join(destDir, `frame-${i + 1}.jpg`);
-    await fs.copyFile(srcPath, destPath);
-    publicPaths.push(`/framed/${movieSlug}/frame-${i + 1}.jpg`);
+    const fileBuffer = await fs.readFile(srcPath);
+    const storagePath = `${movieSlug}/frame-${i + 1}.jpg`;
+
+    const { error } = await supabase.storage
+      .from("framed-puzzles")
+      .upload(storagePath, fileBuffer, {
+        contentType: "image/jpeg",
+        upsert: true,
+      });
+
+    if (error) throw new Error(`Failed to upload frame ${i + 1}: ${error.message}`);
+
+    const { data } = supabase.storage
+      .from("framed-puzzles")
+      .getPublicUrl(storagePath);
+
+    publicUrls.push(data.publicUrl);
   }
 
-  return publicPaths;
+  return publicUrls;
 }
 
 /**
