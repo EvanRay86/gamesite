@@ -360,6 +360,16 @@ export const games: Game[] = [
   },
 
   {
+    slug: "orb-merge",
+    name: "Orb Merge",
+    description:
+      "Drop orbs, match colors, and merge your way to the top tier. Physics-based chaos.",
+    category: "arcade",
+    color: "purple",
+    creditCost: 0,
+  },
+
+  {
     slug: "gem-crush",
     name: "Gem Crush",
     description: "Match gems, chain combos, and climb the leaderboard.",
