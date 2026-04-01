@@ -1,11 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 /** POST — Claim daily login credits. GET — Fetch streak info. */
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const rl = checkRateLimit(`daily-login:${ip}`, { limit: 10, windowSeconds: 60 });
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const supabase = await createSupabaseServer();
     const {
       data: { user },
