@@ -13,6 +13,15 @@ export async function isUserSubscribed(): Promise<boolean> {
 
     if (!user) return false;
 
+    // Admins bypass the paywall
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.is_admin) return true;
+
     const { data } = await supabase
       .from("user_subscriptions")
       .select("status")

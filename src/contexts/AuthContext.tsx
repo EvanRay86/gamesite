@@ -17,6 +17,7 @@ interface Profile {
   display_name: string | null;
   credits: number;
   stripe_customer_id: string | null;
+  is_admin: boolean;
 }
 
 interface AuthContextType {
@@ -59,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .limit(1)
           .single();
 
-        setIsSubscriber(!!sub);
+        setIsSubscriber(!!sub || prof.is_admin === true);
       }
     },
     [supabase],
