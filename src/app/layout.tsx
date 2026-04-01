@@ -76,14 +76,16 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <AuthProvider>
-          <a href="#main-content" className="skip-to-content">
-            Skip to content
-          </a>
-          <TopNav />
-          <main id="main-content">
-            {children}
-          </main>
-          <Footer />
+          <div className="overflow-wrapper">
+            <a href="#main-content" className="skip-to-content">
+              Skip to content
+            </a>
+            <TopNav />
+            <main id="main-content">
+              {children}
+            </main>
+            <Footer />
+          </div>
           <CookieBanner />
           <ConsentScripts />
         </AuthProvider>

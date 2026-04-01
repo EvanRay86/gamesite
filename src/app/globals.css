@@ -25,10 +25,11 @@
   --color-error: #e74c3c;
 }
 
-/* Prevent horizontal overflow on mobile */
-html, body {
+/* Prevent horizontal overflow on mobile (wrapper needed for iOS Safari) */
+.overflow-wrapper {
   overflow-x: hidden;
-  max-width: 100vw;
+  width: 100%;
+  position: relative;
 }
 
 /* Hide scrollbar but keep scroll functionality */
