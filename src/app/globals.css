@@ -25,13 +25,19 @@
   --color-error: #e74c3c;
 }
 
-/* Prevent horizontal overflow on mobile (wrapper needed for iOS Safari) */
-html {
-  overflow-x: clip;
+/* Prevent horizontal overflow on mobile (iOS Safari) */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 .overflow-wrapper {
-  overflow-x: clip;
+  overflow-x: hidden;
   width: 100%;
+  max-width: 100%;
   position: relative;
 }
 
