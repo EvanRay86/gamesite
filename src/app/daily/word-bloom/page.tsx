@@ -27,24 +27,24 @@ export default async function WordBloomPage() {
   return (
     <main>
       <WordBloomGame puzzle={puzzle} />
-      <div className="flex flex-col items-center gap-2 py-6">
+      <div className="flex flex-col items-center gap-3 py-6 px-4 w-full max-w-md mx-auto">
         <Link
           href="/daily/word-bloom/duel"
-          className="text-text-muted text-sm hover:text-coral transition-colors no-underline"
+          className="w-full text-center rounded-full bg-coral text-white font-semibold py-3 px-6 text-base hover:bg-coral/90 active:scale-[0.98] transition-all no-underline shadow-sm"
         >
-          Duel a friend &rarr;
+          Duel a friend
         </Link>
         <Link
           href="/daily/word-bloom/quickplay"
-          className="text-text-muted text-sm hover:text-green transition-colors no-underline"
+          className="w-full text-center rounded-full bg-green text-white font-semibold py-3 px-6 text-base hover:bg-green/90 active:scale-[0.98] transition-all no-underline shadow-sm"
         >
-          Quickplay — unlimited random puzzles &rarr;
+          Quickplay — unlimited random puzzles
         </Link>
         <Link
           href="/daily/word-bloom/archive"
-          className="text-text-muted text-sm hover:text-green transition-colors no-underline"
+          className="w-full text-center rounded-full border-2 border-green text-green font-semibold py-3 px-6 text-base hover:bg-green/10 active:scale-[0.98] transition-all no-underline"
         >
-          Play past puzzles &rarr;
+          Play past puzzles
         </Link>
       </div>
       <MoreDailyGames currentSlug="word-bloom" />
