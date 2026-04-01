@@ -55,6 +55,17 @@ export function getFallbackWordBloomPuzzle(date: string): WordBloomPuzzle {
   };
 }
 
+/** Generate a random puzzle for quickplay mode. */
+export function generateQuickplayPuzzle(): WordBloomPuzzle {
+  const index = Math.floor(Math.random() * SEED_PUZZLES.length);
+  const now = Date.now();
+  return {
+    id: `quickplay-${now}`,
+    puzzle_date: new Date().toISOString().split("T")[0],
+    letters: SEED_PUZZLES[index],
+  };
+}
+
 // ── Seed data ─────────────────────────────────────────────────────────────
 // Each entry is 7 uppercase letters. Index 0 = required center letter.
 // Chosen for rich valid-word coverage with common vowel/consonant mixes.

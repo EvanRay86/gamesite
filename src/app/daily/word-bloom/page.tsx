@@ -27,7 +27,19 @@ export default async function WordBloomPage() {
   return (
     <main>
       <WordBloomGame puzzle={puzzle} />
-      <div className="flex justify-center py-6">
+      <div className="flex flex-col items-center gap-2 py-6">
+        <Link
+          href="/daily/word-bloom/duel"
+          className="text-text-muted text-sm hover:text-coral transition-colors no-underline"
+        >
+          Duel a friend &rarr;
+        </Link>
+        <Link
+          href="/daily/word-bloom/quickplay"
+          className="text-text-muted text-sm hover:text-green transition-colors no-underline"
+        >
+          Quickplay — unlimited random puzzles &rarr;
+        </Link>
         <Link
           href="/daily/word-bloom/archive"
           className="text-text-muted text-sm hover:text-green transition-colors no-underline"
