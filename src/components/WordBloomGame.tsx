@@ -8,20 +8,20 @@ import { shareOrCopy } from "@/lib/share";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 
+const TIME_LIMIT = 60; // seconds
+
 // ── Scoring ────────────────────────────────────────────────────────────────
 function scoreWord(word: string, allLetters: string[]): number {
   if (word.length === 4) return 1;
-  const isPangram = allLetters.every((l) =>
-    word.toUpperCase().includes(l)
-  );
-  return word.length + (isPangram ? 7 : 0);
+  const pan = allLetters.every((l) => word.toUpperCase().includes(l));
+  return word.length + (pan ? 7 : 0);
 }
 
 function isPangram(word: string, allLetters: string[]): boolean {
   return allLetters.every((l) => word.toUpperCase().includes(l));
 }
 
-// ── Rank thresholds (percentage of max score) ──────────────────────────────
+// ── Rank thresholds ────────────────────────────────────────────────────────
 const RANKS: { pct: number; label: string }[] = [
   { pct: 0, label: "Seedling" },
   { pct: 5, label: "Sprout" },
@@ -41,38 +41,50 @@ function getRank(score: number, maxScore: number) {
   return rank;
 }
 
-function getNextRank(score: number, maxScore: number) {
-  const pct = maxScore > 0 ? (score / maxScore) * 100 : 0;
-  for (const r of RANKS) {
-    if (pct < r.pct) return r;
-  }
-  return null;
-}
-
 // ── Persistence ────────────────────────────────────────────────────────────
 function stateKey(date: string) {
   return `gamesite-word-bloom-${date}`;
 }
 
-function loadState(date: string): string[] {
-  if (typeof window === "undefined") return [];
+interface SavedGame {
+  found: string[];
+  score: number;
+  finished: boolean;
+  playerName?: string;
+}
+
+function loadSavedGame(date: string): SavedGame | null {
+  if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(stateKey(date));
-    return raw ? JSON.parse(raw) : [];
+    return raw ? JSON.parse(raw) : null;
   } catch {
-    return [];
+    return null;
   }
 }
 
-function saveState(date: string, found: string[]) {
+function saveGame(date: string, data: SavedGame) {
   try {
-    localStorage.setItem(stateKey(date), JSON.stringify(found));
+    localStorage.setItem(stateKey(date), JSON.stringify(data));
   } catch {
     // ignore
   }
 }
 
-// ── Find all valid answers for a puzzle ─────────────────────────────────────
+function loadPlayerName(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("gamesite-bloom-name") || "";
+}
+
+function savePlayerName(name: string) {
+  try {
+    localStorage.setItem("gamesite-bloom-name", name);
+  } catch {
+    // ignore
+  }
+}
+
+// ── Find all valid answers ─────────────────────────────────────────────────
 function computeAllAnswers(letters: string[]): string[] {
   const center = letters[0].toLowerCase();
   const letterSet = new Set(letters.map((l) => l.toLowerCase()));
@@ -81,17 +93,23 @@ function computeAllAnswers(letters: string[]): string[] {
   for (let len = 4; len <= 12; len++) {
     const words = getWordSet(len);
     for (const word of words) {
-      // Must contain center letter
       if (!word.includes(center)) continue;
-      // All letters must be from the set (reuse allowed)
       if ([...word].every((ch) => letterSet.has(ch))) {
         answers.push(word.toUpperCase());
       }
     }
   }
-
   return answers.sort();
 }
+
+// ── Leaderboard types ──────────────────────────────────────────────────────
+interface LeaderboardEntry {
+  player_name: string;
+  score: number;
+  words_found: number;
+}
+
+type Phase = "splash" | "playing" | "results";
 
 // ── Component ──────────────────────────────────────────────────────────────
 
@@ -100,10 +118,14 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
   const center = letters[0];
   const outer = letters.slice(1);
 
-  const [input, setInput] = useState("");
-  const [found, setFound] = useState<string[]>(() =>
-    loadState(puzzle.puzzle_date)
+  const savedGame = useMemo(() => loadSavedGame(puzzle.puzzle_date), [puzzle.puzzle_date]);
+
+  const [phase, setPhase] = useState<Phase>(
+    savedGame?.finished ? "results" : "splash"
   );
+  const [input, setInput] = useState("");
+  const [found, setFound] = useState<string[]>(savedGame?.found ?? []);
+  const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
   const [message, setMessage] = useState<{
     text: string;
     type: "success" | "error" | "pangram";
@@ -111,110 +133,132 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
   const [shake, setShake] = useState(false);
   const [shared, setShared] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [playerName, setPlayerName] = useState(() => loadPlayerName());
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [submitted, setSubmitted] = useState(savedGame?.finished ?? false);
   const inputRef = useRef<HTMLInputElement>(null);
   const messageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { stats, recordGame } = useGameStats("word-bloom", puzzle.puzzle_date);
 
-  // Compute all valid answers once
   const allAnswers = useMemo(() => computeAllAnswers(letters), [letters]);
-
   const maxScore = useMemo(
     () => allAnswers.reduce((sum, w) => sum + scoreWord(w, letters), 0),
     [allAnswers, letters]
   );
-
   const currentScore = useMemo(
     () => found.reduce((sum, w) => sum + scoreWord(w, letters), 0),
     [found, letters]
   );
 
   const rank = getRank(currentScore, maxScore);
-  const nextRank = getNextRank(currentScore, maxScore);
   const progressPct = maxScore > 0 ? (currentScore / maxScore) * 100 : 0;
 
-  // Persist found words
+  // ── Timer ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    saveState(puzzle.puzzle_date, found);
-  }, [found, puzzle.puzzle_date]);
+    if (phase !== "playing") return;
 
-  // Record stats when player reaches "Full Bloom" (50%+) for the first time
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          setPhase("results");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [phase]);
+
+  // ── End-of-game: record stats, save, fetch leaderboard ─────────────────
   useEffect(() => {
-    if (found.length > 0 && currentScore >= maxScore * 0.5) {
-      recordGame(true, found.length);
-    }
+    if (phase !== "results") return;
+
+    recordGame(currentScore > 0, found.length);
+    saveGame(puzzle.puzzle_date, {
+      found,
+      score: currentScore,
+      finished: true,
+      playerName,
+    });
+
+    // Fetch leaderboard
+    fetch(`/api/word-bloom/leaderboard?date=${puzzle.puzzle_date}`)
+      .then((r) => r.json())
+      .then((data) => setLeaderboard(data.entries ?? []))
+      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentScore]);
+  }, [phase]);
 
-  const showMessage = useCallback(
+  // ── Start game ─────────────────────────────────────────────────────────
+  const startGame = useCallback(() => {
+    setFound([]);
+    setTimeLeft(TIME_LIMIT);
+    setInput("");
+    setSubmitted(false);
+    setPhase("playing");
+  }, []);
+
+  const showMsg = useCallback(
     (text: string, type: "success" | "error" | "pangram") => {
       if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
       setMessage({ text, type });
-      messageTimeoutRef.current = setTimeout(() => setMessage(null), 1800);
+      messageTimeoutRef.current = setTimeout(() => setMessage(null), 1200);
     },
     []
   );
 
   const handleSubmit = useCallback(() => {
+    if (phase !== "playing") return;
     const word = input.trim().toUpperCase();
     setInput("");
 
     if (word.length < 4) {
-      showMessage("Too short — need 4+ letters", "error");
+      showMsg("Too short", "error");
       setShake(true);
-      setTimeout(() => setShake(false), 500);
+      setTimeout(() => setShake(false), 400);
       return;
     }
-
     if (!word.includes(center)) {
-      showMessage(`Must include center letter ${center}`, "error");
+      showMsg(`Needs ${center}`, "error");
       setShake(true);
-      setTimeout(() => setShake(false), 500);
+      setTimeout(() => setShake(false), 400);
       return;
     }
-
     const letterSet = new Set(letters.map((l) => l.toUpperCase()));
     if (![...word].every((ch) => letterSet.has(ch))) {
-      showMessage("Uses letters not in the bloom", "error");
+      showMsg("Bad letters", "error");
       setShake(true);
-      setTimeout(() => setShake(false), 500);
+      setTimeout(() => setShake(false), 400);
       return;
     }
-
     if (found.includes(word)) {
-      showMessage("Already found!", "error");
+      showMsg("Already found", "error");
       setShake(true);
-      setTimeout(() => setShake(false), 500);
+      setTimeout(() => setShake(false), 400);
       return;
     }
-
     if (!isValidEnglishWord(word.toLowerCase())) {
-      showMessage("Not in word list", "error");
+      showMsg("Not a word", "error");
       setShake(true);
-      setTimeout(() => setShake(false), 500);
+      setTimeout(() => setShake(false), 400);
       return;
     }
 
-    // Valid word!
     const pan = isPangram(word, letters);
     const pts = scoreWord(word, letters);
     setFound((prev) => [...prev, word].sort());
-
-    if (pan) {
-      showMessage(`Pangram! +${pts} points`, "pangram");
-    } else {
-      showMessage(
-        pts === 1 ? "+1 point" : `+${pts} points`,
-        "success"
-      );
-    }
-  }, [input, center, letters, found, showMessage]);
+    showMsg(pan ? `Pangram! +${pts}` : `+${pts}`, pan ? "pangram" : "success");
+  }, [input, center, letters, found, showMsg, phase]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
-        handleSubmit();
-      }
+      if (e.key === "Enter") handleSubmit();
     },
     [handleSubmit]
   );
@@ -223,18 +267,10 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
     setInput((prev) => prev + letter);
   }, []);
 
-  const handleShuffle = useCallback(() => {
-    // We don't mutate puzzle data — just shuffle the outer petals visually
-    // This is handled by shuffling the render order
-    setShuffleKey((k) => k + 1);
-  }, []);
-
   const [shuffleKey, setShuffleKey] = useState(0);
 
-  // Shuffled outer letters
   const shuffledOuter = useMemo(() => {
     const arr = [...outer];
-    // Fisher-Yates seeded by shuffleKey
     for (let i = arr.length - 1; i > 0; i--) {
       const j = (shuffleKey * 7 + i * 13) % (i + 1);
       [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -242,13 +278,53 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
     return arr;
   }, [outer, shuffleKey]);
 
+  // ── Submit score to leaderboard ────────────────────────────────────────
+  const submitScore = useCallback(async () => {
+    if (!playerName.trim()) return;
+    savePlayerName(playerName.trim());
+
+    try {
+      await fetch("/api/word-bloom/leaderboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: playerName.trim(),
+          score: currentScore,
+          words: found.length,
+          date: puzzle.puzzle_date,
+        }),
+      });
+    } catch {
+      // silent fail
+    }
+
+    setSubmitted(true);
+    saveGame(puzzle.puzzle_date, {
+      found,
+      score: currentScore,
+      finished: true,
+      playerName: playerName.trim(),
+    });
+
+    // Refresh leaderboard
+    try {
+      const res = await fetch(
+        `/api/word-bloom/leaderboard?date=${puzzle.puzzle_date}`
+      );
+      const data = await res.json();
+      setLeaderboard(data.entries ?? []);
+    } catch {
+      // silent
+    }
+  }, [playerName, currentScore, found, puzzle.puzzle_date]);
+
   const handleShare = async () => {
     const pct = Math.round(progressPct);
     const pangramCount = found.filter((w) => isPangram(w, letters)).length;
     const text = [
       `Word Bloom ${puzzle.puzzle_date}`,
-      `${rank.label} — ${currentScore}/${maxScore} points (${pct}%)`,
-      `${found.length} words found${pangramCount > 0 ? ` (${pangramCount} pangram${pangramCount > 1 ? "s" : ""})` : ""}`,
+      `${rank.label} — ${currentScore} pts (${pct}%)`,
+      `${found.length} words in 60s${pangramCount > 0 ? ` (${pangramCount} pangram${pangramCount > 1 ? "s" : ""})` : ""}`,
       `gamesite.app/daily/word-bloom`,
     ].join("\n");
     const ok = await shareOrCopy(text);
@@ -258,58 +334,281 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
     }
   };
 
-  // ── Petal positions (hexagonal flower layout) ────────────────────────────
+  // ── Petal positions ────────────────────────────────────────────────────
   const petalPositions = [
-    { x: 0, y: -72 },   // top
-    { x: 62, y: -36 },  // top-right
-    { x: 62, y: 36 },   // bottom-right
-    { x: 0, y: 72 },    // bottom
-    { x: -62, y: 36 },  // bottom-left
-    { x: -62, y: -36 }, // top-left
+    { x: 0, y: -72 },
+    { x: 62, y: -36 },
+    { x: 62, y: 36 },
+    { x: 0, y: 72 },
+    { x: -62, y: 36 },
+    { x: -62, y: -36 },
   ];
 
-  return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-[520px]">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="font-display text-3xl sm:text-4xl text-text-primary mb-1">
+  // Timer color
+  const timerPct = (timeLeft / TIME_LIMIT) * 100;
+  const timerColor =
+    timeLeft > 30 ? "#22C55E" : timeLeft > 10 ? "#F7B731" : "#FF6B6B";
+
+  // ════════════════════════════════════════════════════════════════════════
+  // SPLASH SCREEN
+  // ════════════════════════════════════════════════════════════════════════
+  if (phase === "splash") {
+    const alreadyPlayed = savedGame?.finished;
+
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4">
+        <div className="w-full max-w-[420px] text-center">
+          <h1 className="font-display text-4xl text-text-primary mb-2">
             Word Bloom
           </h1>
-          <p className="text-text-muted text-sm">
-            Make words using the letters. Always include the center letter.
+          <p className="text-text-muted mb-2">
+            Make words from 7 letters. Always use the center.
           </p>
-        </div>
+          <p className="text-text-muted mb-6 text-sm">
+            You have <strong className="text-green">60 seconds</strong> — go fast!
+          </p>
 
-        {/* Rank & progress */}
-        <div className="bg-white rounded-2xl border border-border-light shadow-sm p-4 mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold text-green">
+          {alreadyPlayed ? (
+            <div className="space-y-3">
+              <p className="text-sm text-text-muted">
+                You scored <strong className="text-green">{savedGame.score} pts</strong> today.
+              </p>
+              <button
+                onClick={() => setPhase("results")}
+                className="rounded-full bg-green px-8 py-3 text-lg font-bold text-white
+                           hover:bg-green/90 transition-colors"
+              >
+                View Results
+              </button>
+              <button
+                onClick={startGame}
+                className="block mx-auto text-sm text-text-muted hover:text-text-secondary
+                           transition-colors mt-2"
+              >
+                Play again (won&apos;t update leaderboard)
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={startGame}
+              className="rounded-full bg-green px-8 py-3 text-lg font-bold text-white
+                         hover:bg-green/90 transition-colors"
+            >
+              Start
+            </button>
+          )}
+
+          {/* Rules */}
+          <div className="mt-8 text-left bg-white rounded-2xl border border-border-light p-4 text-sm text-text-muted">
+            <ul className="space-y-1.5 pl-4 list-disc">
+              <li>Every word must include the <strong className="text-green">center letter</strong>.</li>
+              <li>Words must be at least 4 letters.</li>
+              <li>Letters can be reused.</li>
+              <li>4-letter words = 1 pt. Longer = 1 pt per letter.</li>
+              <li>
+                <strong className="text-amber">Pangrams</strong> (all 7 letters) = +7 bonus!
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // RESULTS SCREEN
+  // ════════════════════════════════════════════════════════════════════════
+  if (phase === "results") {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-[520px]">
+          {/* Score summary */}
+          <div className="bg-white rounded-2xl border border-border-light shadow-sm p-6 text-center mb-4">
+            <h2 className="font-display text-3xl text-text-primary mb-1">
               {rank.label}
-            </span>
-            <span className="text-xs text-text-muted">
-              {currentScore} / {maxScore} pts
-              {nextRank && (
-                <span className="ml-1 text-text-dim">
-                  — {Math.ceil(maxScore * (nextRank.pct / 100)) - currentScore} to{" "}
-                  {nextRank.label}
-                </span>
-              )}
-            </span>
+            </h2>
+            <p className="text-4xl font-bold text-green mb-1">{currentScore}</p>
+            <p className="text-text-muted text-sm mb-4">
+              {found.length} words &middot; {Math.round(progressPct)}% of max
+            </p>
+
+            {/* Progress bar */}
+            <div className="w-full h-2.5 bg-surface rounded-full overflow-hidden mb-4">
+              <div
+                className="h-full rounded-full bg-green transition-all duration-500 ease-out"
+                style={{ width: `${Math.min(progressPct, 100)}%` }}
+              />
+            </div>
+
+            {/* Found words */}
+            {found.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 justify-center mb-4">
+                {found.map((word) => (
+                  <span
+                    key={word}
+                    className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      isPangram(word, letters)
+                        ? "bg-amber/10 text-amber border border-amber/30"
+                        : "bg-green/10 text-green"
+                    }`}
+                  >
+                    {word}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={handleShare}
+                className={`rounded-full px-6 py-2.5 text-sm font-semibold transition-colors ${
+                  shared
+                    ? "bg-green text-white"
+                    : "bg-green text-white hover:bg-green/90"
+                }`}
+              >
+                {shared ? "Copied!" : "Share Results"}
+              </button>
+              <button
+                onClick={() => setShowStats(true)}
+                className="rounded-full border border-border-light px-6 py-2.5
+                           text-sm font-semibold text-text-muted hover:bg-surface
+                           transition-colors"
+              >
+                Stats
+              </button>
+            </div>
           </div>
-          <div className="w-full h-2.5 bg-surface rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-green transition-all duration-500 ease-out"
-              style={{ width: `${Math.min(progressPct, 100)}%` }}
-            />
+
+          {/* Leaderboard submit */}
+          {!submitted && (
+            <div className="bg-white rounded-2xl border border-border-light shadow-sm p-4 mb-4">
+              <h3 className="text-sm font-semibold text-text-muted mb-3 text-center">
+                Submit to Today&apos;s Leaderboard
+              </h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value.slice(0, 20))}
+                  placeholder="Your name..."
+                  maxLength={20}
+                  className="flex-1 rounded-xl border-2 border-border-light px-3 py-2
+                             text-sm font-semibold focus:outline-none focus:border-green"
+                />
+                <button
+                  onClick={submitScore}
+                  disabled={!playerName.trim()}
+                  className="rounded-full bg-green px-5 py-2 text-sm font-semibold
+                             text-white hover:bg-green/90 transition-colors
+                             disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Daily Leaderboard */}
+          <div className="bg-white rounded-2xl border border-border-light shadow-sm p-4">
+            <h3 className="text-sm font-semibold text-text-muted mb-3 text-center">
+              Daily Leaderboard
+            </h3>
+            {leaderboard.length === 0 ? (
+              <p className="text-text-dim text-sm text-center py-3">
+                {submitted
+                  ? "Loading..."
+                  : "No scores yet today. Be the first!"}
+              </p>
+            ) : (
+              <div className="space-y-1.5">
+                {leaderboard.map((entry, i) => (
+                  <div
+                    key={`${entry.player_name}-${i}`}
+                    className={`flex items-center justify-between rounded-xl px-3 py-2 ${
+                      i === 0
+                        ? "bg-amber/10"
+                        : i === 1
+                          ? "bg-gray-100"
+                          : i === 2
+                            ? "bg-amber/5"
+                            : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-sm font-bold text-text-dim w-5 text-right">
+                        {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}`}
+                      </span>
+                      <span className="text-sm font-semibold text-text-primary">
+                        {entry.player_name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-text-dim">
+                        {entry.words_found} words
+                      </span>
+                      <span className="text-sm font-bold text-green">
+                        {entry.score}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Play again */}
+          <div className="text-center mt-4">
+            <button
+              onClick={() => setPhase("splash")}
+              className="text-sm text-text-muted hover:text-text-secondary transition-colors"
+            >
+              &larr; Back
+            </button>
+          </div>
+
+          <StatsModal
+            open={showStats}
+            onClose={() => setShowStats(false)}
+            stats={stats}
+            gameName="Word Bloom"
+            color="green"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // PLAYING SCREEN
+  // ════════════════════════════════════════════════════════════════════════
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-4">
+      <div className="w-full max-w-[520px]">
+        {/* Timer bar + score */}
+        <div className="flex items-center justify-between mb-2">
+          <span
+            className="text-2xl font-bold font-mono"
+            style={{ color: timerColor }}
+          >
+            {timeLeft}s
+          </span>
+          <span className="text-sm font-semibold text-text-muted">
+            {currentScore} pts &middot; {found.length} words
+          </span>
+        </div>
+        <div className="w-full h-2 bg-surface rounded-full mb-4 overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-1000 ease-linear"
+            style={{ width: `${timerPct}%`, backgroundColor: timerColor }}
+          />
         </div>
 
         {/* Message toast */}
-        <div className="h-8 flex items-center justify-center mb-2">
+        <div className="h-7 flex items-center justify-center mb-1">
           {message && (
             <span
-              className={`text-sm font-semibold px-4 py-1 rounded-full animate-[fade-in_0.15s_ease]
+              className={`text-sm font-semibold px-4 py-0.5 rounded-full animate-[fade-in_0.15s_ease]
                 ${
                   message.type === "pangram"
                     ? "bg-amber/10 text-amber"
@@ -324,9 +623,8 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
         </div>
 
         {/* Flower layout */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <div className="relative" style={{ width: 200, height: 200 }}>
-            {/* Center petal */}
             <button
               onClick={() => addLetter(center)}
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
@@ -337,7 +635,6 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
             >
               {center}
             </button>
-            {/* Outer petals */}
             {shuffledOuter.map((letter, i) => {
               const pos = petalPositions[i];
               return (
@@ -363,7 +660,7 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
         </div>
 
         {/* Input area */}
-        <div className="bg-white rounded-2xl border border-border-light shadow-sm p-4 sm:p-6 mb-4">
+        <div className="bg-white rounded-2xl border border-border-light shadow-sm p-4 mb-3">
           <div className="flex gap-2 mb-3">
             <input
               ref={inputRef}
@@ -391,7 +688,7 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
               Delete
             </button>
             <button
-              onClick={handleShuffle}
+              onClick={() => setShuffleKey((k) => k + 1)}
               className="rounded-full border border-border-light px-5 py-2
                          text-sm font-semibold text-text-muted hover:bg-surface
                          transition-colors"
@@ -410,90 +707,23 @@ export default function WordBloomGame({ puzzle }: { puzzle: WordBloomPuzzle }) {
           </div>
         </div>
 
-        {/* Found words */}
-        <div className="bg-white rounded-2xl border border-border-light shadow-sm p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-text-muted">
-              Found Words ({found.length}/{allAnswers.length})
-            </h3>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowStats(true)}
-                aria-label="View stats"
-                className="w-8 h-8 flex items-center justify-center rounded-full
-                           text-text-dim hover:text-text-primary hover:bg-surface
-                           transition-colors"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="4" y="12" width="4" height="8" rx="1" />
-                  <rect x="10" y="6" width="4" height="14" rx="1" />
-                  <rect x="16" y="2" width="4" height="18" rx="1" />
-                </svg>
-              </button>
-              <button
-                onClick={handleShare}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
-                  shared
-                    ? "bg-green text-white"
-                    : "border border-border-light text-text-muted hover:bg-surface"
+        {/* Found words compact */}
+        {found.length > 0 && (
+          <div className="flex flex-wrap gap-1 justify-center">
+            {found.map((word) => (
+              <span
+                key={word}
+                className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                  isPangram(word, letters)
+                    ? "bg-amber/10 text-amber"
+                    : "bg-green/10 text-green"
                 }`}
               >
-                {shared ? "Copied!" : "Share"}
-              </button>
-            </div>
+                {word}
+              </span>
+            ))}
           </div>
-
-          {found.length === 0 ? (
-            <p className="text-text-dim text-sm text-center py-4">
-              No words found yet. Start typing!
-            </p>
-          ) : (
-            <div className="flex flex-wrap gap-1.5">
-              {found.map((word) => (
-                <span
-                  key={word}
-                  className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
-                    isPangram(word, letters)
-                      ? "bg-amber/10 text-amber border border-amber/30"
-                      : "bg-green/10 text-green"
-                  }`}
-                >
-                  {word}
-                  <span className="ml-1 opacity-60">
-                    +{scoreWord(word, letters)}
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Rules */}
-        <details className="mt-4 text-sm text-text-muted">
-          <summary className="cursor-pointer hover:text-text-secondary transition-colors">
-            How to play
-          </summary>
-          <ul className="mt-2 space-y-1 pl-4 list-disc">
-            <li>Make words using the 7 available letters.</li>
-            <li>Every word must include the <strong className="text-green">center letter</strong>.</li>
-            <li>Words must be at least 4 letters long.</li>
-            <li>Letters can be reused in a single word.</li>
-            <li>4-letter words = 1 point. Longer words = 1 point per letter.</li>
-            <li>
-              <strong className="text-amber">Pangrams</strong> (using all 7
-              letters) earn +7 bonus points!
-            </li>
-          </ul>
-        </details>
-
-        <StatsModal
-          open={showStats}
-          onClose={() => setShowStats(false)}
-          stats={stats}
-          gameName="Word Bloom"
-          color="green"
-        />
+        )}
       </div>
     </div>
   );
