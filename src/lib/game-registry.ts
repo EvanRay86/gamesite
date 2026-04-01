@@ -240,6 +240,15 @@ export const games: Game[] = [
     color: "amber",
   },
 
+  {
+    slug: "word-bloom",
+    name: "Word Bloom",
+    description:
+      "Build words from seven letters — every word must use the center. How many can you find?",
+    category: "daily",
+    color: "green",
+  },
+
   // ── Community Games ──────────────────────────────────────────────────────
 
   {
