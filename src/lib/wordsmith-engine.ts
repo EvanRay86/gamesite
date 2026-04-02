@@ -6,7 +6,7 @@ import type {
   RoundResult,
   ScoreBonus,
 } from "@/types/wordsmith";
-import { isValidEnglishWord } from "@/lib/dictionary";
+import { isValidEnglishWord, getWordSet } from "@/lib/dictionary";
 
 // ── Seeded RNG ───────────────────────────────────────────────────────────────
 
@@ -98,21 +98,34 @@ export function generateRoundLetters(
   return tiles;
 }
 
-// Verify tiles can form at least one valid word
-export function tilesHaveValidWord(tiles: LetterTile[]): boolean {
+// Check if a word can be formed from the available letters
+function canFormWord(word: string, available: string[]): boolean {
+  const pool = [...available];
+  for (const ch of word) {
+    const idx = pool.indexOf(ch);
+    if (idx === -1) return false;
+    pool.splice(idx, 1);
+  }
+  return true;
+}
+
+// Count how many words of a given length can be formed from the tiles
+function countFormableWords(tiles: LetterTile[], wordLength: number): number {
   const letters = tiles.map((t) => t.letter.toLowerCase());
-  // Check all 3-letter combos (quickest check)
-  for (let a = 0; a < letters.length; a++) {
-    for (let b = 0; b < letters.length; b++) {
-      if (b === a) continue;
-      for (let c = 0; c < letters.length; c++) {
-        if (c === a || c === b) continue;
-        const word = letters[a] + letters[b] + letters[c];
-        if (isValidEnglishWord(word, 3)) return true;
-      }
+  const wordSet = getWordSet(wordLength);
+  let count = 0;
+  for (const word of wordSet) {
+    if (canFormWord(word, letters)) {
+      count++;
+      if (count >= 10) break; // Early exit — enough
     }
   }
-  return false;
+  return count;
+}
+
+// Verify tiles can form at least one 5-letter word and three 4-letter words
+export function tilesHaveValidWord(tiles: LetterTile[]): boolean {
+  return countFormableWords(tiles, 5) >= 1 && countFormableWords(tiles, 4) >= 3;
 }
 
 export function generatePlayableLetters(
