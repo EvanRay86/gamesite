@@ -35,7 +35,7 @@ export default function AdminFramedPage() {
   const [movieSlug, setMovieSlug] = useState("");
 
   // Result
-  const [savedResult, setSavedResult] = useState<{ framePaths: string[]; message: string } | null>(null);
+  const [savedResult, setSavedResult] = useState<{ framePaths: string[]; message: string; dateChanged?: boolean; assignedDate?: string } | null>(null);
   const [error, setError] = useState("");
 
   // ── Search ──────────────────────────────────────────────────────────────
@@ -489,6 +489,11 @@ export default function AdminFramedPage() {
           <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm text-center">
             <div className="text-4xl mb-3">🎬</div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Puzzle saved!</h2>
+            {savedResult.dateChanged && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 mb-3 text-sm text-amber-800">
+                The requested date was already taken — assigned to <strong>{savedResult.assignedDate}</strong> instead.
+              </div>
+            )}
             <p className="text-sm text-gray-600 mb-4">{savedResult.message}</p>
 
             <div className="flex gap-2 justify-center mb-6">

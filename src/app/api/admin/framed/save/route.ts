@@ -56,18 +56,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
     }
 
-    const { error } = await supabase.from("framed_puzzles").upsert(
-      {
-        puzzle_date: date,
-        variant,
-        tmdb_id: body.tmdbId || null,
-        title,
-        year,
-        frames: framePaths,
-        movie_slug: movieSlug,
-      },
-      { onConflict: "puzzle_date,variant" },
-    );
+    // Check if a puzzle already exists for this date+variant
+    let assignedDate = date;
+    const { data: existing } = await supabase
+      .from("framed_puzzles")
+      .select("puzzle_date")
+      .eq("puzzle_date", date)
+      .eq("variant", variant)
+      .single();
+
+    if (existing) {
+      // Find the next available date starting from the day after the requested date
+      const { data: occupied } = await supabase
+        .from("framed_puzzles")
+        .select("puzzle_date")
+        .eq("variant", variant)
+        .gte("puzzle_date", date)
+        .order("puzzle_date", { ascending: true });
+
+      const occupiedSet = new Set((occupied || []).map((r: { puzzle_date: string }) => r.puzzle_date));
+      const candidate = new Date(date + "T00:00:00");
+      candidate.setDate(candidate.getDate() + 1); // start from next day
+      while (occupiedSet.has(candidate.toISOString().slice(0, 10))) {
+        candidate.setDate(candidate.getDate() + 1);
+      }
+      assignedDate = candidate.toISOString().slice(0, 10);
+    }
+
+    const { error } = await supabase.from("framed_puzzles").insert({
+      puzzle_date: assignedDate,
+      variant,
+      tmdb_id: body.tmdbId || null,
+      title,
+      year,
+      frames: framePaths,
+      movie_slug: movieSlug,
+    });
 
     if (error) {
       console.error("Supabase save failed:", error);
@@ -77,10 +101,15 @@ export async function POST(req: NextRequest) {
     // 3. Clean up temp session
     await cleanupSession(sessionId);
 
+    const dateChanged = assignedDate !== date;
     return NextResponse.json({
       success: true,
       framePaths,
-      message: `Saved ${title} (${year}) for ${date} [${variant}]`,
+      assignedDate,
+      dateChanged,
+      message: dateChanged
+        ? `Date ${date} was taken — saved ${title} (${year}) for next available date ${assignedDate} [${variant}]`
+        : `Saved ${title} (${year}) for ${assignedDate} [${variant}]`,
     });
   } catch (err) {
     console.error("Save failed:", err);
