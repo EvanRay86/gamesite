@@ -30,7 +30,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen flex flex-col items-center px-4 py-10 relative overflow-hidden">
       {/* ── Decorative background blobs (in clipping container) ──────── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true" style={{ clipPath: "inset(0)" }}>
         <div className="hero-blob w-72 h-72 bg-coral/40 -top-20 -left-20" style={{ animationDelay: "0s" }} />
         <div className="hero-blob w-96 h-96 bg-teal/30 top-10 -right-32" style={{ animationDelay: "4s" }} />
         <div className="hero-blob w-64 h-64 bg-purple/25 top-60 left-1/4" style={{ animationDelay: "8s" }} />
