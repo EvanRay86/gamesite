@@ -140,14 +140,22 @@ export default function AdminHeardlePage() {
               Search SoundCloud for a song, preview it, and save as a puzzle.
             </p>
           </div>
-          {step !== "search" && (
-            <button
-              onClick={reset}
-              className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+          <div className="flex items-center gap-3">
+            {step !== "search" && (
+              <button
+                onClick={reset}
+                className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                Start over
+              </button>
+            )}
+            <a
+              href="/admin"
+              className="text-sm font-medium text-purple hover:opacity-80 transition-opacity"
             >
-              Start over
-            </button>
-          )}
+              &larr; Back to Admin
+            </a>
+          </div>
         </div>
 
         {/* Progress bar */}
