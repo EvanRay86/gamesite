@@ -630,62 +630,81 @@ export default function OrbMerge() {
       orb.x += orb.vx;
       orb.y += orb.vy;
 
-      // Cup collisions — only apply to orbs whose CENTER is inside the cup
+      // Cup wall collisions — treat walls as solid from both sides
+      // but orbs above the rim are free (can go over the top)
       if (orb.y > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
         const leftWall = cupLeftX(orb.y);
         const rightWall = cupRightX(orb.y);
-        const orbCenter = orb.x;
 
-        // Only collide if orb center is between the walls (inside the cup)
-        // Orbs outside the cup (dropped wide or pushed out) fall freely
-        if (orbCenter > leftWall && orbCenter < rightWall) {
-          // Left wall
-          if (orb.x - orb.radius < leftWall) {
+        // Left wall — solid barrier. Check if orb overlaps it.
+        const leftOverlap = leftWall - (orb.x - orb.radius);
+        if (leftOverlap > 0 && leftOverlap < orb.radius * 2) {
+          // Orb overlaps the left wall — push to nearest side
+          const distToInside = leftWall + orb.radius - orb.x; // push right (inside)
+          const distToOutside = orb.x + orb.radius - leftWall; // push left (outside)
+
+          if (distToInside <= distToOutside) {
+            // Closer to inside — push inward
             orb.x = leftWall + orb.radius;
-            const wallDx = CUP_BOT_L - CUP_RIM_L;
-            const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
-            const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
-            const nx = -wallDy / wallLen;
-            const ny = wallDx / wallLen;
-            const dot = orb.vx * nx + orb.vy * ny;
-            if (dot < 0) {
-              orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
-              orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
-              orb.vx *= 0.7;
-              orb.vy *= 0.7;
-            }
+          } else {
+            // Closer to outside — push outward
+            orb.x = leftWall - orb.radius;
           }
 
-          // Right wall
-          if (orb.x + orb.radius > rightWall) {
-            orb.x = rightWall - orb.radius;
-            const wallDx = CUP_BOT_R - CUP_RIM_R;
-            const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
-            const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
-            const nx = wallDy / wallLen;
-            const ny = -wallDx / wallLen;
-            const dot = orb.vx * nx + orb.vy * ny;
-            if (dot < 0) {
-              orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
-              orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
-              orb.vx *= 0.7;
-              orb.vy *= 0.7;
-            }
+          const wallDx = CUP_BOT_L - CUP_RIM_L;
+          const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
+          const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
+          const nx = -wallDy / wallLen;
+          const ny = wallDx / wallLen;
+          const dot = orb.vx * nx + orb.vy * ny;
+          if (orb.x > leftWall ? dot < 0 : dot > 0) {
+            orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
+            orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
+            orb.vx *= 0.7;
+            orb.vy *= 0.7;
           }
 
           // Wall squish
-          if (orb.x - orb.radius < leftWall + 2 || orb.x + orb.radius > rightWall - 2) {
-            const impact = Math.abs(orb.vx);
-            const squishAmt = Math.min(0.4, impact * 0.1);
-            orb.squishX = Math.max(0.55, orb.squishX - squishAmt);
-            orb.squishY = Math.min(1.45, orb.squishY + squishAmt);
+          const impact = Math.abs(orb.vx);
+          const squishAmt = Math.min(0.4, impact * 0.1);
+          orb.squishX = Math.max(0.55, orb.squishX - squishAmt);
+          orb.squishY = Math.min(1.45, orb.squishY + squishAmt);
+        }
+
+        // Right wall — solid barrier
+        const rightOverlap = (orb.x + orb.radius) - rightWall;
+        if (rightOverlap > 0 && rightOverlap < orb.radius * 2) {
+          const distToInside = orb.x - (rightWall - orb.radius);
+          const distToOutside = rightWall + orb.radius - orb.x;
+
+          if (distToInside <= distToOutside) {
+            orb.x = rightWall - orb.radius;
+          } else {
+            orb.x = rightWall + orb.radius;
           }
+
+          const wallDx = CUP_BOT_R - CUP_RIM_R;
+          const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
+          const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
+          const nx = wallDy / wallLen;
+          const ny = -wallDx / wallLen;
+          const dot = orb.vx * nx + orb.vy * ny;
+          if (orb.x < rightWall ? dot < 0 : dot > 0) {
+            orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
+            orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
+            orb.vx *= 0.7;
+            orb.vy *= 0.7;
+          }
+
+          const impact = Math.abs(orb.vx);
+          const squishAmt = Math.min(0.4, impact * 0.1);
+          orb.squishX = Math.max(0.55, orb.squishX - squishAmt);
+          orb.squishY = Math.min(1.45, orb.squishY + squishAmt);
         }
       }
 
-      // Bottom collision — only if orb center is inside the cup horizontally
-      const isInsideCup = orb.x > cupLeftX(orb.y) && orb.x < cupRightX(orb.y);
-      if (orb.y + orb.radius > CUP_BOTTOM_Y && isInsideCup) {
+      // Bottom collision — only if orb center is inside the cup
+      if (orb.y + orb.radius > CUP_BOTTOM_Y && orb.x > cupLeftX(orb.y) && orb.x < cupRightX(orb.y)) {
         const impact = Math.abs(orb.vy);
         orb.y = CUP_BOTTOM_Y - orb.radius;
         orb.vy = -Math.abs(orb.vy) * RESTITUTION_WALL;
