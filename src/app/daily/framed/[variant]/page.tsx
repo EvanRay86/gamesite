@@ -8,7 +8,6 @@ import {
 } from "@/lib/framed-puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 60;
 
@@ -59,14 +58,6 @@ export default async function FramedVariantPage({
         description={`Guess the ${label.toLowerCase()} movie one frame at a time.`}
         path={`daily/framed/${variant}`}
         category="daily"
-      />
-      <Breadcrumbs
-        crumbs={[
-          { label: "Home", href: "/" },
-          { label: "Daily", href: "/daily" },
-          { label: "Framed", href: "/daily/framed" },
-          { label },
-        ]}
       />
       <FramedGame puzzle={puzzle} variant={variant} />
       <div className="flex justify-center py-6">

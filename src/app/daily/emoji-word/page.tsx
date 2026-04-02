@@ -2,7 +2,6 @@ import Link from "next/link";
 import EmojiWordGame from "@/components/EmojiWordGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import {
   getEmojiWordPuzzleByDate,
   getTodayDate,
@@ -31,11 +30,6 @@ export default async function EmojiWordPage() {
   return (
     <main>
       <GameJsonLd name="Emoji Decoder" description="Guess the word or phrase from emoji clues. Five rounds that get progressively harder. A new challenge every day." path="daily/emoji-word" category="daily" />
-      <Breadcrumbs crumbs={[
-        { label: "Home", href: "/" },
-        { label: "Daily", href: "/daily" },
-        { label: "Emoji Decoder" },
-      ]} />
       <EmojiWordGame puzzle={puzzle} />
       <div className="flex justify-center py-6">
         <Link

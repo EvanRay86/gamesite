@@ -2,7 +2,6 @@ import Link from "next/link";
 import WordBloomGame from "@/components/WordBloomGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import {
   getWordBloomPuzzleByDate,
   getTodayDate,
@@ -31,11 +30,6 @@ export default async function WordBloomPage() {
   return (
     <main>
       <GameJsonLd name="Word Bloom" description="Make words from 7 letters, always using the center. A new bloom every day." path="daily/word-bloom" category="daily" />
-      <Breadcrumbs crumbs={[
-        { label: "Home", href: "/" },
-        { label: "Daily", href: "/daily" },
-        { label: "Word Bloom" },
-      ]} />
       <WordBloomGame puzzle={puzzle} />
       <div className="flex flex-col items-center gap-3 py-6 px-4 w-full max-w-md mx-auto">
         <Link

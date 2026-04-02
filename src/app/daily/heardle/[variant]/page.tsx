@@ -8,7 +8,6 @@ import {
 } from "@/lib/heardle-puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 60;
 
@@ -59,14 +58,6 @@ export default async function HeardleVariantPage({
         description={`Name the ${label.toLowerCase()} song from its opening seconds.`}
         path={`daily/heardle/${variant}`}
         category="daily"
-      />
-      <Breadcrumbs
-        crumbs={[
-          { label: "Home", href: "/" },
-          { label: "Daily", href: "/daily" },
-          { label: "Heardle", href: "/daily/heardle" },
-          { label },
-        ]}
       />
       <HeardleGame puzzle={puzzle} variant={variant} />
       <div className="flex justify-center py-6">

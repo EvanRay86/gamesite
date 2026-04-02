@@ -2,7 +2,6 @@ import Link from "next/link";
 import AnagramGame from "@/components/AnagramGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import {
   getAnagramPuzzleByDate,
   getTodayDate,
@@ -30,11 +29,6 @@ export default async function AnagramPage() {
   return (
     <main>
       <GameJsonLd name="Anagram Scramble" description="Unscramble five words before time runs out. A new challenge every day." path="daily/anagram" category="daily" />
-      <Breadcrumbs crumbs={[
-        { label: "Home", href: "/" },
-        { label: "Daily", href: "/daily" },
-        { label: "Anagram Scramble" },
-      ]} />
       <AnagramGame puzzle={puzzle} />
       <div className="flex justify-center py-6">
         <Link

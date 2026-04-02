@@ -2,7 +2,6 @@ import Link from "next/link";
 import ChainReactionGame from "@/components/ChainReactionGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import {
   getChainReactionPuzzle,
   getTodayDate,
@@ -25,11 +24,6 @@ export default function ChainReactionPage() {
   return (
     <main>
       <GameJsonLd name="Chain Reaction" description="Complete the word chain — each pair of neighbors forms a compound word or phrase." path="daily/chain-reaction" category="daily" />
-      <Breadcrumbs crumbs={[
-        { label: "Home", href: "/" },
-        { label: "Daily", href: "/daily" },
-        { label: "Chain Reaction" },
-      ]} />
       <ChainReactionGame puzzle={puzzle} date={today} />
       <div className="flex justify-center py-6">
         <Link

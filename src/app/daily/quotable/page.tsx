@@ -2,7 +2,6 @@ import Link from "next/link";
 import QuotableGame from "@/components/QuotableGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import {
   getQuotablePuzzleByDate,
   getTodayDate,
@@ -30,11 +29,6 @@ export default async function QuotablePage() {
   return (
     <main>
       <GameJsonLd name="Quotable" description="Guess who said the famous quote as words are revealed. A new challenge every day." path="daily/quotable" category="daily" />
-      <Breadcrumbs crumbs={[
-        { label: "Home", href: "/" },
-        { label: "Daily", href: "/daily" },
-        { label: "Quotable" },
-      ]} />
       <QuotableGame puzzle={puzzle} />
       <div className="flex justify-center py-6">
         <Link

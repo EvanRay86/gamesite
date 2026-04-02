@@ -2,7 +2,6 @@ import Link from "next/link";
 import MathlerGame from "@/components/MathlerGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { getMathlerPuzzle, getTodayDate } from "@/lib/mathler-puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 
@@ -22,11 +21,6 @@ export default function MathlerPage() {
   return (
     <main>
       <GameJsonLd name="Mathler" description="Find the hidden math equation that equals the target number. 6 guesses, 6 characters." path="daily/mathler" category="daily" />
-      <Breadcrumbs crumbs={[
-        { label: "Home", href: "/" },
-        { label: "Daily", href: "/daily" },
-        { label: "Mathler" },
-      ]} />
       <MathlerGame puzzle={puzzle} date={today} />
       <div className="flex justify-center py-6">
         <Link

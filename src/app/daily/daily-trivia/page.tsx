@@ -2,7 +2,6 @@ import Link from "next/link";
 import TriviaGame from "@/components/TriviaGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import {
   getTriviaPuzzleByDate,
   getTodayDate,
@@ -38,11 +37,6 @@ export default async function TriviaPage() {
   return (
     <main>
       <GameJsonLd name="Daily Trivia" description="Test your knowledge with 8 daily trivia questions featuring current events." path="daily/daily-trivia" category="daily" />
-      <Breadcrumbs crumbs={[
-        { label: "Home", href: "/" },
-        { label: "Daily", href: "/daily" },
-        { label: "Daily Trivia" },
-      ]} />
       <TriviaGame puzzle={puzzle} />
       <div className="flex justify-center py-6">
         <Link

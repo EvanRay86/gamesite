@@ -2,7 +2,6 @@ import Link from "next/link";
 import TimelineGame from "@/components/TimelineGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import {
   getTimelinePuzzleByDate,
   getTodayDate,
@@ -30,11 +29,6 @@ export default async function TimelinePage() {
   return (
     <main>
       <GameJsonLd name="Timeline" description="Put five events in chronological order. A new challenge every day." path="daily/timeline" category="daily" />
-      <Breadcrumbs crumbs={[
-        { label: "Home", href: "/" },
-        { label: "Daily", href: "/daily" },
-        { label: "Timeline" },
-      ]} />
       <TimelineGame puzzle={puzzle} />
       <div className="flex justify-center py-6">
         <Link

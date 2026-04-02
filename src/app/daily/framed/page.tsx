@@ -2,7 +2,6 @@ import Link from "next/link";
 import FramedGame from "@/components/FramedGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
-import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { getFramedPuzzleAsync, getTodayDate } from "@/lib/framed-puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 
@@ -21,11 +20,6 @@ export default async function FramedPage() {
   return (
     <main>
       <GameJsonLd name="Framed" description="Guess the movie one frame at a time. 6 frames, 6 guesses." path="daily/framed" category="daily" />
-      <Breadcrumbs crumbs={[
-        { label: "Home", href: "/" },
-        { label: "Daily", href: "/daily" },
-        { label: "Framed" },
-      ]} />
       <FramedGame puzzle={puzzle} variant="all" />
       <div className="flex justify-center py-6">
         <Link
