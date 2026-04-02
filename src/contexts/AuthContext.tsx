@@ -15,6 +15,8 @@ interface Profile {
   id: string;
   email: string | null;
   display_name: string | null;
+  avatar_url: string | null;
+  display_name_updated_at: string | null;
   credits: number;
   stripe_customer_id: string | null;
   is_admin: boolean;

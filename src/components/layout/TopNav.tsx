@@ -13,7 +13,7 @@ const navLinks = [
 export default function TopNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, credits, loading, signOut } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -75,17 +75,6 @@ export default function TopNav() {
             <div className="hidden items-center gap-2 md:flex">
               {user ? (
                 <>
-                  {/* Credit pill */}
-                  <Link
-                    href="/account"
-                    className="flex items-center gap-1.5 rounded-full bg-amber/10 px-3 py-1 text-sm font-semibold text-amber no-underline hover:bg-amber/20 transition-colors"
-                  >
-                    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <circle cx="10" cy="10" r="8" />
-                    </svg>
-                    {credits}
-                  </Link>
-
                   {/* User dropdown */}
                   <div className="relative" ref={userMenuRef}>
                     <button
@@ -93,15 +82,19 @@ export default function TopNav() {
                       aria-label="User menu"
                       aria-expanded={userMenuOpen}
                       aria-haspopup="true"
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-teal/10 text-teal text-sm font-bold hover:bg-teal/20 transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-full overflow-hidden bg-teal/10 text-teal text-sm font-bold hover:ring-2 hover:ring-teal/30 transition-all"
                     >
-                      {user.email?.[0]?.toUpperCase() ?? "U"}
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        (profile?.display_name || user.email)?.[0]?.toUpperCase() ?? "U"
+                      )}
                     </button>
 
                     {userMenuOpen && (
                       <div role="menu" className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-white py-1 shadow-lg">
                         <div className="px-4 py-2 text-xs text-text-dim truncate border-b border-border">
-                          {user.email}
+                          {profile?.display_name || user.email}
                         </div>
                         <Link
                           href="/account"
@@ -203,12 +196,6 @@ export default function TopNav() {
                     className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-text-secondary no-underline hover:bg-surface"
                   >
                     Account
-                    <span className="flex items-center gap-1 text-amber text-xs">
-                      <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                        <circle cx="10" cy="10" r="8" />
-                      </svg>
-                      {credits}
-                    </span>
                   </Link>
                   <button
                     onClick={async () => {
