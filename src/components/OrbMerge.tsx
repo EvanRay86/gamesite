@@ -898,6 +898,8 @@ export default function OrbMerge() {
             scalePhase: SCALE_ANIM_FRAMES,
             lookX: 0,
             lookY: 0,
+            squishX: 1,
+            squishY: 1,
           });
 
           // Score
