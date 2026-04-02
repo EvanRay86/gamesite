@@ -94,7 +94,7 @@ export default function HomePage() {
           </h2>
           <Link
             href="/daily"
-            className="text-sm font-semibold text-coral hover:text-coral-dark transition-colors no-underline"
+            className="rounded-full px-4 py-1.5 text-sm font-semibold bg-coral/10 text-coral hover:bg-coral/20 transition-colors no-underline"
           >
             View all &rarr;
           </Link>
@@ -114,7 +114,7 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold text-text-primary">Arcade</h2>
           <Link
             href="/arcade"
-            className="text-sm font-semibold text-teal hover:text-teal transition-colors no-underline"
+            className="rounded-full px-4 py-1.5 text-sm font-semibold bg-teal/10 text-teal hover:bg-teal/20 transition-colors no-underline"
           >
             View all &rarr;
           </Link>

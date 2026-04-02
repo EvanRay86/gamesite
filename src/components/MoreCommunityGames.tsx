@@ -60,7 +60,7 @@ export default function MoreCommunityGames({ currentSlug }: { currentSlug: strin
           <h2 className="text-lg font-bold text-text-primary">More Games</h2>
           <Link
             href="/arcade"
-            className="text-sm font-semibold text-teal hover:text-teal transition-colors no-underline"
+            className="rounded-full px-4 py-1.5 text-sm font-semibold bg-teal/10 text-teal hover:bg-teal/20 transition-colors no-underline"
           >
             View all &rarr;
           </Link>

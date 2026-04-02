@@ -19,7 +19,7 @@ export default async function WordBloomQuickplayPage() {
           <div className="mb-6">
             <Link
               href="/daily/word-bloom"
-              className="text-text-muted text-sm hover:text-text-secondary transition-colors no-underline"
+              className="rounded-full px-4 py-1.5 text-sm font-medium bg-surface hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors no-underline"
             >
               &larr; Today&apos;s Puzzle
             </Link>
@@ -108,7 +108,7 @@ export default async function WordBloomQuickplayPage() {
       <div className="flex justify-center py-4">
         <Link
           href="/daily/word-bloom"
-          className="text-text-muted text-sm hover:text-green transition-colors no-underline"
+          className="rounded-full px-4 py-1.5 text-sm font-medium bg-surface hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors no-underline"
         >
           &larr; Today&apos;s daily puzzle
         </Link>

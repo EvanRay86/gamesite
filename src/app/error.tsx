@@ -27,7 +27,7 @@ export default function GlobalError({
         </button>
         <Link
           href="/"
-          className="text-text-muted hover:text-text-primary text-sm font-medium transition-colors no-underline"
+          className="rounded-full px-5 py-2.5 text-sm font-semibold bg-surface hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors no-underline"
         >
           Go home
         </Link>

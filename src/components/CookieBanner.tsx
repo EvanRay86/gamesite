@@ -34,7 +34,7 @@ export default function CookieBanner() {
           We use cookies to keep the site working and to understand how it&apos;s used.{" "}
           <Link
             href="/privacy"
-            className="text-coral hover:text-coral-dark transition-colors no-underline font-medium"
+            className="inline-flex items-center rounded-full px-3 py-0.5 text-sm font-medium bg-coral/10 text-coral hover:bg-coral/20 transition-colors no-underline"
           >
             Privacy Policy
           </Link>

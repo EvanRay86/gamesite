@@ -13,7 +13,7 @@ export default function WordBloomDuelPage() {
       <div className="flex justify-center py-4">
         <Link
           href="/daily/word-bloom"
-          className="text-text-muted text-sm hover:text-green transition-colors no-underline"
+          className="rounded-full px-4 py-1.5 text-sm font-medium bg-surface hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors no-underline"
         >
           &larr; Back to daily puzzle
         </Link>
