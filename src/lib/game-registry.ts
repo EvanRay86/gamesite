@@ -225,8 +225,8 @@ export const games: Game[] = [
   // ── Learn Games ──────────────────────────────────────────────────────────
 
   {
-    slug: "geo-guess",
-    name: "Where in the World",
+    slug: "country-mastery",
+    name: "Country Mastery",
     description:
       "Learn every country from progressive hints: outline, population, flag, capital, and fun facts.",
     category: "learn",

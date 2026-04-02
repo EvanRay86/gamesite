@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function GeoGuessRedirect() {
-  redirect("/learn/geo-guess");
+  redirect("/learn/country-mastery");
 }

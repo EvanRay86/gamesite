@@ -148,7 +148,7 @@ function CrosswordPreview() {
   );
 }
 
-/* ─── Where in the World Mini Preview ─────────────────────────────────── */
+/* ─── Country Mastery Mini Preview ────────────────────────────────────── */
 
 function GeoGuessPreview() {
   return (
@@ -1023,7 +1023,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "hexle": return <HexlePreview />;
     case "daily-trivia": return <TriviaPreview />;
     case "crossword": return <CrosswordPreview />;
-    case "geo-guess": return <GeoGuessPreview />;
+    case "country-mastery": return <GeoGuessPreview />;
     case "mathler": return <MathlerPreview />;
     case "word-ladder": return <WordLadderPreview />;
     case "heardle": return <HeardlePreview />;

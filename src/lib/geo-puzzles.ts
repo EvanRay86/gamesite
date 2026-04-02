@@ -1,4 +1,4 @@
-// Where in the World — daily geography guessing game data layer
+// Country Mastery — daily geography guessing game data layer
 
 export interface GeoCountry {
   name: string;

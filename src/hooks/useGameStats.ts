@@ -59,7 +59,7 @@ function isConsecutiveDay(prev: string, next: string): boolean {
 /**
  * Unified stats hook for all daily games.
  *
- * @param gameSlug  — unique identifier (e.g. "hexle", "cluster", "geo-guess")
+ * @param gameSlug  — unique identifier (e.g. "hexle", "cluster", "country-mastery")
  * @param puzzleDate — today's puzzle date string (YYYY-MM-DD)
  */
 export function useGameStats(gameSlug: string, puzzleDate: string) {

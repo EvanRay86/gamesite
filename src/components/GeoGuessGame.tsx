@@ -5,7 +5,7 @@ import { countries, countryNames, type GeoCountry } from "@/lib/geo-puzzles";
 import { shareOrCopy } from "@/lib/share";
 
 const MAX_GUESSES = 5;
-const MASTERY_KEY = "gamesite-geo-mastery";
+const MASTERY_KEY = "gamesite-country-mastery";
 
 // ── Hint definitions ─────────────────────────────────────────────────────────
 
@@ -343,7 +343,7 @@ export default function GeoGuessGame() {
     );
     while (squares.length < MAX_GUESSES) squares.push("\u2B1C");
 
-    const text = `\u{1F30D} Where in the World — ${country.name}\n${guessCount}/${MAX_GUESSES} ${squares.join("")}\ngamesite.app/learn/geo-guess`;
+    const text = `\u{1F30D} Country Mastery — ${country.name}\n${guessCount}/${MAX_GUESSES} ${squares.join("")}\ngamesite.app/learn/country-mastery`;
 
     const ok = await shareOrCopy(text);
     if (ok) {
@@ -474,7 +474,7 @@ export default function GeoGuessGame() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-bold text-text-primary">
-              Where in the World
+              Country Mastery
             </h1>
             <p className="text-text-dim text-xs">{attempted}/{countries.length} countries attempted</p>
           </div>
