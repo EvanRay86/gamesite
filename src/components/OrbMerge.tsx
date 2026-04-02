@@ -6,8 +6,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 const CANVAS_W = 440;
 const CANVAS_H = 700;
-const GRAVITY = 0.1;
-const FRICTION = 0.982;
+const GRAVITY = 0.07;
+const FRICTION = 0.965; // more air resistance so orbs float down gently
 const RESTITUTION_WALL = 0.2;
 const RESTITUTION_ORB = 0.12; // very low — sticky, squelchy
 const SLEEP_THRESHOLD = 0.2;
@@ -583,7 +583,7 @@ export default function OrbMerge() {
       x,
       y: DROP_Y,
       vx: 0,
-      vy: 1,
+      vy: 0.2,
       tier,
       radius: def.radius,
       merging: false,
