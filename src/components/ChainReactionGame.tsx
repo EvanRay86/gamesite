@@ -37,7 +37,7 @@ interface StatsData {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const MAX_ATTEMPTS = 3;
+const MAX_CHANCES = 5;
 const STORAGE_PREFIX = "chain-reaction-";
 const STATS_KEY = "chain-reaction-stats";
 
@@ -116,19 +116,22 @@ function saveStats(date: string, won: boolean, earnedStars: number): StatsData {
   return stats;
 }
 
-function getStars(attempts: number, won: boolean): number {
+function getStars(wrongGuesses: number, won: boolean): number {
   if (!won) return 0;
-  return Math.min(MAX_ATTEMPTS, Math.max(1, MAX_ATTEMPTS - attempts + 1));
+  if (wrongGuesses === 0) return 3;
+  if (wrongGuesses <= 2) return 2;
+  return 1; // 3-4 wrong
 }
 
 function buildShareText(
   date: string,
-  attempts: number,
+  wrongGuesses: number,
   won: boolean,
   slotStatuses: SlotStatus[],
 ): string {
-  const stars = getStars(attempts, won);
+  const stars = getStars(wrongGuesses, won);
   const starStr = won ? "\u2B50".repeat(stars) : "\u274C";
+  const remaining = MAX_CHANCES - wrongGuesses;
   const chainEmoji = slotStatuses
     .map((s) => {
       if (s === "locked" || s === "correct") return "\uD83D\uDFE2"; // green
@@ -137,7 +140,7 @@ function buildShareText(
     })
     .join("");
 
-  return `Chain Reaction \u26D3\uFE0F ${date}\n${starStr} (${attempts}/${MAX_ATTEMPTS})\n${chainEmoji}\ngamesite.app/daily/chain-reaction`;
+  return `Chain Reaction \u26D3\uFE0F ${date}\n${starStr} ${won ? `${remaining}/${MAX_CHANCES} remaining` : "0 chances left"}\n${chainEmoji}\ngamesite.app/daily/chain-reaction`;
 }
 
 // ---------------------------------------------------------------------------
@@ -197,7 +200,8 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
 
   // Persist state
   useEffect(() => {
-    if (attempts > 0 || gameState !== "playing") {
+    const hasProgress = attempts > 0 || gameState !== "playing" || slotStatuses.some((s) => s === "correct");
+    if (hasProgress) {
       saveState(date, { guesses, attempts, gameState, slotStatuses, revealedLetters });
     }
   }, [guesses, attempts, gameState, slotStatuses, revealedLetters, date]);
@@ -233,11 +237,8 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
         );
         setSlotStatuses(newStatuses);
         if (allCorrect) {
-          // Fix: ensure at least 1 attempt is recorded when winning via Enter
-          const finalAttempts = Math.max(1, attempts);
-          setAttempts(finalAttempts);
           setGameState("won");
-          const earnedStars = getStars(finalAttempts, true);
+          const earnedStars = getStars(attempts, true);
           const newStats = saveStats(date, true, earnedStars);
           setStats(newStats);
         } else {
@@ -250,6 +251,9 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
           }
         }
       } else {
+        const newWrong = attempts + 1;
+        setAttempts(newWrong);
+
         newStatuses[slotIndex] = "wrong";
         setSlotStatuses(newStatuses);
 
@@ -266,14 +270,37 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
         }
         setRevealedLetters(newRevealed);
 
-        // Reset wrong status back to blank after animation
-        setTimeout(() => {
-          setSlotStatuses((prev) => {
-            const reset = [...prev];
-            reset[slotIndex] = "blank";
-            return reset;
+        if (newWrong >= MAX_CHANCES) {
+          // Game over — reveal all remaining words
+          const finalStatuses = [...newStatuses];
+          for (const i of blankIndices) {
+            if (finalStatuses[i] !== "correct") {
+              finalStatuses[i] = "wrong";
+            }
+          }
+          setSlotStatuses(finalStatuses);
+          setGameState("lost");
+          const newStats = saveStats(date, false, 0);
+          setStats(newStats);
+          setGuesses((prev) => {
+            const filled = [...prev];
+            for (const i of blankIndices) {
+              if (filled[i].toLowerCase() !== chain[i].toLowerCase()) {
+                filled[i] = chain[i];
+              }
+            }
+            return filled;
           });
-        }, 800);
+        } else {
+          // Reset wrong status back to blank after animation
+          setTimeout(() => {
+            setSlotStatuses((prev) => {
+              const reset = [...prev];
+              reset[slotIndex] = "blank";
+              return reset;
+            });
+          }, 800);
+        }
       }
 
       setTimeout(() => setIsChecking(false), 100);
@@ -290,113 +317,6 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
       date,
     ],
   );
-
-  // Submit all filled slots at once (Check Chain button)
-  const handleSubmit = useCallback(() => {
-    if (gameState !== "playing" || isChecking) return;
-
-    // Find unsolved slots that have a guess
-    const toCheck = blankIndices.filter(
-      (i) => slotStatuses[i] !== "correct" && guesses[i].trim().length > 0,
-    );
-    if (toCheck.length === 0) return;
-
-    setIsChecking(true);
-    const newAttempts = attempts + 1;
-    const newStatuses = [...slotStatuses];
-    const wrongSlots = new Set<number>();
-
-    for (const i of toCheck) {
-      const guess = guesses[i].trim().toLowerCase();
-      const answer = chain[i].toLowerCase();
-      if (guess === answer) {
-        newStatuses[i] = "correct";
-      } else {
-        newStatuses[i] = "wrong";
-        wrongSlots.add(i);
-      }
-    }
-
-    const allCorrect = blankIndices.every(
-      (i) => newStatuses[i] === "correct",
-    );
-
-    if (wrongSlots.size > 0) {
-      setShakeSlots(wrongSlots);
-      setTimeout(() => setShakeSlots(new Set()), 600);
-    }
-
-    if (!allCorrect && newAttempts < MAX_ATTEMPTS) {
-      const newRevealed = [...revealedLetters.map((r) => [...r])];
-      for (const i of wrongSlots) {
-        const answer = chain[i].toLowerCase();
-        const alreadyRevealed = newRevealed[i].length;
-        if (alreadyRevealed < answer.length) {
-          newRevealed[i].push(answer[alreadyRevealed]);
-        }
-      }
-      setRevealedLetters(newRevealed);
-
-      setTimeout(() => {
-        setSlotStatuses((prev) => {
-          const reset = [...prev];
-          for (const i of wrongSlots) {
-            reset[i] = "blank";
-          }
-          return reset;
-        });
-      }, 800);
-    }
-
-    setSlotStatuses(newStatuses);
-    setAttempts(newAttempts);
-
-    if (allCorrect) {
-      setGameState("won");
-      const earnedStars = getStars(newAttempts, true);
-      const newStats = saveStats(date, true, earnedStars);
-      setStats(newStats);
-    } else if (newAttempts >= MAX_ATTEMPTS) {
-      const finalStatuses = [...newStatuses];
-      for (const i of blankIndices) {
-        if (finalStatuses[i] !== "correct") {
-          finalStatuses[i] = "wrong";
-        }
-      }
-      setSlotStatuses(finalStatuses);
-      setGameState("lost");
-      const newStats = saveStats(date, false, 0);
-      setStats(newStats);
-      setGuesses((prev) => {
-        const filled = [...prev];
-        for (const i of blankIndices) {
-          if (filled[i].toLowerCase() !== chain[i].toLowerCase()) {
-            filled[i] = chain[i];
-          }
-        }
-        return filled;
-      });
-    }
-
-    const nextUnsolved = blankIndices.find(
-      (i) => newStatuses[i] !== "correct",
-    );
-    if (nextUnsolved !== undefined) {
-      setActiveSlot(nextUnsolved);
-    }
-
-    setTimeout(() => setIsChecking(false), 100);
-  }, [
-    gameState,
-    isChecking,
-    chain,
-    guesses,
-    attempts,
-    slotStatuses,
-    revealedLetters,
-    blankIndices,
-    date,
-  ]);
 
   // Share
   const handleShare = async () => {
@@ -450,8 +370,8 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
               Answer: sun<strong>flower</strong> {"\u2192"} flower<strong>pot</strong> {"\u2192"} pot<strong>luck</strong> {"\u2192"} luck charm
             </p>
             <ul className="list-disc pl-5 space-y-1">
-              <li>Press <strong>Enter</strong> to check a word instantly — no attempt cost.</li>
-              <li>Use <strong>Check Chain</strong> to submit all words at once (3 checks total).</li>
+              <li>Press <strong>Enter</strong> to check a word.</li>
+              <li>You have <strong>5 chances</strong> — each wrong guess costs one.</li>
               <li>A hint letter is revealed after each wrong guess.</li>
             </ul>
           </div>
@@ -486,7 +406,11 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
         Chain Reaction
       </h1>
       <p className="mb-2 text-sm text-zinc-500">
-        {date} &middot; {isFinished ? `${attempts}/${MAX_ATTEMPTS} check${attempts === 1 ? "" : "s"}` : `${MAX_ATTEMPTS - attempts} check${MAX_ATTEMPTS - attempts === 1 ? "" : "s"} remaining`}
+        {date} &middot; {isFinished
+          ? (gameState === "won"
+            ? `${MAX_CHANCES - attempts}/${MAX_CHANCES} chances left`
+            : "0 chances left")
+          : `${MAX_CHANCES - attempts} chance${MAX_CHANCES - attempts === 1 ? "" : "s"} remaining`}
       </p>
 
       {/* Streak badge (during gameplay) */}
@@ -643,16 +567,8 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
         })}
       </div>
 
-      {/* Submit / Result */}
-      {!isFinished ? (
-        <button
-          onClick={handleSubmit}
-          disabled={isChecking}
-          className="w-full max-w-xs rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3.5 text-lg font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/30 active:scale-95 disabled:opacity-50"
-        >
-          Check Chain
-        </button>
-      ) : (
+      {/* Result */}
+      {isFinished && (
         <div className="flex w-full max-w-xs flex-col items-center gap-4">
           {/* Result */}
           <div
@@ -679,7 +595,7 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
                   ))}
                 </div>
                 <p className="font-semibold text-emerald-700 dark:text-emerald-300">
-                  Solved in {attempts} {attempts === 1 ? "attempt" : "attempts"}!
+                  {attempts === 0 ? "Perfect — no wrong guesses!" : `Solved with ${MAX_CHANCES - attempts} chance${MAX_CHANCES - attempts === 1 ? "" : "s"} remaining!`}
                 </p>
                 {/* Stats line */}
                 {stats && streakCount > 0 && (
