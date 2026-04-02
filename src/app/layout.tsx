@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import TopNav from "@/components/layout/TopNav";
 import Footer from "@/components/layout/Footer";
 import CookieBanner from "@/components/CookieBanner";
@@ -7,6 +7,12 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
 const siteUrl = "https://gamesite.app";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: {
