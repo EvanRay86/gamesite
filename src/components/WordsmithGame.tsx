@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type {
   LetterTile,
+  LetterScoreDetail,
   PowerUp,
   PowerUpId,
   RoundResult,
@@ -71,10 +72,29 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
   const [toast, setToast] = useState("");
   const [shake, setShake] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [scoreAnim, setScoreAnim] = useState(false);
-  const [showBonuses, setShowBonuses] = useState<ScoreBonus[]>([]);
   const [choosingFade, setChoosingFade] = useState(-1); // index of fading cards
   const [chosenCardIdx, setChosenCardIdx] = useState(-1);
+
+  // Score breakdown state
+  const [breakdownData, setBreakdownData] = useState<{
+    letterDetails: LetterScoreDetail[];
+    letterSum: number;
+    lengthMultiplier: number;
+    multipliedScore: number;
+    bonuses: ScoreBonus[];
+    totalScore: number;
+    word: string;
+  } | null>(null);
+  const [breakdownStep, setBreakdownStep] = useState(0); // animation step counter
+  const breakdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [breakdownDone, setBreakdownDone] = useState(false);
+
+  // Ref to hold data needed after breakdown animation
+  const pendingRoundRef = useRef<{
+    newResults: RoundResult[];
+    newTotal: number;
+    word: string;
+  } | null>(null);
   const [stats, setStats] = useState<WordsmithStats>({
     streak: 0,
     bestScore: 0,
@@ -373,14 +393,6 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
     roundScore: number,
     bonuses: ScoreBonus[] = [],
   ) => {
-    // Show score animation
-    setScoreAnim(true);
-    setShowBonuses(bonuses);
-    setTimeout(() => {
-      setScoreAnim(false);
-      setShowBonuses([]);
-    }, 1500);
-
     const tidalRounds = activePowerUps.includes("tidal")
       ? roundResults.filter((_, i) => {
           const tidalPickRound = roundResults.findIndex(
@@ -407,7 +419,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
       lengthMultiplier: scoreResult.lengthMultiplier,
       bonuses: scoreResult.bonuses,
       totalScore: scoreResult.totalScore,
-      powerUpChosen: null, // Will be set when power-up is chosen
+      powerUpChosen: null,
     };
 
     const newResults = [...roundResults, result];
@@ -418,24 +430,49 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
     setPreviousWord(word.toUpperCase());
     setSelectedTileIds([]);
 
+    // Set up score breakdown animation
+    setBreakdownData({
+      letterDetails: scoreResult.letterDetails,
+      letterSum: scoreResult.baseScore,
+      lengthMultiplier: scoreResult.lengthMultiplier,
+      multipliedScore: Math.round(scoreResult.baseScore * scoreResult.lengthMultiplier),
+      bonuses: scoreResult.bonuses,
+      totalScore: scoreResult.totalScore,
+      word: word.toUpperCase(),
+    });
+    setBreakdownStep(0);
+    setBreakdownDone(false);
+    setPhase("score-breakdown");
+
+    // Store pending data for after breakdown
+    pendingRoundRef.current = { newResults, newTotal, word: word.toUpperCase() };
+  };
+
+  // Advance from score-breakdown to the next phase
+  const advanceFromBreakdown = useCallback(() => {
+    if (breakdownTimerRef.current) {
+      clearTimeout(breakdownTimerRef.current);
+      breakdownTimerRef.current = null;
+    }
+    const pending = pendingRoundRef.current;
+    if (!pending) return;
+    pendingRoundRef.current = null;
+
     if (currentRound >= TOTAL_ROUNDS - 1) {
-      // Game over
       setPhase("results");
-      saveStats(newTotal);
+      saveStats(pending.newTotal);
       saveGame({
-        rounds: newResults,
-        totalScore: newTotal,
+        rounds: pending.newResults,
+        totalScore: pending.newTotal,
         phase: "results",
-        previousWord: word.toUpperCase(),
+        previousWord: pending.word,
       });
     } else {
-      // Generate power-up offerings on-the-fly, filtering already-chosen
       const offeringSeedStr = isQuickplay ? quickplaySeed + "-pu-" + currentRound : dateStr + "-pu-" + currentRound;
       const offeringRng = seededRandom(dateToSeed(offeringSeedStr));
       const offerings = generatePowerUpOfferings(offeringRng, activePowerUps);
       setPowerUpOfferings(offerings);
 
-      // Store for persistence
       const newOfferings = [...allOfferings];
       newOfferings[currentRound] = offerings;
       setAllOfferings(newOfferings);
@@ -443,6 +480,46 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
       setPhase("choosing-powerup");
       setChoosingFade(-1);
       setChosenCardIdx(-1);
+    }
+    setBreakdownData(null);
+  }, [currentRound, isQuickplay, quickplaySeed, dateStr, activePowerUps, allOfferings, saveStats, saveGame]);
+
+  // Animate breakdown steps
+  useEffect(() => {
+    if (phase !== "score-breakdown" || !breakdownData || breakdownDone) return;
+
+    // Total steps: letters + 1 (multiplier) + bonuses.length + 1 (final)
+    const totalSteps = breakdownData.letterDetails.length + 1 + breakdownData.bonuses.length + 1;
+
+    if (breakdownStep >= totalSteps) {
+      setBreakdownDone(true);
+      // Auto-advance after 800ms
+      breakdownTimerRef.current = setTimeout(advanceFromBreakdown, 800);
+      return;
+    }
+
+    const delay = breakdownStep < breakdownData.letterDetails.length ? 300 : 400;
+    breakdownTimerRef.current = setTimeout(() => {
+      setBreakdownStep((s) => s + 1);
+    }, delay);
+
+    return () => {
+      if (breakdownTimerRef.current) clearTimeout(breakdownTimerRef.current);
+    };
+  }, [phase, breakdownData, breakdownStep, breakdownDone, advanceFromBreakdown]);
+
+  // Skip breakdown on tap
+  const handleBreakdownTap = () => {
+    if (!breakdownData) return;
+    if (breakdownDone) {
+      advanceFromBreakdown();
+    } else {
+      // Fast-forward: show everything
+      if (breakdownTimerRef.current) clearTimeout(breakdownTimerRef.current);
+      const totalSteps = breakdownData.letterDetails.length + 1 + breakdownData.bonuses.length + 1;
+      setBreakdownStep(totalSteps);
+      setBreakdownDone(true);
+      breakdownTimerRef.current = setTimeout(advanceFromBreakdown, 600);
     }
   };
 
@@ -807,11 +884,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
       {/* Score display */}
       <div className="mb-4 text-center">
         <span className="text-text-secondary text-xs">Score</span>
-        <p
-          className={`font-display text-3xl font-bold text-amber ${
-            scoreAnim ? "animate-[ws-count-up_0.3s_ease]" : ""
-          }`}
-        >
+        <p className="font-display text-3xl font-bold text-amber">
           {totalScore}
         </p>
       </div>
@@ -862,7 +935,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
             <button
               key={tile.id}
               onClick={() => toggleTile(tile.id)}
-              disabled={phase === "choosing-powerup"}
+              disabled={phase === "choosing-powerup" || phase === "score-breakdown"}
               className={`
                 relative flex h-14 w-14 flex-col items-center justify-center rounded-xl
                 border-2 font-bold text-lg transition-all select-none
@@ -919,22 +992,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
             )}
           </div>
 
-          {/* Bonus annotations */}
-          {showBonuses.length > 0 && (
-            <div className="mb-2 flex flex-wrap justify-center gap-1">
-              {showBonuses.map((b, i) => (
-                <span
-                  key={i}
-                  className="text-xs font-bold text-amber opacity-0"
-                  style={{
-                    animation: `ws-bonus-fly 0.3s ease ${i * 0.15}s forwards`,
-                  }}
-                >
-                  {b.label}
-                </span>
-              ))}
-            </div>
-          )}
+
 
           {/* Submit + Clear */}
           <div className="flex gap-2">
@@ -959,6 +1017,127 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
             </button>
           </div>
         </>
+      )}
+
+      {/* Score breakdown overlay */}
+      {phase === "score-breakdown" && breakdownData && (
+        <div
+          className="mt-4 w-full animate-[fade-up_0.3s_ease] cursor-pointer"
+          onClick={handleBreakdownTap}
+        >
+          <div className="clay-card mx-auto w-full max-w-sm p-5">
+            {/* Word display */}
+            <p className="font-display mb-4 text-center text-xl font-bold tracking-widest text-amber">
+              {breakdownData.word}
+            </p>
+
+            {/* Letter-by-letter breakdown */}
+            <div className="mb-3 flex flex-wrap justify-center gap-2">
+              {breakdownData.letterDetails.map((ld, i) => {
+                const visible = breakdownStep > i;
+                return (
+                  <div
+                    key={i}
+                    className={`flex flex-col items-center transition-all duration-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}
+                  >
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-xl border-2 font-bold text-lg ${
+                        ld.modifiers.length > 0
+                          ? "border-amber bg-amber/15 text-amber"
+                          : "border-gray-200 bg-white text-text-primary"
+                      }`}
+                      style={visible ? { animation: "ws-letter-reveal 0.3s ease" } : undefined}
+                    >
+                      <span className="font-grotesk">{ld.letter}</span>
+                    </div>
+                    <span
+                      className={`mt-1 text-sm font-bold ${
+                        ld.modifiers.length > 0 ? "text-amber" : "text-text-secondary"
+                      }`}
+                    >
+                      {ld.modifiedValue}
+                    </span>
+                    {ld.modifiers.length > 0 && (
+                      <span className="mt-0.5 text-[9px] font-medium text-amber/70">
+                        {ld.modifiers[0]}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Running letter sum */}
+            {breakdownStep > 0 && breakdownStep <= breakdownData.letterDetails.length && (
+              <p className="mb-2 text-center text-sm text-text-secondary">
+                Letter total:{" "}
+                <span className="font-bold text-text-primary">
+                  {breakdownData.letterDetails
+                    .slice(0, breakdownStep)
+                    .reduce((sum, ld) => sum + ld.modifiedValue, 0)}
+                </span>
+              </p>
+            )}
+
+            {/* Length multiplier */}
+            {breakdownStep > breakdownData.letterDetails.length && (
+              <div
+                className="mb-2 text-center"
+                style={{ animation: "ws-multiplier-pop 0.4s ease" }}
+              >
+                <span className="text-sm text-text-secondary">
+                  {breakdownData.letterSum} {"\u00D7"}{" "}
+                </span>
+                <span className="text-lg font-bold text-amber">
+                  {breakdownData.lengthMultiplier}x
+                </span>
+                <span className="text-sm text-text-secondary">
+                  {" "}({breakdownData.word.length} letters)
+                </span>
+                <span className="text-sm text-text-secondary"> = </span>
+                <span className="text-lg font-bold text-text-primary">
+                  {breakdownData.multipliedScore}
+                </span>
+              </div>
+            )}
+
+            {/* Bonuses */}
+            {breakdownData.bonuses.map((b, i) => {
+              const bonusIdx = breakdownData.letterDetails.length + 1 + i;
+              const visible = breakdownStep > bonusIdx;
+              return (
+                <div
+                  key={i}
+                  className={`mb-1 text-center transition-all duration-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
+                >
+                  <span className="rounded-full bg-amber/10 px-3 py-1 text-xs font-bold text-amber">
+                    {b.label}
+                  </span>
+                </div>
+              );
+            })}
+
+            {/* Final score */}
+            {breakdownDone && (
+              <div
+                className="mt-3 text-center"
+                style={{ animation: "ws-score-pop 0.4s ease" }}
+              >
+                <span className="text-text-secondary text-xs">Round Score</span>
+                <p className="font-display text-3xl font-bold text-amber">
+                  +{breakdownData.totalScore}
+                </p>
+              </div>
+            )}
+
+            {/* Tap hint */}
+            {!breakdownDone && (
+              <p className="mt-3 text-center text-[10px] text-text-secondary/50">
+                Tap to skip
+              </p>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Power-up selection overlay */}

@@ -36,6 +36,13 @@ export interface ScoreBonus {
   value: number;
 }
 
+export interface LetterScoreDetail {
+  letter: string;
+  baseValue: number;
+  modifiedValue: number;
+  modifiers: string[];
+}
+
 export interface RoundResult {
   roundNumber: number;
   word: string;
@@ -50,6 +57,7 @@ export interface RoundResult {
 export type GamePhase =
   | "splash"
   | "playing"
+  | "score-breakdown"
   | "choosing-powerup"
   | "rerolling"
   | "results";

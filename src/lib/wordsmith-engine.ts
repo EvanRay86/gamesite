@@ -1,5 +1,6 @@
 import type {
   LetterTile,
+  LetterScoreDetail,
   PowerUp,
   PowerUpId,
   RoundResult,
@@ -254,26 +255,31 @@ export function calculateScore(
   _roundNumber: number,
   previousWord: string | null,
   tidalRounds: number,
-): { baseScore: number; lengthMultiplier: number; bonuses: ScoreBonus[]; totalScore: number } {
+): { baseScore: number; lengthMultiplier: number; bonuses: ScoreBonus[]; totalScore: number; letterDetails: LetterScoreDetail[] } {
   const has = (id: PowerUpId) => activePowerUps.includes(id);
   const upper = word.toUpperCase();
   const bonuses: ScoreBonus[] = [];
+  const letterDetails: LetterScoreDetail[] = [];
 
   // 1. Base letter score
   let letterSum = 0;
   for (const tile of tiles) {
     let val = tile.value;
     const L = tile.letter.toUpperCase();
+    const modifiers: string[] = [];
 
     // Inferno: vowels 2x
     if (has("inferno") && COMMON.has(L) && "AEIOU".includes(L)) {
       val *= 2;
+      modifiers.push("Inferno 2x");
     }
     // Stardust: rare letters 5x
     if (has("stardust") && RARE.has(L)) {
       val *= 5;
+      modifiers.push("Stardust 5x");
     }
     letterSum += val;
+    letterDetails.push({ letter: L, baseValue: tile.value, modifiedValue: val, modifiers });
   }
 
   // 2. Length multiplier
@@ -332,6 +338,7 @@ export function calculateScore(
     lengthMultiplier: lengthMult,
     bonuses,
     totalScore: score,
+    letterDetails,
   };
 }
 
