@@ -1,73 +1,253 @@
 "use client";
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { countryNames, type GeoPuzzle } from "@/lib/geo-puzzles";
+import { countries, countryNames, type GeoCountry } from "@/lib/geo-puzzles";
 import { shareOrCopy } from "@/lib/share";
-import { useGameStats } from "@/hooks/useGameStats";
-import StatsModal from "@/components/StatsModal";
-import StatsButton from "@/components/StatsButton";
 
-const MAX_GUESSES = 4;
-const STORAGE_KEY = "geoguess-streak";
+const MAX_GUESSES = 5;
+const MASTERY_KEY = "gamesite-geo-mastery";
 
-interface StreakData {
-  current: number;
-  lastDate: string;
+// ── Hint definitions ─────────────────────────────────────────────────────────
+
+/** The 5 hint types in default order */
+const HINT_TYPES = ["outline", "population", "flag", "capital", "funfact"] as const;
+type HintType = (typeof HINT_TYPES)[number];
+
+const HINT_LABELS: Record<HintType, string> = {
+  outline: "Country Outline",
+  population: "Population",
+  flag: "Flag",
+  capital: "Capital City",
+  funfact: "Fun Fact & Neighbors",
+};
+
+// ── Mastery types ────────────────────────────────────────────────────────────
+
+interface CountryMastery {
+  /** Which hints this player has aced (got right as the first/only hint) */
+  masteredHints: HintType[];
+  attempts: number;
+  lastPlayed: string;
 }
 
-function loadStreak(): StreakData {
-  if (typeof window === "undefined") return { current: 0, lastDate: "" };
+type MasteryData = Record<string, CountryMastery>;
+
+type MasteryLevel = "mastered" | "familiar" | "learning" | "new" | "unseen";
+
+function getMasteryLevel(m: CountryMastery | undefined): MasteryLevel {
+  if (!m) return "unseen";
+  const count = m.masteredHints.length;
+  if (count >= 5) return "mastered";
+  if (count >= 3) return "familiar";
+  if (count >= 1) return "learning";
+  return "new";
+}
+
+const masteryColors: Record<MasteryLevel, string> = {
+  mastered: "bg-green text-white",
+  familiar: "bg-teal text-white",
+  learning: "bg-amber text-white",
+  new: "bg-coral text-white",
+  unseen: "bg-gray-200 text-text-dim",
+};
+
+const masteryLabels: Record<MasteryLevel, string> = {
+  mastered: "Mastered",
+  familiar: "Familiar",
+  learning: "Learning",
+  new: "New",
+  unseen: "Unseen",
+};
+
+// ── Mastery persistence ──────────────────────────────────────────────────────
+
+function loadMastery(): MasteryData {
+  if (typeof window === "undefined") return {};
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(MASTERY_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {
-    // ignore
-  }
-  return { current: 0, lastDate: "" };
+  } catch { /* ignore */ }
+  return {};
 }
 
-function saveStreak(data: StreakData) {
+function saveMastery(data: MasteryData) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch {
-    // ignore
+    localStorage.setItem(MASTERY_KEY, JSON.stringify(data));
+  } catch { /* ignore */ }
+}
+
+// ── Hint order rotation ──────────────────────────────────────────────────────
+
+/**
+ * Pick which hint to show first for this country.
+ * Rotates through un-mastered hints so the player trains all 5 dimensions.
+ */
+function getHintOrder(mastery: MasteryData, code: string): HintType[] {
+  const m = mastery[code];
+  const mastered = new Set(m?.masteredHints ?? []);
+
+  // Find the first un-mastered hint to lead with
+  const unmastered = HINT_TYPES.filter((h) => !mastered.has(h));
+
+  if (unmastered.length === 0) {
+    // All mastered — cycle based on attempt count
+    const offset = (m?.attempts ?? 0) % HINT_TYPES.length;
+    return [...HINT_TYPES.slice(offset), ...HINT_TYPES.slice(0, offset)];
   }
+
+  // Lead with the next un-mastered hint, then the rest in order
+  const lead = unmastered[0];
+  const rest = HINT_TYPES.filter((h) => h !== lead);
+  return [lead, ...rest];
 }
 
-/** Check if two date strings are consecutive calendar days. */
-function isConsecutiveDay(prev: string, next: string): boolean {
-  const d1 = new Date(prev);
-  const d2 = new Date(next);
-  const diff = d2.getTime() - d1.getTime();
-  return diff > 0 && diff <= 86400000 * 1.5; // allow some wiggle
+// ── Country picker ───────────────────────────────────────────────────────────
+
+function pickNextCountry(mastery: MasteryData): GeoCountry {
+  // Prioritize unseen countries
+  const unseen = countries.filter((c) => !mastery[c.code]);
+  if (unseen.length > 0) {
+    return unseen[Math.floor(Math.random() * unseen.length)];
+  }
+  // All seen — prioritize least mastered hints, then random
+  const sorted = [...countries].sort((a, b) => {
+    const am = mastery[a.code]?.masteredHints.length ?? 0;
+    const bm = mastery[b.code]?.masteredHints.length ?? 0;
+    if (am !== bm) return am - bm; // least mastered first
+    return Math.random() - 0.5;
+  });
+  return sorted[0];
 }
 
-export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
-  const { country, date } = puzzle;
+// ── Hint renderer ────────────────────────────────────────────────────────────
 
+function HintCard({
+  hintType,
+  hintIndex,
+  revealed,
+  country,
+}: {
+  hintType: HintType;
+  hintIndex: number;
+  revealed: boolean;
+  country: GeoCountry;
+}) {
+  const isFirst = hintIndex === 0;
+  const label = `Hint ${hintIndex + 1} — ${HINT_LABELS[hintType]}`;
+
+  const content = (() => {
+    switch (hintType) {
+      case "outline":
+        return (
+          <div className="flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/countries/${country.code}.svg`}
+              alt="Country outline"
+              className="h-32 w-auto opacity-80"
+              draggable={false}
+            />
+          </div>
+        );
+      case "population":
+        return (
+          <p className="text-text-primary text-lg font-semibold">
+            {country.population}
+          </p>
+        );
+      case "flag":
+        return (
+          <div className="flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`https://flagcdn.com/w160/${country.code}.png`}
+              srcSet={`https://flagcdn.com/w320/${country.code}.png 2x`}
+              alt="Country flag"
+              className="h-16 w-auto rounded shadow-sm"
+              draggable={false}
+            />
+          </div>
+        );
+      case "capital":
+        return (
+          <p className="text-text-primary text-lg font-semibold">
+            {country.capital}
+          </p>
+        );
+      case "funfact":
+        return (
+          <div className="space-y-2">
+            <p className="text-text-primary text-sm">{country.funFact}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {country.neighbors.map((n) => (
+                <span
+                  key={n}
+                  className="text-xs font-medium text-green bg-green/10 rounded-full px-2.5 py-0.5"
+                >
+                  {n}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+    }
+  })();
+
+  if (isFirst) {
+    return (
+      <div className="bg-white rounded-2xl border border-border-light shadow-sm p-6">
+        <div className="text-xs font-semibold uppercase tracking-wider text-green mb-3">
+          {label}
+        </div>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`bg-white rounded-2xl border border-border-light shadow-sm p-6 transition-all duration-500 ${
+        revealed ? "opacity-100" : "opacity-30 pointer-events-none"
+      }`}
+    >
+      <div className="text-xs font-semibold uppercase tracking-wider text-green mb-2">
+        {label}
+      </div>
+      {revealed ? (
+        content
+      ) : (
+        <p className="text-text-dim text-sm italic">
+          Revealed after guess {hintIndex}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
+
+export default function GeoGuessGame() {
+  const [mastery, setMastery] = useState<MasteryData>({});
+  const [country, setCountry] = useState<GeoCountry | null>(null);
+  const [hintOrder, setHintOrder] = useState<HintType[]>([...HINT_TYPES]);
   const [guesses, setGuesses] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [gameState, setGameState] = useState<"playing" | "won" | "lost">("playing");
-  const [showSplash, setShowSplash] = useState(true);
-  const [fadeIn, setFadeIn] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [streak, setStreak] = useState(0);
   const [highlightIdx, setHighlightIdx] = useState(-1);
-  const [showStats, setShowStats] = useState(false);
-  const { stats, recordGame } = useGameStats("geo-guess", date);
+  const [showMastery, setShowMastery] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load streak on mount
+  // Load mastery and pick first country on mount
   useEffect(() => {
-    const s = loadStreak();
-    setStreak(s.current);
-  }, []);
-
-  useEffect(() => {
-    setTimeout(() => setFadeIn(true), 100);
+    const m = loadMastery();
+    setMastery(m);
+    const c = pickNextCountry(m);
+    setCountry(c);
+    setHintOrder(getHintOrder(m, c.code));
   }, []);
 
   // Filter country suggestions
@@ -94,14 +274,13 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Reset highlight when suggestions change
   useEffect(() => {
     setHighlightIdx(-1);
   }, [suggestions]);
 
   const submitGuess = useCallback(
     (name: string) => {
-      if (gameState !== "playing") return;
+      if (gameState !== "playing" || !country) return;
       const trimmed = name.trim();
       if (!trimmed || guesses.includes(trimmed)) return;
 
@@ -110,38 +289,30 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
       setInputValue("");
       setShowDropdown(false);
 
-      // Check win
-      if (trimmed.toLowerCase() === country.name.toLowerCase()) {
-        setGameState("won");
-        // Update streak
-        const s = loadStreak();
-        const newStreak = isConsecutiveDay(s.lastDate, date)
-          ? s.current + 1
-          : s.lastDate === date
-            ? s.current
-            : 1;
-        saveStreak({ current: newStreak, lastDate: date });
-        setStreak(newStreak);
-        recordGame(true, newGuesses.length);
-        setTimeout(() => setShowStats(true), 800);
-        return;
-      }
+      const won = trimmed.toLowerCase() === country.name.toLowerCase();
+      const lost = !won && newGuesses.length >= MAX_GUESSES;
 
-      // Check lose
-      if (newGuesses.length >= MAX_GUESSES) {
-        setGameState("lost");
-        // Reset streak
-        const s = loadStreak();
-        if (s.lastDate !== date) {
-          saveStreak({ current: 0, lastDate: date });
-          setStreak(0);
+      if (won || lost) {
+        setGameState(won ? "won" : "lost");
+        const m = loadMastery();
+        const prev = m[country.code];
+        const masteredHints = new Set(prev?.masteredHints ?? []);
+
+        // If they got it on the first guess, they've mastered the leading hint
+        if (won && newGuesses.length === 1) {
+          masteredHints.add(hintOrder[0]);
         }
-        recordGame(false, newGuesses.length);
-        setTimeout(() => setShowStats(true), 800);
-        return;
+
+        m[country.code] = {
+          masteredHints: [...masteredHints],
+          attempts: (prev?.attempts ?? 0) + 1,
+          lastPlayed: new Date().toISOString().slice(0, 10),
+        };
+        saveMastery(m);
+        setMastery({ ...m });
       }
     },
-    [gameState, guesses, country.name, date],
+    [gameState, guesses, country, hintOrder],
   );
 
   const handleKeyDown = useCallback(
@@ -164,83 +335,135 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
     [highlightIdx, suggestions, submitGuess],
   );
 
-  // Share result
   const handleShare = useCallback(async () => {
+    if (!country) return;
     const guessCount = gameState === "won" ? guesses.length : "X";
     const squares: string[] = guesses.map((g) =>
       g.toLowerCase() === country.name.toLowerCase() ? "\u{1F7E9}" : "\u{1F7E5}",
     );
     while (squares.length < MAX_GUESSES) squares.push("\u2B1C");
 
-    const text = `\u{1F30D} Where in the World ${date} — ${guessCount}/${MAX_GUESSES}\n${squares.join("")}\ngamesite.app/daily/geo-guess`;
+    const text = `\u{1F30D} Where in the World — ${country.name}\n${guessCount}/${MAX_GUESSES} ${squares.join("")}\ngamesite.app/learn/geo-guess`;
 
     const ok = await shareOrCopy(text);
     if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-  }, [gameState, guesses, country.name, date]);
+  }, [gameState, guesses, country]);
 
-  // How many hints to show (starts at 1, +1 per wrong guess)
+  const nextCountry = useCallback(() => {
+    const m = loadMastery();
+    const c = pickNextCountry(m);
+    setCountry(c);
+    setHintOrder(getHintOrder(m, c.code));
+    setGuesses([]);
+    setInputValue("");
+    setGameState("playing");
+    setCopied(false);
+    setShowDropdown(false);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, []);
+
+  if (!country) return null;
+
   const hintsRevealed = Math.min(guesses.length + 1, MAX_GUESSES);
   const isFinished = gameState !== "playing";
 
-  // ── Splash ──────────────────────────────────────────────────
-  if (showSplash) {
-    return (
-      <div
-        className={`flex min-h-[80vh] flex-col items-center justify-center px-4 transition-opacity duration-500 ${fadeIn ? "opacity-100" : "opacity-0"}`}
-      >
-        <div className="bg-white rounded-2xl shadow-lg border border-border-light p-8 max-w-md w-full text-center">
-          <div className="text-5xl mb-4">{"\u{1F30D}"}</div>
-          <h1 className="text-2xl font-bold text-text-primary mb-1">Where in the World</h1>
-          <p className="text-text-muted text-sm mb-6">
-            Guess the country from progressive hints. You get 4 guesses — each
-            wrong answer reveals a new clue.
-          </p>
+  // Mastery summary counts
+  const attempted = Object.keys(mastery).length;
+  const masteredCount = Object.values(mastery).filter((m) => m.masteredHints.length >= 5).length;
 
-          <div className="space-y-3 text-left text-sm text-text-secondary mb-6">
-            <div className="flex items-start gap-3">
-              <span className="font-bold text-green">1.</span>
-              <span>Start with just the flag and continent</span>
+  // ── Mastery Dashboard ─────────────────────────────────────────────
+  if (showMastery) {
+    const levels: MasteryLevel[] = ["mastered", "familiar", "learning", "new", "unseen"];
+    const counts: Record<MasteryLevel, number> = { mastered: 0, familiar: 0, learning: 0, new: 0, unseen: 0 };
+    countries.forEach((c) => {
+      counts[getMasteryLevel(mastery[c.code])]++;
+    });
+
+    return (
+      <div className="flex min-h-[80vh] flex-col items-center px-4 py-8">
+        <div className="w-full max-w-lg">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-xl font-bold text-text-primary">Country Mastery</h1>
+            <button
+              onClick={() => setShowMastery(false)}
+              className="text-sm font-semibold text-green hover:underline"
+            >
+              Back to game
+            </button>
+          </div>
+
+          {/* Progress bar */}
+          <div className="bg-white rounded-2xl border border-border-light shadow-sm p-5 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-text-primary">{attempted} / {countries.length} countries attempted</span>
+              <span className="text-sm font-semibold text-green">{masteredCount} fully mastered</span>
             </div>
-            <div className="flex items-start gap-3">
-              <span className="font-bold text-green">2.</span>
-              <span>Wrong guess? The capital city is revealed</span>
+            <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden flex">
+              {levels.filter((l) => l !== "unseen").map((level) => (
+                <div
+                  key={level}
+                  className={`h-full ${masteryColors[level].split(" ")[0]}`}
+                  style={{ width: `${(counts[level] / countries.length) * 100}%` }}
+                />
+              ))}
             </div>
-            <div className="flex items-start gap-3">
-              <span className="font-bold text-green">3.</span>
-              <span>Still stuck? See the population range</span>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="font-bold text-green">4.</span>
-              <span>Last chance — a fun fact and neighbors appear</span>
+            <div className="flex flex-wrap gap-3 mt-3">
+              {levels.map((level) => (
+                <div key={level} className="flex items-center gap-1.5">
+                  <div className={`w-3 h-3 rounded-sm ${masteryColors[level].split(" ")[0]}`} />
+                  <span className="text-xs text-text-dim">{masteryLabels[level]} ({counts[level]})</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {streak > 0 && (
-            <div className="mb-4 text-sm text-text-muted">
-              Current streak: <span className="font-bold text-green">{streak}</span>
+          {/* Country list */}
+          <div className="bg-white rounded-2xl border border-border-light shadow-sm overflow-hidden">
+            <div className="max-h-[50vh] overflow-y-auto divide-y divide-border-light">
+              {[...countries]
+                .sort((a, b) => {
+                  const al = getMasteryLevel(mastery[a.code]);
+                  const bl = getMasteryLevel(mastery[b.code]);
+                  const order: Record<MasteryLevel, number> = { unseen: 0, new: 1, learning: 2, familiar: 3, mastered: 4 };
+                  if (order[al] !== order[bl]) return order[al] - order[bl];
+                  return a.name.localeCompare(b.name);
+                })
+                .map((c) => {
+                  const level = getMasteryLevel(mastery[c.code]);
+                  const m = mastery[c.code];
+                  return (
+                    <div key={c.code} className="flex items-center gap-3 px-4 py-2.5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`https://flagcdn.com/w40/${c.code}.png`}
+                        alt=""
+                        className="w-6 h-4 rounded-sm object-cover"
+                      />
+                      <span className="flex-1 text-sm text-text-primary font-medium">{c.name}</span>
+                      {m && (
+                        <span className="text-xs text-text-dim tabular-nums">
+                          {m.masteredHints.length}/5
+                        </span>
+                      )}
+                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${masteryColors[level]}`}>
+                        {masteryLabels[level]}
+                      </span>
+                    </div>
+                  );
+                })}
             </div>
-          )}
-
-          <button
-            onClick={() => setShowSplash(false)}
-            className="w-full bg-green text-white font-bold rounded-full py-3 text-sm
-                       hover:opacity-90 transition-opacity"
-          >
-            Play
-          </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  // ── Main game ───────────────────────────────────────────────
+  // ── Main game ───────────────────────────────────────────────────
   return (
-    <div
-      className={`flex min-h-[80vh] flex-col items-center px-4 py-8 transition-opacity duration-500 ${fadeIn ? "opacity-100" : "opacity-0"}`}
-    >
+    <div className="flex min-h-[80vh] flex-col items-center px-4 py-8">
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -248,102 +471,35 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
             <h1 className="text-xl font-bold text-text-primary">
               Where in the World
             </h1>
-            <p className="text-text-dim text-xs">{date}</p>
+            <p className="text-text-dim text-xs">{attempted}/{countries.length} countries attempted</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="text-sm text-text-muted font-medium tabular-nums">
               {guesses.length} / {MAX_GUESSES} guesses
             </div>
-            <StatsButton onClick={() => setShowStats(true)} />
+            <button
+              onClick={() => setShowMastery(true)}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-green/10 text-green hover:bg-green/20 transition-colors"
+              aria-label="View mastery"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </button>
           </div>
         </div>
 
-        {/* Hint cards */}
+        {/* Hint cards — dynamically ordered */}
         <div className="space-y-3 mb-6">
-          {/* Hint 1: Flag + Continent (always visible) */}
-          <div className="bg-white rounded-2xl border border-border-light shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-wider text-green mb-2">
-                  Hint 1 — Flag &amp; Continent
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-6xl leading-none">{country.flag}</span>
-                  <div>
-                    <span className="inline-block text-xs font-semibold text-green bg-green/10 rounded-full px-3 py-1">
-                      {country.continent}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Hint 2: Capital */}
-          <div
-            className={`bg-white rounded-2xl border border-border-light shadow-sm p-6 transition-all duration-500 ${
-              hintsRevealed >= 2 ? "opacity-100" : "opacity-30 pointer-events-none"
-            }`}
-          >
-            <div className="text-xs font-semibold uppercase tracking-wider text-green mb-2">
-              Hint 2 — Capital City
-            </div>
-            {hintsRevealed >= 2 ? (
-              <p className="text-text-primary text-lg font-semibold">
-                {country.capital}
-              </p>
-            ) : (
-              <p className="text-text-dim text-sm italic">Revealed after guess 1</p>
-            )}
-          </div>
-
-          {/* Hint 3: Population */}
-          <div
-            className={`bg-white rounded-2xl border border-border-light shadow-sm p-6 transition-all duration-500 ${
-              hintsRevealed >= 3 ? "opacity-100" : "opacity-30 pointer-events-none"
-            }`}
-          >
-            <div className="text-xs font-semibold uppercase tracking-wider text-green mb-2">
-              Hint 3 — Population
-            </div>
-            {hintsRevealed >= 3 ? (
-              <p className="text-text-primary text-lg font-semibold">
-                {country.population}
-              </p>
-            ) : (
-              <p className="text-text-dim text-sm italic">Revealed after guess 2</p>
-            )}
-          </div>
-
-          {/* Hint 4: Fun fact + Neighbors */}
-          <div
-            className={`bg-white rounded-2xl border border-border-light shadow-sm p-6 transition-all duration-500 ${
-              hintsRevealed >= 4 ? "opacity-100" : "opacity-30 pointer-events-none"
-            }`}
-          >
-            <div className="text-xs font-semibold uppercase tracking-wider text-green mb-2">
-              Hint 4 — Fun Fact &amp; Neighbors
-            </div>
-            {hintsRevealed >= 4 ? (
-              <div className="space-y-2">
-                <p className="text-text-primary text-sm">
-                  {country.funFact}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {country.neighbors.map((n) => (
-                    <span
-                      key={n}
-                      className="text-xs font-medium text-green bg-green/10 rounded-full px-2.5 py-0.5"
-                    >
-                      {n}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <p className="text-text-dim text-sm italic">Revealed after guess 3</p>
-            )}
-          </div>
+          {hintOrder.map((hintType, i) => (
+            <HintCard
+              key={hintType}
+              hintType={hintType}
+              hintIndex={i}
+              revealed={i === 0 || hintsRevealed > i}
+              country={country}
+            />
+          ))}
         </div>
 
         {/* Result card */}
@@ -353,29 +509,29 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
               <>
                 <div className="text-3xl mb-2">{"\u{1F389}"}</div>
                 <h2 className="text-lg font-bold text-text-primary">
-                  You got it in {guesses.length}/{MAX_GUESSES}!
+                  {country.name}!
                 </h2>
                 <p className="text-text-muted text-sm mt-1">
-                  <span className="text-5xl leading-none">{country.flag}</span>
-                </p>
-                <p className="text-text-primary font-semibold text-lg mt-2">
-                  {country.name}
+                  Got it in {guesses.length} {guesses.length === 1 ? "guess" : "guesses"}
                 </p>
               </>
             ) : (
               <>
                 <div className="text-3xl mb-2">{"\u{1F614}"}</div>
                 <h2 className="text-lg font-bold text-text-primary">
-                  Better luck tomorrow!
+                  {country.name}
                 </h2>
                 <p className="text-text-muted text-sm mt-1">
-                  The answer was{" "}
-                  <span className="font-semibold text-text-primary">
-                    {country.flag} {country.name}
-                  </span>
+                  Better luck next time!
                 </p>
               </>
             )}
+
+            {/* Flag reveal */}
+            <div className="flex justify-center mt-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`https://flagcdn.com/w160/${country.code}.png`} alt="" className="h-12 w-auto rounded shadow-sm" />
+            </div>
 
             {/* Guess history squares */}
             <div className="flex items-center justify-center gap-1 mt-3">
@@ -399,27 +555,38 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
               ))}
             </div>
 
-            {/* Stats row */}
-            <div className="flex justify-center gap-6 mt-4 mb-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-text-primary">
-                  {gameState === "won" ? guesses.length : "X"}
+            {/* Mastery badge */}
+            {(() => {
+              const level = getMasteryLevel(mastery[country.code]);
+              const m = mastery[country.code];
+              return (
+                <div className="mt-3">
+                  <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full ${masteryColors[level]}`}>
+                    {m ? `${m.masteredHints.length}/5 hints mastered` : masteryLabels[level]}
+                  </span>
                 </div>
-                <div className="text-text-dim text-xs mt-0.5">Guesses</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-text-primary">{streak}</div>
-                <div className="text-text-dim text-xs mt-0.5">Streak</div>
-              </div>
-            </div>
+              );
+            })()}
 
-            <button
-              onClick={handleShare}
-              className="bg-green text-white font-bold rounded-full px-6 py-2.5 text-sm
-                         hover:opacity-90 transition-opacity"
-            >
-              {copied ? "Copied!" : "Share result"}
-            </button>
+            <div className="flex items-center justify-center gap-3 mt-5">
+              <button
+                onClick={handleShare}
+                className="bg-white border border-border-light text-text-secondary font-bold rounded-full px-5 py-2.5 text-sm
+                           hover:bg-surface transition-colors"
+              >
+                {copied ? "Copied!" : "Share"}
+              </button>
+              <button
+                onClick={nextCountry}
+                className="bg-green text-white font-bold rounded-full px-6 py-2.5 text-sm
+                           hover:opacity-90 transition-opacity flex items-center gap-1.5"
+              >
+                Next Country
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         )}
 
@@ -490,15 +657,6 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
           </div>
         )}
       </div>
-
-      <StatsModal
-        open={showStats}
-        onClose={() => setShowStats(false)}
-        stats={stats}
-        gameName="Where in the World"
-        color="green"
-        maxGuesses={MAX_GUESSES}
-      />
     </div>
   );
 }

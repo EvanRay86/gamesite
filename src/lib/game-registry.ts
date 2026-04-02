@@ -3,7 +3,7 @@
 
 export type GameColor = "coral" | "teal" | "sky" | "amber" | "purple" | "green";
 
-export type GameCategory = "daily" | "arcade" | "community";
+export type GameCategory = "daily" | "arcade" | "community" | "learn";
 
 export interface GameVariant {
   slug: string;
@@ -222,12 +222,14 @@ export const games: Game[] = [
     color: "green",
   },
 
+  // ── Learn Games ──────────────────────────────────────────────────────────
+
   {
     slug: "geo-guess",
     name: "Where in the World",
     description:
-      "Guess the country from progressive hints: flag, capital, population, and fun facts.",
-    category: "daily",
+      "Learn every country from progressive hints: outline, population, flag, capital, and fun facts.",
+    category: "learn",
     color: "green",
   },
 
@@ -405,6 +407,11 @@ export function getArcadeGames(): Game[] {
 /** All community-category games. */
 export function getCommunityGames(): Game[] {
   return games.filter((g) => g.category === "community" && visible(g));
+}
+
+/** All learn-category games. */
+export function getLearnGames(): Game[] {
+  return games.filter((g) => g.category === "learn" && visible(g));
 }
 
 /** Look up a game by its slug. Returns `undefined` if not found. */

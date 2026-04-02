@@ -154,10 +154,11 @@ function GeoGuessPreview() {
   return (
     <div className="mb-3 rounded-xl bg-gradient-to-br from-green/5 to-green/10 border border-green/15 p-3.5">
       <div className="flex items-center gap-3 mb-2.5">
-        <span className="text-3xl">🇧🇷</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/countries/br.svg" alt="" className="h-10 w-auto opacity-70" />
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-green">Hint 1</span>
-          <p className="text-xs font-semibold text-text-primary">South America</p>
+          <p className="text-xs font-semibold text-text-primary">Country Outline</p>
         </div>
       </div>
       <div className="flex gap-1.5">

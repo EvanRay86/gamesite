@@ -3,6 +3,7 @@ import {
   getDailyGames,
   getArcadeGames,
   getCommunityGames,
+  getLearnGames,
   getFeaturedGame,
   type Game,
 } from "@/lib/game-registry";
@@ -24,6 +25,7 @@ export default function HomePage() {
   );
   const arcadeGames = getArcadeGames().filter((g) => !g.comingSoon);
   const communityGames = getCommunityGames().filter((g) => !g.comingSoon);
+  const learnGames = getLearnGames().filter((g) => !g.comingSoon);
 
   return (
     <main className="min-h-screen flex flex-col items-center px-4 py-10 relative overflow-hidden">
@@ -126,6 +128,28 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* ── Learn ────────────────────────────────────────────────────────── */}
+      {learnGames.length > 0 && (
+        <section id="learn" className="w-full max-w-[1120px] mb-14 animate-[fade-up_0.5s_ease_0.42s_forwards] opacity-0 relative z-10">
+          <div className="section-divider mb-8" />
+          <div className="flex items-baseline justify-between mb-5">
+            <h2 className="text-2xl font-bold text-text-primary">Learn</h2>
+            <Link
+              href="/learn"
+              className="rounded-full px-4 py-1.5 text-sm font-semibold bg-green/10 text-green hover:bg-green/20 transition-colors no-underline"
+            >
+              View all &rarr;
+            </Link>
+          </div>
+
+          <div className="masonry-cards">
+            {learnGames.map((game) => (
+              <LearnCard key={game.slug} game={game} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Community ──────────────────────────────────────────────────────── */}
       {communityGames.length > 0 && (
@@ -295,6 +319,41 @@ function DailyCard({ game }: { game: Game }) {
                       group-hover:shadow-sm transition-all duration-200 flex items-center gap-1`}
         >
           Play now
+          <svg className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function LearnCard({ game }: { game: Game }) {
+  return (
+    <Link
+      href={`/learn/${game.slug}`}
+      className={`group relative flex flex-col clay-card
+                  ${hoverBorderMap[game.color]}
+                  p-5
+                  transition-all duration-200 no-underline cursor-pointer`}
+    >
+      <div className={`absolute top-0 left-6 right-6 h-1.5 ${colorMap[game.color]} rounded-b-full`} />
+
+      <GamePreview slug={game.slug} />
+
+      <h3 className={`text-lg font-bold text-text-primary ${hoverTextMap[game.color]} transition-colors duration-200`}>
+        {game.name}
+      </h3>
+      <p className="text-text-dim text-sm mt-1 leading-relaxed">
+        {game.description}
+      </p>
+
+      <div className="flex items-center gap-2 mt-auto pt-3">
+        <span
+          className={`text-xs font-semibold ${textColorMap[game.color]} ${bgLightMap[game.color]} rounded-full px-3 py-1
+                      group-hover:shadow-sm transition-all duration-200 flex items-center gap-1`}
+        >
+          Start learning
           <svg className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
