@@ -8,6 +8,7 @@ export const metadata = buildGameMetadata({
   description:
     "Farm, build, chat, and hang out in a pixel-art community world.",
   path: "arcade/pixelville",
+  color: "green",
 });
 
 export default function PixelVillePage() {

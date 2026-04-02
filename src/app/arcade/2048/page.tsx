@@ -8,6 +8,7 @@ export const metadata = buildGameMetadata({
   description:
     "Slide tiles, combine numbers, and reach the 2048 tile to win.",
   path: "arcade/2048",
+  color: "amber",
 });
 
 export default function Game2048Page() {

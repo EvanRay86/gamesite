@@ -10,9 +10,11 @@ export function buildGameMetadata(opts: {
   description: string;
   /** e.g. "daily/cluster" or "arcade/snake-arena" */
   path: string;
+  /** Game color token for OG image accent. Defaults to "coral". */
+  color?: string;
 }): Metadata {
   const url = `${siteUrl}/${opts.path}`;
-  const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(opts.title)}&description=${encodeURIComponent(opts.description)}`;
+  const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(opts.title)}&description=${encodeURIComponent(opts.description)}&color=${encodeURIComponent(opts.color ?? "coral")}`;
 
   return {
     title: opts.title,

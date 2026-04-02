@@ -8,6 +8,7 @@ export const metadata = buildGameMetadata({
   description:
     "Spell words to slay monsters in this roguelike dungeon crawler. How deep can you go?",
   path: "arcade/lexicon-quest",
+  color: "purple",
 });
 
 export default function LexiconQuestPage() {

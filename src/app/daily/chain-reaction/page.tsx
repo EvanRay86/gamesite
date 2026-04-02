@@ -15,6 +15,7 @@ export const metadata = buildGameMetadata({
   description:
     "Complete the word chain — each pair of neighbors forms a compound word or phrase.",
   path: "daily/chain-reaction",
+  color: "coral",
 });
 
 export default function ChainReactionPage() {

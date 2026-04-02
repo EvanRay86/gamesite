@@ -8,6 +8,7 @@ export const metadata = buildGameMetadata({
   description:
     "Drop orbs, match colors, and merge your way to the top tier. Physics-based chaos.",
   path: "arcade/orb-merge",
+  color: "purple",
 });
 
 export default function OrbMergePage() {

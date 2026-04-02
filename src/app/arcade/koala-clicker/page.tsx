@@ -8,6 +8,7 @@ export const metadata = buildGameMetadata({
   description:
     "Click the koala, collect eucalyptus leaves, and build the ultimate koala colony.",
   path: "arcade/koala-clicker",
+  color: "green",
 });
 
 export default function KoalaClickerPage() {

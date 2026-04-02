@@ -15,6 +15,7 @@ export const metadata = buildGameMetadata({
   title: "Anagram Scramble",
   description: "Unscramble five words before time runs out. A new challenge every day.",
   path: "daily/anagram",
+  color: "teal",
 });
 
 export default async function AnagramPage() {

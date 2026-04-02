@@ -12,6 +12,7 @@ export const metadata = buildGameMetadata({
   description:
     "Find the hidden math equation that equals the target number. 6 guesses, 6 characters.",
   path: "daily/mathler",
+  color: "purple",
 });
 
 export default function MathlerPage() {

@@ -8,6 +8,7 @@ export const metadata = buildGameMetadata({
   description:
     "Eat, grow, and devour other players in this multiplayer snake battle.",
   path: "arcade/snake-arena",
+  color: "green",
 });
 
 export default function SnakeArenaPage() {

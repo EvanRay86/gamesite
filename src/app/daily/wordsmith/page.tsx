@@ -9,6 +9,7 @@ export const metadata = buildGameMetadata({
   description:
     "Forge words through five rounds, collect power-ups, and chase the daily high score.",
   path: "daily/wordsmith",
+  color: "amber",
 });
 
 export default function WordsmithPage() {

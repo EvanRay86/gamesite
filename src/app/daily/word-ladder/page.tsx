@@ -12,6 +12,7 @@ export const metadata = buildGameMetadata({
   description:
     "Change one letter at a time to transform the start word into the target word.",
   path: "daily/word-ladder",
+  color: "teal",
 });
 
 export default function WordLadderPage() {

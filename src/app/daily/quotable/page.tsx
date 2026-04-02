@@ -15,6 +15,7 @@ export const metadata = buildGameMetadata({
   title: "Quotable",
   description: "Guess who said the famous quote as words are revealed. A new challenge every day.",
   path: "daily/quotable",
+  color: "purple",
 });
 
 export default async function QuotablePage() {

@@ -7,6 +7,7 @@ export const metadata = buildGameMetadata({
   description:
     "Learn every country from progressive hints: outline, population, flag, capital, and fun facts. Track your mastery of all 195 countries.",
   path: "learn/country-mastery",
+  color: "green",
 });
 
 export default function CountryMasteryLearnPage() {

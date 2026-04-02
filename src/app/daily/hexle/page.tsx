@@ -12,6 +12,7 @@ export const metadata = buildGameMetadata({
   description:
     "Seven guesses to crack the six-letter word. A new puzzle every day.",
   path: "daily/hexle",
+  color: "amber",
 });
 
 function getTodayDate(): string {

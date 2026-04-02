@@ -16,6 +16,7 @@ export const metadata = buildGameMetadata({
   title: "Daily Trivia",
   description: "Test your knowledge with 8 daily trivia questions featuring current events.",
   path: "daily/daily-trivia",
+  color: "sky",
 });
 
 export default async function TriviaPage() {

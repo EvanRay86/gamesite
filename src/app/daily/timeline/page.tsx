@@ -15,6 +15,7 @@ export const metadata = buildGameMetadata({
   title: "Timeline",
   description: "Put five events in chronological order. A new challenge every day.",
   path: "daily/timeline",
+  color: "teal",
 });
 
 export default async function TimelinePage() {

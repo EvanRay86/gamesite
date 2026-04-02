@@ -11,6 +11,7 @@ export const metadata = buildGameMetadata({
   description:
     "A daily crossword puzzle built from today's headlines and pop culture.",
   path: "daily/crossword",
+  color: "amber",
 });
 
 export default async function CrosswordPage() {

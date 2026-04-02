@@ -3,13 +3,13 @@ import { type NextRequest } from "next/server";
 
 export const runtime = "edge";
 
-const colorMap: Record<string, { bg: string; accent: string }> = {
-  coral: { bg: "#FF6B6B", accent: "#FF8E8E" },
-  teal: { bg: "#4ECDC4", accent: "#7EDBD4" },
-  sky: { bg: "#45B7D1", accent: "#72C9DD" },
-  amber: { bg: "#F7B731", accent: "#F9CA60" },
-  purple: { bg: "#A855F7", accent: "#BE7FFA" },
-  green: { bg: "#22C55E", accent: "#4ED47B" },
+const colorMap: Record<string, { bg: string; accent: string; light: string }> = {
+  coral:  { bg: "#FF6B6B", accent: "#FF8E8E", light: "#FFF0F0" },
+  teal:   { bg: "#4ECDC4", accent: "#7EDBD4", light: "#EDFAF8" },
+  sky:    { bg: "#45B7D1", accent: "#72C9DD", light: "#EBF6FA" },
+  amber:  { bg: "#F7B731", accent: "#F9CA60", light: "#FFF8E8" },
+  purple: { bg: "#A855F7", accent: "#BE7FFA", light: "#F5EEFE" },
+  green:  { bg: "#22C55E", accent: "#4ED47B", light: "#EDFCF2" },
 };
 
 export async function GET(req: NextRequest) {
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const title = searchParams.get("title") ?? "Gamesite";
   const description = searchParams.get("description") ?? "";
   const color = searchParams.get("color") ?? "coral";
-  const { bg, accent } = colorMap[color] ?? colorMap.coral;
+  const { bg, accent, light } = colorMap[color] ?? colorMap.coral;
 
   return new ImageResponse(
     (
@@ -29,9 +29,10 @@ export async function GET(req: NextRequest) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#ffffff",
+          background: `linear-gradient(135deg, ${light} 0%, #ffffff 50%, ${light} 100%)`,
           fontFamily: "sans-serif",
           position: "relative",
+          overflow: "hidden",
         }}
       >
         {/* Colored accent bar at top */}
@@ -42,7 +43,35 @@ export async function GET(req: NextRequest) {
             left: 0,
             right: 0,
             height: 8,
+            background: `linear-gradient(90deg, ${bg}, ${accent})`,
+            display: "flex",
+          }}
+        />
+
+        {/* Decorative corner shapes */}
+        <div
+          style={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 200,
+            height: 200,
+            borderRadius: 100,
             background: bg,
+            opacity: 0.08,
+            display: "flex",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: -40,
+            left: -40,
+            width: 160,
+            height: 160,
+            borderRadius: 80,
+            background: bg,
+            opacity: 0.06,
             display: "flex",
           }}
         />
@@ -50,45 +79,34 @@ export async function GET(req: NextRequest) {
         {/* Game tile icon */}
         <div
           style={{
-            width: 80,
-            height: 80,
-            borderRadius: 16,
-            background: bg,
+            width: 88,
+            height: 88,
+            borderRadius: 20,
+            background: `linear-gradient(135deg, ${bg}, ${accent})`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: 24,
+            marginBottom: 28,
+            boxShadow: `0 8px 30px ${bg}44`,
           }}
         >
-          <div
+          <span
             style={{
-              width: 68,
-              height: 68,
-              borderRadius: 12,
-              background: accent,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              fontSize: 48,
+              fontWeight: 800,
+              color: "white",
+              lineHeight: 1,
+              fontFamily: "Georgia, serif",
             }}
           >
-            <span
-              style={{
-                fontSize: 44,
-                fontWeight: 800,
-                color: "white",
-                lineHeight: 1,
-                fontFamily: "Georgia, serif",
-              }}
-            >
-              G
-            </span>
-          </div>
+            g.
+          </span>
         </div>
 
         {/* Title */}
         <span
           style={{
-            fontSize: 72,
+            fontSize: 68,
             fontWeight: 800,
             color: "#1a1a2e",
             letterSpacing: -2,
@@ -104,10 +122,10 @@ export async function GET(req: NextRequest) {
         {description && (
           <span
             style={{
-              fontSize: 28,
+              fontSize: 26,
               color: "#6a6a7a",
               fontWeight: 500,
-              maxWidth: 750,
+              maxWidth: 700,
               textAlign: "center",
               lineHeight: 1.4,
               marginTop: 16,
@@ -117,20 +135,32 @@ export async function GET(req: NextRequest) {
           </span>
         )}
 
-        {/* Site branding */}
-        <span
+        {/* Bottom bar with branding */}
+        <div
           style={{
             position: "absolute",
-            bottom: 32,
-            fontSize: 22,
-            fontWeight: 700,
-            color: bg,
-            letterSpacing: 3,
-            textTransform: "uppercase",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 56,
+            background: bg,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          gamesite.app
-        </span>
+          <span
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: "white",
+              letterSpacing: 3,
+              textTransform: "uppercase",
+            }}
+          >
+            gamesite.app
+          </span>
+        </div>
       </div>
     ),
     { width: 1200, height: 630 },

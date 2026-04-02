@@ -8,6 +8,7 @@ export const metadata = buildGameMetadata({
   description:
     "Slay monsters, collect gold, and grow your sword to absurd proportions in this action RPG.",
   path: "arcade/ginormo-sword",
+  color: "coral",
 });
 
 export default function GinormoSwordPage() {

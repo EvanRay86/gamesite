@@ -8,6 +8,7 @@ export const metadata = buildGameMetadata({
   description:
     "Tap to flap, dodge the pipes, and chase your high score in this endless arcade hopper.",
   path: "arcade/sky-hopper",
+  color: "sky",
 });
 
 export default function SkyHopperPage() {

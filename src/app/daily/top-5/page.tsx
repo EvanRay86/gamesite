@@ -15,6 +15,7 @@ export const metadata = buildGameMetadata({
   title: "Top 5",
   description: "Rank five items in the correct order. A new challenge every day.",
   path: "daily/top-5",
+  color: "amber",
 });
 
 export default async function Top5Page() {

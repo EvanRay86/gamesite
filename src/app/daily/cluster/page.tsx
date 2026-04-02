@@ -12,6 +12,7 @@ export const metadata = buildGameMetadata({
   description:
     "Find five groups of three words that share a hidden connection. A new puzzle every day.",
   path: "daily/cluster",
+  color: "coral",
 });
 
 export default async function ClusterPage() {

@@ -29,6 +29,7 @@ export function generateMetadata({
     title: `Framed ${label}`,
     description: `Guess the ${label.toLowerCase()} movie one frame at a time.`,
     path: `daily/framed/${params.variant}`,
+    color: "green",
   });
 }
 

@@ -9,6 +9,7 @@ export const metadata = buildGameMetadata({
   description:
     "Blast meteors, grab power-ups, and chase your high score in this neon space shooter.",
   path: "arcade/meteor-mayhem",
+  color: "coral",
 });
 
 export default function MeteorMayhemPage() {

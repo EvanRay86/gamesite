@@ -8,6 +8,7 @@ export const metadata = buildGameMetadata({
   description:
     "Jump, bump, and spike your way to 7 points.",
   path: "arcade/slime-volleyball",
+  color: "teal",
 });
 
 export default function SlimePage() {

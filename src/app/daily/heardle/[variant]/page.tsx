@@ -29,6 +29,7 @@ export function generateMetadata({
     title: `Heardle ${label}`,
     description: `Name the ${label.toLowerCase()} song from its opening seconds.`,
     path: `daily/heardle/${params.variant}`,
+    color: "purple",
   });
 }
 

@@ -16,6 +16,7 @@ export const metadata = buildGameMetadata({
   description:
     "Make words from 7 letters, always using the center. A new bloom every day.",
   path: "daily/word-bloom",
+  color: "green",
 });
 
 export default async function WordBloomPage() {

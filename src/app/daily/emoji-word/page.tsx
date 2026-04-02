@@ -16,6 +16,7 @@ export const metadata = buildGameMetadata({
   description:
     "Guess the word or phrase from emoji clues. Five rounds that get progressively harder. A new challenge every day.",
   path: "daily/emoji-word",
+  color: "amber",
 });
 
 export default async function EmojiWordPage() {

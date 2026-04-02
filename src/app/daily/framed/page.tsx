@@ -11,6 +11,7 @@ export const metadata = buildGameMetadata({
   title: "Framed",
   description: "Guess the movie one frame at a time. 6 frames, 6 guesses.",
   path: "daily/framed",
+  color: "green",
 });
 
 export default async function FramedPage() {

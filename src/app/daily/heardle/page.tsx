@@ -11,6 +11,7 @@ export const metadata = buildGameMetadata({
   title: "Heardle",
   description: "Name the song from its opening seconds. 6 clips, 6 guesses.",
   path: "daily/heardle",
+  color: "purple",
 });
 
 export default async function HeardlePage() {
