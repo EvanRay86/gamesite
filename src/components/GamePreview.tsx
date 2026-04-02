@@ -13,30 +13,24 @@ import Image from "next/image";
  * Preview shows a mid-game state with the "Birds" group selected.
  */
 const clusterWords = [
-  { word: "CHESS", selected: false },
   { word: "ROBIN", selected: true },
   { word: "MAPLE", selected: false },
-  { word: "VENUS", selected: false },
   { word: "DRUMS", selected: false },
   { word: "EAGLE", selected: true },
-  { word: "BIRCH", selected: false },
   { word: "MARS", selected: false },
-  { word: "FLUTE", selected: false },
-  { word: "POKER", selected: false },
   { word: "RAVEN", selected: true },
   { word: "CEDAR", selected: false },
   { word: "PIANO", selected: false },
   { word: "PLUTO", selected: false },
-  { word: "DARTS", selected: false },
 ];
 
 function ClusterPreview() {
   return (
-    <div className="grid grid-cols-5 gap-1 sm:gap-1.5 mb-4">
+    <div className="grid grid-cols-3 gap-1.5 mb-4">
       {clusterWords.map(({ word, selected }, i) => (
         <div
           key={i}
-          className={`rounded-lg py-1.5 sm:py-2 px-0.5 text-center text-[9px] sm:text-[11px] font-bold uppercase tracking-wide transition-all
+          className={`rounded-lg py-2 px-1 text-center text-[11px] font-bold uppercase tracking-wide transition-all
             ${selected
               ? "bg-coral text-white shadow-sm"
               : "bg-gray-100 text-text-secondary"
@@ -161,9 +155,9 @@ function GeoGuessPreview() {
           <p className="text-xs font-semibold text-text-primary">Country Outline</p>
         </div>
       </div>
-      <div className="flex gap-1.5">
-        <div className="rounded-lg bg-white/80 border border-black/5 px-2 py-1.5 text-[10px] font-medium text-text-secondary flex-1 text-center">Argentina?</div>
-        <div className="rounded-lg bg-green text-white px-2 py-1.5 text-[10px] font-bold flex-1 text-center shadow-[0_2px_8px_rgba(34,197,94,0.3)]">Brazil</div>
+      <div className="flex gap-1.5 min-w-0">
+        <div className="rounded-lg bg-white/80 border border-black/5 px-2 py-1.5 text-[10px] font-medium text-text-secondary flex-1 text-center min-w-0 truncate">Argentina?</div>
+        <div className="rounded-lg bg-green text-white px-2 py-1.5 text-[10px] font-bold flex-1 text-center min-w-0 truncate shadow-[0_2px_8px_rgba(34,197,94,0.3)]">Brazil</div>
       </div>
     </div>
   );
@@ -547,7 +541,6 @@ function WordsmithPreview() {
             {emoji}
           </span>
         ))}
-        <span className="text-[9px] text-text-dim ml-auto">Power-ups stack!</span>
       </div>
     </div>
   );
@@ -717,7 +710,6 @@ function KoalaPreview() {
             <span className="text-xs">{u.emoji}</span>
             <span className="text-[9px] sm:text-[10px] font-semibold text-text-primary flex-1">{u.name}</span>
             <span className="text-[8px] text-text-dim">x{u.count}</span>
-            <span className="text-[8px] font-bold text-green">+{u.lps}/s</span>
           </div>
         ))}
       </div>
