@@ -395,6 +395,11 @@ export default function GeoGuessGame() {
             </button>
           </div>
 
+          {/* Explainer */}
+          <p className="text-text-dim text-sm mb-4">
+            A hint is mastered when it&apos;s the first hint shown and you guess the country correctly. The starting hint rotates so you learn all five — outline, population, flag, capital, and fun fact — for every country.
+          </p>
+
           {/* Progress bar */}
           <div className="bg-white rounded-2xl border border-border-light shadow-sm p-5 mb-4">
             <div className="flex items-center justify-between mb-2">
