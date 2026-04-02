@@ -42,11 +42,17 @@ function ClusterPreview() {
 /* ─── Hexle Mini Preview ─────────────────────────────────────────────────── */
 
 function HexlePreview() {
+  /* Answer: BRONZE — colours follow the real evaluateGuess() two-pass algorithm */
   const guesses = [
-    { word: "RACING", colors: ["gray", "gray", "gray", "gray", "gray", "green"] },
-    { word: "PLAYED", colors: ["gray", "gray", "amber", "green", "green", "gray"] },
-    { word: "SCREEN", colors: ["green", "gray", "gray", "green", "green", "green"] },
+    { word: "THROWN", colors: ["absent", "absent", "present", "present", "absent", "present"] },
+    { word: "BROKEN", colors: ["correct", "correct", "correct", "absent", "present", "present"] },
+    { word: "BRONZE", colors: ["correct", "correct", "correct", "correct", "correct", "correct"] },
   ];
+  const bg: Record<string, string> = {
+    correct: "bg-amber",
+    present: "bg-teal",
+    absent: "bg-[#3a3a4a]",
+  };
   return (
     <div className="mb-3 flex flex-col items-center gap-1">
       {guesses.map((row, ri) => (
@@ -55,7 +61,7 @@ function HexlePreview() {
             <div
               key={ci}
               className={`w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center text-[9px] sm:text-[11px] font-bold rounded-md text-white shadow-sm
-                ${row.colors[ci] === "green" ? "bg-green" : row.colors[ci] === "amber" ? "bg-amber" : "bg-gray-300/80"}`}
+                ${bg[row.colors[ci]]}`}
             >
               {ch}
             </div>
