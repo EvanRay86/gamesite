@@ -14,8 +14,8 @@ const SLEEP_THRESHOLD = 0.2;
 const DROP_COOLDOWN = 24;
 const PHYSICS_SUBSTEPS = 4;
 const MERGE_TOLERANCE = 3; // px tolerance beyond touching
-const MERGE_SHRINK_FRAMES = 16;
-const SCALE_ANIM_FRAMES = 28;
+const MERGE_SHRINK_FRAMES = 32;
+const SCALE_ANIM_FRAMES = 56;
 const COMBO_WINDOW = 120;
 const STICKY_FORCE = 0.08; // attraction between touching non-merge orbs
 const STICKY_DAMPING = 0.85; // velocity damping on contact
@@ -49,31 +49,31 @@ const BG_TOP = "#080515";
 const BG_MID = "#0f0a1e";
 const BG_BOTTOM = "#1a1035";
 
-// Background stars (seeded positions)
+// Background stars (seeded positions) — more and varied
 const BG_STARS: { x: number; y: number; size: number; twinkleSpeed: number; brightness: number }[] = [];
-for (let i = 0; i < 60; i++) {
-  // Simple pseudo-random from seed
+for (let i = 0; i < 100; i++) {
   const seed = i * 7919 + 13;
   BG_STARS.push({
     x: ((seed * 31) % CANVAS_W),
     y: ((seed * 47) % CANVAS_H),
-    size: 0.5 + ((seed * 17) % 100) / 60,
-    twinkleSpeed: 0.01 + ((seed * 23) % 100) / 2500,
-    brightness: 0.2 + ((seed * 41) % 100) / 200,
+    size: 0.4 + ((seed * 17) % 100) / 50,
+    twinkleSpeed: 0.008 + ((seed * 23) % 100) / 3000,
+    brightness: 0.15 + ((seed * 41) % 100) / 150,
   });
 }
 
-// Floating background motes
-const BG_MOTES: { x: number; y: number; vx: number; vy: number; size: number; hue: number }[] = [];
-for (let i = 0; i < 15; i++) {
+// Floating background motes — more, bigger, colorful
+const BG_MOTES: { x: number; y: number; vx: number; vy: number; size: number; hue: number; alpha: number }[] = [];
+for (let i = 0; i < 25; i++) {
   const seed = i * 3571 + 7;
   BG_MOTES.push({
     x: ((seed * 31) % CANVAS_W),
     y: ((seed * 47) % CANVAS_H),
-    vx: ((seed * 13) % 100 - 50) / 400,
-    vy: ((seed * 19) % 100 - 50) / 400,
-    size: 1.5 + ((seed * 29) % 100) / 40,
+    vx: ((seed * 13) % 100 - 50) / 500,
+    vy: ((seed * 19) % 100 - 70) / 500, // slight upward bias
+    size: 2 + ((seed * 29) % 100) / 25,
     hue: (seed * 11) % 360,
+    alpha: 0.08 + ((seed * 37) % 100) / 600,
   });
 }
 
@@ -659,91 +659,69 @@ export default function OrbMerge() {
       orb.x += orb.vx;
       orb.y += orb.vy;
 
-      // Cup wall collisions — treat walls as solid from both sides
-      // but orbs above the rim are free (can go over the top)
+      // Cup collisions — only for orbs in the cup's y-range
       if (orb.y > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
         const leftWall = cupLeftX(orb.y);
         const rightWall = cupRightX(orb.y);
+        const center = orb.x;
 
-        // Left wall — solid barrier. Check if orb overlaps it.
-        const leftOverlap = leftWall - (orb.x - orb.radius);
-        if (leftOverlap > 0 && leftOverlap < orb.radius * 2) {
-          // Orb overlaps the left wall — push to nearest side
-          const distToInside = leftWall + orb.radius - orb.x; // push right (inside)
-          const distToOutside = orb.x + orb.radius - leftWall; // push left (outside)
-
-          if (distToInside <= distToOutside) {
-            // Closer to inside — push inward
+        // Only apply wall collisions if orb center is INSIDE the cup
+        // Orbs whose center is outside the walls are free-falling — no collision
+        if (center > leftWall && center < rightWall) {
+          // Left wall — keep orb inside
+          if (orb.x - orb.radius < leftWall) {
             orb.x = leftWall + orb.radius;
-          } else {
-            // Closer to outside — push outward
-            orb.x = leftWall - orb.radius;
+            const wallDx = CUP_BOT_L - CUP_RIM_L;
+            const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
+            const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
+            const nx = -wallDy / wallLen;
+            const ny = wallDx / wallLen;
+            const dot = orb.vx * nx + orb.vy * ny;
+            if (dot < 0) {
+              orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
+              orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
+              orb.vx *= 0.7;
+              orb.vy *= 0.7;
+            }
+            const impact = Math.abs(orb.vx);
+            const squishAmt = Math.min(0.4, impact * 0.1);
+            orb.squishX = Math.max(0.55, orb.squishX - squishAmt);
+            orb.squishY = Math.min(1.45, orb.squishY + squishAmt);
           }
 
-          const wallDx = CUP_BOT_L - CUP_RIM_L;
-          const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
-          const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
-          const nx = -wallDy / wallLen;
-          const ny = wallDx / wallLen;
-          const dot = orb.vx * nx + orb.vy * ny;
-          if (orb.x > leftWall ? dot < 0 : dot > 0) {
-            orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
-            orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
-            orb.vx *= 0.7;
-            orb.vy *= 0.7;
-          }
-
-          // Wall squish
-          const impact = Math.abs(orb.vx);
-          const squishAmt = Math.min(0.4, impact * 0.1);
-          orb.squishX = Math.max(0.55, orb.squishX - squishAmt);
-          orb.squishY = Math.min(1.45, orb.squishY + squishAmt);
-        }
-
-        // Right wall — solid barrier
-        const rightOverlap = (orb.x + orb.radius) - rightWall;
-        if (rightOverlap > 0 && rightOverlap < orb.radius * 2) {
-          const distToInside = orb.x - (rightWall - orb.radius);
-          const distToOutside = rightWall + orb.radius - orb.x;
-
-          if (distToInside <= distToOutside) {
+          // Right wall — keep orb inside
+          if (orb.x + orb.radius > rightWall) {
             orb.x = rightWall - orb.radius;
-          } else {
-            orb.x = rightWall + orb.radius;
+            const wallDx = CUP_BOT_R - CUP_RIM_R;
+            const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
+            const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
+            const nx = wallDy / wallLen;
+            const ny = -wallDx / wallLen;
+            const dot = orb.vx * nx + orb.vy * ny;
+            if (dot < 0) {
+              orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
+              orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
+              orb.vx *= 0.7;
+              orb.vy *= 0.7;
+            }
+            const impact = Math.abs(orb.vx);
+            const squishAmt = Math.min(0.4, impact * 0.1);
+            orb.squishX = Math.max(0.55, orb.squishX - squishAmt);
+            orb.squishY = Math.min(1.45, orb.squishY + squishAmt);
           }
 
-          const wallDx = CUP_BOT_R - CUP_RIM_R;
-          const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
-          const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
-          const nx = wallDy / wallLen;
-          const ny = -wallDx / wallLen;
-          const dot = orb.vx * nx + orb.vy * ny;
-          if (orb.x < rightWall ? dot < 0 : dot > 0) {
-            orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
-            orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
-            orb.vx *= 0.7;
-            orb.vy *= 0.7;
+          // Bottom collision — only for orbs inside the cup
+          if (orb.y + orb.radius > CUP_BOTTOM_Y) {
+            const impact = Math.abs(orb.vy);
+            orb.y = CUP_BOTTOM_Y - orb.radius;
+            orb.vy = -Math.abs(orb.vy) * RESTITUTION_WALL;
+            orb.vx *= 0.85;
+            const squishAmt = Math.min(0.5, impact * 0.12);
+            orb.squishX = Math.min(1.5, orb.squishX + squishAmt);
+            orb.squishY = Math.max(0.5, orb.squishY - squishAmt);
           }
-
-          const impact = Math.abs(orb.vx);
-          const squishAmt = Math.min(0.4, impact * 0.1);
-          orb.squishX = Math.max(0.55, orb.squishX - squishAmt);
-          orb.squishY = Math.min(1.45, orb.squishY + squishAmt);
         }
-      }
-
-      // Bottom collision — only if orb is truly inside the cup
-      // Check against wall position just above the bottom to avoid
-      // orbs outside the wall snagging on the floor edge
-      const wallCheckY = Math.min(orb.y, CUP_BOTTOM_Y - 5);
-      if (orb.y + orb.radius > CUP_BOTTOM_Y && orb.x > cupLeftX(wallCheckY) + orb.radius * 0.5 && orb.x < cupRightX(wallCheckY) - orb.radius * 0.5) {
-        const impact = Math.abs(orb.vy);
-        orb.y = CUP_BOTTOM_Y - orb.radius;
-        orb.vy = -Math.abs(orb.vy) * RESTITUTION_WALL;
-        orb.vx *= 0.85;
-        const squishAmt = Math.min(0.5, impact * 0.12);
-        orb.squishX = Math.min(1.5, orb.squishX + squishAmt);
-        orb.squishY = Math.max(0.5, orb.squishY - squishAmt);
+        // else: orb center is outside the walls — it falls freely
       }
 
       // Decay squish back to circle (slow spring for jelly feel)
@@ -1124,17 +1102,36 @@ export default function OrbMerge() {
       ctx.fillStyle = grad;
       ctx.fillRect(-10, -10, CANVAS_W + 20, CANVAS_H + 20);
 
-      // Subtle radial glow behind the cup
-      const glowX = CUP_CX;
-      const glowY = (CUP_RIM_Y + CUP_BOTTOM_Y) / 2;
-      const bgGlow = ctx.createRadialGradient(glowX, glowY, 30, glowX, glowY, 280);
-      bgGlow.addColorStop(0, "rgba(168, 85, 247, 0.06)");
-      bgGlow.addColorStop(0.5, "rgba(99, 50, 200, 0.03)");
-      bgGlow.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = bgGlow;
+      // Nebula clouds — slow-moving colored glow patches
+      const nebulaTime = frame * 0.003;
+      const neb1X = CUP_CX + Math.sin(nebulaTime * 0.7) * 80;
+      const neb1Y = 200 + Math.cos(nebulaTime * 0.5) * 60;
+      const nebula1 = ctx.createRadialGradient(neb1X, neb1Y, 10, neb1X, neb1Y, 200);
+      nebula1.addColorStop(0, "rgba(168, 85, 247, 0.07)");
+      nebula1.addColorStop(0.4, "rgba(120, 50, 220, 0.04)");
+      nebula1.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = nebula1;
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-      // Stars
+      const neb2X = CUP_CX + Math.cos(nebulaTime * 0.6) * 100;
+      const neb2Y = 450 + Math.sin(nebulaTime * 0.4) * 50;
+      const nebula2 = ctx.createRadialGradient(neb2X, neb2Y, 10, neb2X, neb2Y, 180);
+      nebula2.addColorStop(0, "rgba(10, 189, 227, 0.05)");
+      nebula2.addColorStop(0.5, "rgba(72, 219, 251, 0.025)");
+      nebula2.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = nebula2;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      const neb3X = 100 + Math.sin(nebulaTime * 0.8 + 2) * 60;
+      const neb3Y = 350 + Math.cos(nebulaTime * 0.3 + 1) * 80;
+      const nebula3 = ctx.createRadialGradient(neb3X, neb3Y, 10, neb3X, neb3Y, 150);
+      nebula3.addColorStop(0, "rgba(255, 107, 157, 0.04)");
+      nebula3.addColorStop(0.5, "rgba(255, 80, 120, 0.02)");
+      nebula3.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = nebula3;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      // Stars — twinkling
       for (const star of BG_STARS) {
         const twinkle = 0.5 + 0.5 * Math.sin(frame * star.twinkleSpeed);
         const alpha = star.brightness * twinkle;
@@ -1142,19 +1139,39 @@ export default function OrbMerge() {
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
+        // Bright stars get a tiny cross sparkle
+        if (star.size > 1.5 && twinkle > 0.7) {
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.3})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(star.x - star.size * 2, star.y);
+          ctx.lineTo(star.x + star.size * 2, star.y);
+          ctx.moveTo(star.x, star.y - star.size * 2);
+          ctx.lineTo(star.x, star.y + star.size * 2);
+          ctx.stroke();
+        }
       }
 
-      // Floating motes (slow drifting colored dots)
+      // Floating motes — drifting colored orbs
       for (const mote of BG_MOTES) {
         mote.x += mote.vx;
         mote.y += mote.vy;
-        if (mote.x < 0) mote.x += CANVAS_W;
-        if (mote.x > CANVAS_W) mote.x -= CANVAS_W;
-        if (mote.y < 0) mote.y += CANVAS_H;
-        if (mote.y > CANVAS_H) mote.y -= CANVAS_H;
+        if (mote.x < -10) mote.x += CANVAS_W + 20;
+        if (mote.x > CANVAS_W + 10) mote.x -= CANVAS_W + 20;
+        if (mote.y < -10) mote.y += CANVAS_H + 20;
+        if (mote.y > CANVAS_H + 10) mote.y -= CANVAS_H + 20;
 
-        const alpha = 0.12 + 0.08 * Math.sin(frame * 0.015 + mote.hue);
-        ctx.fillStyle = `hsla(${mote.hue}, 70%, 70%, ${alpha})`;
+        const pulse = mote.alpha + 0.04 * Math.sin(frame * 0.012 + mote.hue);
+        // Soft glow around each mote
+        const moteGlow = ctx.createRadialGradient(mote.x, mote.y, 0, mote.x, mote.y, mote.size * 3);
+        moteGlow.addColorStop(0, `hsla(${mote.hue}, 70%, 70%, ${pulse})`);
+        moteGlow.addColorStop(1, `hsla(${mote.hue}, 70%, 70%, 0)`);
+        ctx.fillStyle = moteGlow;
+        ctx.beginPath();
+        ctx.arc(mote.x, mote.y, mote.size * 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = `hsla(${mote.hue}, 80%, 80%, ${pulse * 1.5})`;
         ctx.beginPath();
         ctx.arc(mote.x, mote.y, mote.size, 0, Math.PI * 2);
         ctx.fill();
