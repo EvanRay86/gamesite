@@ -527,7 +527,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
 
     setTimeout(() => {
       setBreakdownData(null);
-      const newPowerUps = [...activePowerUps, powerUp.id];
+      let newPowerUps = [...activePowerUps, powerUp.id];
       setActivePowerUps(newPowerUps);
 
       // Update the last round result with the chosen power-up
@@ -540,7 +540,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
       }
       setRoundResults(updatedResults);
 
-      // Handle Echo: double last round's score
+      // Handle Echo: double last round's score, then remove from active list
       let newTotal = totalScore;
       if (powerUp.id === "echo" && updatedResults.length > 0) {
         const lastResult = updatedResults[updatedResults.length - 1];
@@ -553,6 +553,9 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
         newTotal = updatedResults.reduce((sum, r) => sum + r.totalScore, 0);
         setTotalScore(newTotal);
         setEchoUsed(true);
+        // Remove echo from active list — it's a one-time effect
+        newPowerUps = newPowerUps.filter((id) => id !== "echo");
+        setActivePowerUps(newPowerUps);
       }
 
       // Move to next round
@@ -1151,20 +1154,29 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
             )}
 
             {/* Bonuses */}
-            {breakdownData.bonuses.map((b, i) => {
-              const bonusIdx = breakdownData.letterDetails.length + 1 + i;
-              const visible = breakdownStep > bonusIdx;
-              return (
-                <div
-                  key={i}
-                  className={`mb-1 text-center transition-all duration-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
-                >
-                  <span className="rounded-full bg-amber/10 px-3 py-1 text-xs font-bold text-amber">
-                    {b.label}
-                  </span>
-                </div>
-              );
-            })}
+            {breakdownData.bonuses.length > 0 && breakdownStep > breakdownData.letterDetails.length && (
+              <div className="mb-2 space-y-1.5">
+                {breakdownData.bonuses.map((b, i) => {
+                  const bonusIdx = breakdownData.letterDetails.length + 1 + i;
+                  const visible = breakdownStep > bonusIdx;
+                  return (
+                    <div
+                      key={i}
+                      className={`flex items-center justify-center gap-2 transition-all duration-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
+                    >
+                      <span className="rounded-full bg-amber/10 px-3 py-1 text-xs font-bold text-amber">
+                        {b.label}
+                      </span>
+                      {b.value > 0 && (
+                        <span className="text-sm font-bold text-amber">
+                          {b.label.includes("2x") ? `\u2192 ${breakdownData.totalScore}` : `+${b.value}`}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Final score */}
             {breakdownDone && (
