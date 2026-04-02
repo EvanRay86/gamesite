@@ -132,6 +132,7 @@ interface Orb {
   lookY: number;
   squishX: number; // 1.0 = circle, >1 = wide, <1 = tall
   squishY: number; // inverse of squishX for volume preservation
+  insideCup: boolean; // true if orb entered the cup from the top
 }
 
 interface Particle {
@@ -626,6 +627,7 @@ export default function OrbMerge() {
       lookY: 0,
       squishX: 1,
       squishY: 1,
+      insideCup: false, // dropped from above — not inside yet
     });
 
     currentTierRef.current = nextTierRef.current;
@@ -659,16 +661,21 @@ export default function OrbMerge() {
       orb.x += orb.vx;
       orb.y += orb.vy;
 
-      // Cup collisions — only for orbs in the cup's y-range
+      // Track insideCup state: once an orb enters the cup, it stays "inside"
+      // until it goes above the rim (pushed out over the top).
+      // Orbs that were never inside (dropped outside) stay outside.
       if (orb.y > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
         const leftWall = cupLeftX(orb.y);
         const rightWall = cupRightX(orb.y);
-        const center = orb.x;
 
-        // Only apply wall collisions if orb center is INSIDE the cup
-        // Orbs whose center is outside the walls are free-falling — no collision
-        if (center > leftWall && center < rightWall) {
-          // Left wall — keep orb inside
+        // Mark as inside if orb center enters between the walls
+        if (!orb.insideCup && orb.x > leftWall + orb.radius && orb.x < rightWall - orb.radius) {
+          orb.insideCup = true;
+        }
+
+        // Wall + floor collisions only for orbs that are inside the cup
+        if (orb.insideCup) {
+          // Left wall
           if (orb.x - orb.radius < leftWall) {
             orb.x = leftWall + orb.radius;
             const wallDx = CUP_BOT_L - CUP_RIM_L;
@@ -689,7 +696,7 @@ export default function OrbMerge() {
             orb.squishY = Math.min(1.45, orb.squishY + squishAmt);
           }
 
-          // Right wall — keep orb inside
+          // Right wall
           if (orb.x + orb.radius > rightWall) {
             orb.x = rightWall - orb.radius;
             const wallDx = CUP_BOT_R - CUP_RIM_R;
@@ -710,7 +717,7 @@ export default function OrbMerge() {
             orb.squishY = Math.min(1.45, orb.squishY + squishAmt);
           }
 
-          // Bottom collision — only for orbs inside the cup
+          // Bottom
           if (orb.y + orb.radius > CUP_BOTTOM_Y) {
             const impact = Math.abs(orb.vy);
             orb.y = CUP_BOTTOM_Y - orb.radius;
@@ -721,7 +728,11 @@ export default function OrbMerge() {
             orb.squishY = Math.max(0.5, orb.squishY - squishAmt);
           }
         }
-        // else: orb center is outside the walls — it falls freely
+        // else: orb never entered the cup — falls freely past the walls
+      } else if (orb.y <= CUP_RIM_Y && orb.insideCup) {
+        // Orb went above the rim — it's escaping, mark as outside
+        // so it doesn't re-collide with walls if it falls back alongside the cup
+        orb.insideCup = false;
       }
 
       // Decay squish back to circle (slow spring for jelly feel)
@@ -939,6 +950,7 @@ export default function OrbMerge() {
             lookY: 0,
             squishX: 1,
             squishY: 1,
+            insideCup: true, // merged inside the cup
           });
 
           // Score
