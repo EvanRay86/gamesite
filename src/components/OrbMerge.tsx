@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 const CANVAS_W = 440;
 const CANVAS_H = 700;
-const GRAVITY = 0.18;
+const GRAVITY = 0.1;
 const FRICTION = 0.982;
 const RESTITUTION_WALL = 0.2;
 const RESTITUTION_ORB = 0.12; // very low — sticky, squelchy
@@ -37,7 +37,7 @@ const CUP_BOT_L = CUP_CX - CUP_BOTTOM_W / 2;
 const CUP_BOT_R = CUP_CX + CUP_BOTTOM_W / 2;
 
 // Drop zone — wider than the cup so you can aim past the edges
-const DROP_Y = CUP_RIM_Y - 40;
+const DROP_Y = CUP_RIM_Y - 100;
 const DROP_LEFT = 30; // much wider than cup
 const DROP_RIGHT = CANVAS_W - 30;
 
@@ -630,8 +630,9 @@ export default function OrbMerge() {
       orb.x += orb.vx;
       orb.y += orb.vy;
 
-      // Cup wall collisions — only apply inside the cup's vertical range
-      if (orb.y + orb.radius > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
+      // Cup wall collisions — only apply when orb CENTER is inside the cup
+      // Once center rises above rim, orb is free to slide out sideways
+      if (orb.y > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
         const leftWall = cupLeftX(orb.y);
         const rightWall = cupRightX(orb.y);
 
@@ -681,9 +682,8 @@ export default function OrbMerge() {
         orb.squishY = Math.max(0.5, orb.squishY - squishAmt);
       }
 
-      // Wall collisions only apply within the cup's vertical range
+      // Wall squish only inside cup
       if (orb.y > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
-        // Wall squish
         if (orb.x - orb.radius < cupLeftX(orb.y) + 2 || orb.x + orb.radius > cupRightX(orb.y) - 2) {
           const impact = Math.abs(orb.vx);
           const squishAmt = Math.min(0.4, impact * 0.1);
