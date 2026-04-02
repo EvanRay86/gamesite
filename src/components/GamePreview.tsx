@@ -915,6 +915,89 @@ function WordBloomPreview() {
   );
 }
 
+/* ─── Orb Merge Mini Preview ────────────────────────────────────────── */
+
+function OrbMergePreview() {
+  const orbs = [
+    { x: 38, y: 62, r: 10, color: "#a855f7", glow: "rgba(168,85,247,0.5)", name: "Nova" },
+    { x: 62, y: 58, r: 10, color: "#a855f7", glow: "rgba(168,85,247,0.5)", name: "Nova" },
+    { x: 50, y: 38, r: 13, color: "#ff6b9d", glow: "rgba(255,107,157,0.5)", name: "Bloom" },
+    { x: 25, y: 75, r: 7, color: "#feca57", glow: "rgba(254,202,87,0.4)", name: "Glow" },
+    { x: 75, y: 72, r: 8, color: "#48dbfb", glow: "rgba(72,219,251,0.4)", name: "Pulse" },
+    { x: 50, y: 80, r: 6, color: "#ff9f43", glow: "rgba(255,159,67,0.4)", name: "Ember" },
+    { x: 35, y: 48, r: 5, color: "#ff6b6b", glow: "rgba(255,107,107,0.4)", name: "Spark" },
+    { x: 68, y: 44, r: 9, color: "#0abde3", glow: "rgba(10,189,227,0.4)", name: "Surge" },
+  ];
+
+  return (
+    <div className="mb-3 rounded-xl border border-purple/20 p-3.5 relative overflow-hidden" style={{ background: "linear-gradient(180deg, #080515 0%, #0f0a1e 50%, #1a1035 100%)" }}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-purple">Score: 1,280</span>
+        <span className="text-[10px] font-bold text-gray-400 bg-white/5 px-2 py-0.5 rounded-full">Best: 3,450</span>
+      </div>
+
+      {/* Cup with orbs */}
+      <div className="relative mx-auto" style={{ width: 120, height: 90 }}>
+        {/* Cup outline */}
+        <svg viewBox="0 0 120 90" className="absolute inset-0 w-full h-full">
+          <path
+            d="M 20 10 L 15 80 Q 15 88 25 88 L 95 88 Q 105 88 105 80 L 100 10"
+            fill="none"
+            stroke="rgba(168,85,247,0.3)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+        </svg>
+
+        {/* Orbs */}
+        {orbs.map((orb, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              left: `${orb.x}%`,
+              top: `${orb.y}%`,
+              width: orb.r * 2,
+              height: orb.r * 2,
+              transform: "translate(-50%, -50%)",
+              background: `radial-gradient(circle at 35% 35%, ${orb.color}, ${orb.color}aa 70%)`,
+              boxShadow: `0 0 ${orb.r}px ${orb.glow}`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Tier legend */}
+      <div className="flex justify-center gap-1.5 mt-2.5">
+        {[
+          { color: "#ff6b6b", label: "Spark" },
+          { color: "#feca57", label: "Glow" },
+          { color: "#48dbfb", label: "Pulse" },
+          { color: "#a855f7", label: "Nova" },
+          { color: "#ff6b9d", label: "Bloom" },
+        ].map((t, i) => (
+          <div key={i} className="flex items-center gap-0.5">
+            <div className="w-2 h-2 rounded-full" style={{ background: t.color, boxShadow: `0 0 4px ${t.color}66` }} />
+            <span className="text-[7px] text-gray-500">{t.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Subtle star dots */}
+      {[
+        { x: 8, y: 15 }, { x: 92, y: 22 }, { x: 15, y: 88 }, { x: 88, y: 85 },
+        { x: 50, y: 8 }, { x: 30, y: 20 }, { x: 78, y: 12 },
+      ].map((s, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-white/20"
+          style={{ left: `${s.x}%`, top: `${s.y}%`, width: 1.5, height: 1.5 }}
+        />
+      ))}
+    </div>
+  );
+}
+
 /* ─── Game Preview Router ───────────────────────────────────────────────── */
 
 export default function GamePreview({ slug }: { slug: string }) {
@@ -945,6 +1028,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "lexicon-quest": return <LexiconPreview />;
     case "rift": return <RiftPreview />;
     case "word-bloom": return <WordBloomPreview />;
+    case "orb-merge": return <OrbMergePreview />;
     default: return null;
   }
 }

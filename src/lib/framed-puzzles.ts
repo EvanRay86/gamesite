@@ -178,6 +178,8 @@ export const movieBank: string[] = [
   "Everything Everywhere All at Once", "Dune", "Dune: Part Two",
   "Oppenheimer", "Barbie", "The Batman",
   "Milk Money", "9",
+  "Dark City", "House of Wax", "Martyrs", "Steel Magnolias",
+  "Sweeney Todd: The Demon Barber of Fleet Street", "The Sandlot", "Videodrome",
 ];
 
 // ---------------------------------------------------------------------------
