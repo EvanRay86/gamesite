@@ -30,6 +30,7 @@ const CUP_BOTTOM_Y = 520; // y-position of cup floor (shorter cup)
 const CUP_TOP_W = 300; // width at rim
 const CUP_BOTTOM_W = 220; // width at bottom
 const CUP_CORNER_R = 25; // bottom corner rounding
+const CUP_WALL_THICKNESS = 8; // visual + collision thickness of cup walls
 const CUP_CX = CANVAS_W / 2; // cup center x
 const CUP_RIM_L = CUP_CX - CUP_TOP_W / 2;
 const CUP_RIM_R = CUP_CX + CUP_TOP_W / 2;
@@ -449,7 +450,9 @@ function drawFace(
 // ── Draw Cup Shape ──────────────────────────────────────────────────────────
 
 function drawCup(ctx: CanvasRenderingContext2D, frame: number) {
-  // Cup body (filled background)
+  const W = CUP_WALL_THICKNESS;
+
+  // Cup interior background
   ctx.fillStyle = "rgba(15, 10, 35, 0.5)";
   ctx.beginPath();
   ctx.moveTo(CUP_RIM_L, CUP_RIM_Y);
@@ -461,11 +464,48 @@ function drawCup(ctx: CanvasRenderingContext2D, frame: number) {
   ctx.closePath();
   ctx.fill();
 
-  // Cup border — glass-like
-  const borderAlpha = 0.3 + 0.05 * Math.sin(frame * 0.03);
-  ctx.strokeStyle = `rgba(168, 85, 247, ${borderAlpha})`;
-  ctx.lineWidth = 2.5;
-  ctx.lineJoin = "round";
+  // Thick cup walls — draw as filled shapes
+  const borderAlpha = 0.35 + 0.05 * Math.sin(frame * 0.03);
+  const wallColor = `rgba(140, 70, 220, ${borderAlpha})`;
+  const wallHighlight = `rgba(200, 140, 255, ${borderAlpha * 0.4})`;
+
+  // Left wall (thick trapezoid strip)
+  ctx.fillStyle = wallColor;
+  ctx.beginPath();
+  ctx.moveTo(CUP_RIM_L - W, CUP_RIM_Y - 4);
+  ctx.lineTo(CUP_RIM_L + 1, CUP_RIM_Y - 4);
+  ctx.lineTo(CUP_BOT_L + 1, CUP_BOTTOM_Y - CUP_CORNER_R);
+  ctx.quadraticCurveTo(CUP_BOT_L + 1, CUP_BOTTOM_Y, CUP_BOT_L + CUP_CORNER_R, CUP_BOTTOM_Y);
+  ctx.lineTo(CUP_BOT_L + CUP_CORNER_R, CUP_BOTTOM_Y + W);
+  ctx.quadraticCurveTo(CUP_BOT_L - W, CUP_BOTTOM_Y + W, CUP_BOT_L - W, CUP_BOTTOM_Y - CUP_CORNER_R);
+  ctx.lineTo(CUP_RIM_L - W, CUP_RIM_Y - 4);
+  ctx.closePath();
+  ctx.fill();
+
+  // Right wall (thick trapezoid strip)
+  ctx.beginPath();
+  ctx.moveTo(CUP_RIM_R + W, CUP_RIM_Y - 4);
+  ctx.lineTo(CUP_RIM_R - 1, CUP_RIM_Y - 4);
+  ctx.lineTo(CUP_BOT_R - 1, CUP_BOTTOM_Y - CUP_CORNER_R);
+  ctx.quadraticCurveTo(CUP_BOT_R - 1, CUP_BOTTOM_Y, CUP_BOT_R - CUP_CORNER_R, CUP_BOTTOM_Y);
+  ctx.lineTo(CUP_BOT_R - CUP_CORNER_R, CUP_BOTTOM_Y + W);
+  ctx.quadraticCurveTo(CUP_BOT_R + W, CUP_BOTTOM_Y + W, CUP_BOT_R + W, CUP_BOTTOM_Y - CUP_CORNER_R);
+  ctx.lineTo(CUP_RIM_R + W, CUP_RIM_Y - 4);
+  ctx.closePath();
+  ctx.fill();
+
+  // Bottom wall (thick strip)
+  ctx.beginPath();
+  ctx.moveTo(CUP_BOT_L + CUP_CORNER_R, CUP_BOTTOM_Y);
+  ctx.lineTo(CUP_BOT_R - CUP_CORNER_R, CUP_BOTTOM_Y);
+  ctx.lineTo(CUP_BOT_R - CUP_CORNER_R, CUP_BOTTOM_Y + W);
+  ctx.lineTo(CUP_BOT_L + CUP_CORNER_R, CUP_BOTTOM_Y + W);
+  ctx.closePath();
+  ctx.fill();
+
+  // Inner edge highlight (glass shine)
+  ctx.strokeStyle = wallHighlight;
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.moveTo(CUP_RIM_L, CUP_RIM_Y);
   ctx.lineTo(CUP_BOT_L, CUP_BOTTOM_Y - CUP_CORNER_R);
@@ -475,18 +515,34 @@ function drawCup(ctx: CanvasRenderingContext2D, frame: number) {
   ctx.lineTo(CUP_RIM_R, CUP_RIM_Y);
   ctx.stroke();
 
-  // Glass shine on left wall
-  ctx.strokeStyle = `rgba(255, 255, 255, 0.06)`;
-  ctx.lineWidth = 6;
+  // Outer edge
+  ctx.strokeStyle = `rgba(100, 50, 180, ${borderAlpha * 0.6})`;
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(CUP_RIM_L + 4, CUP_RIM_Y + 20);
-  ctx.lineTo(CUP_BOT_L + 4, CUP_BOTTOM_Y - CUP_CORNER_R - 20);
+  ctx.moveTo(CUP_RIM_L - W, CUP_RIM_Y - 4);
+  ctx.lineTo(CUP_BOT_L - W, CUP_BOTTOM_Y - CUP_CORNER_R);
+  ctx.quadraticCurveTo(CUP_BOT_L - W, CUP_BOTTOM_Y + W, CUP_BOT_L + CUP_CORNER_R, CUP_BOTTOM_Y + W);
+  ctx.lineTo(CUP_BOT_R - CUP_CORNER_R, CUP_BOTTOM_Y + W);
+  ctx.quadraticCurveTo(CUP_BOT_R + W, CUP_BOTTOM_Y + W, CUP_BOT_R + W, CUP_BOTTOM_Y - CUP_CORNER_R);
+  ctx.lineTo(CUP_RIM_R + W, CUP_RIM_Y - 4);
   ctx.stroke();
 
-  // Rim highlight
-  ctx.fillStyle = "rgba(168, 85, 247, 0.2)";
-  ctx.fillRect(CUP_RIM_L - 3, CUP_RIM_Y - 2, 6, 4);
-  ctx.fillRect(CUP_RIM_R - 3, CUP_RIM_Y - 2, 6, 4);
+  // Glass shine on left wall
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(CUP_RIM_L - W / 2, CUP_RIM_Y + 15);
+  ctx.lineTo(CUP_BOT_L - W / 2, CUP_BOTTOM_Y - CUP_CORNER_R - 15);
+  ctx.stroke();
+
+  // Rim caps (rounded tops of walls)
+  ctx.fillStyle = `rgba(180, 100, 255, ${borderAlpha * 0.7})`;
+  ctx.beginPath();
+  ctx.arc(CUP_RIM_L - W / 2, CUP_RIM_Y - 4, W / 2 + 1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(CUP_RIM_R + W / 2, CUP_RIM_Y - 4, W / 2 + 1, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -820,6 +876,27 @@ export default function OrbMerge() {
           a.vy += ny * pullStrength * (massB / totalMass);
           b.vx -= nx * pullStrength * (massA / totalMass);
           b.vy -= ny * pullStrength * (massA / totalMass);
+        }
+      }
+    }
+
+    // Post-collision clamp: ensure insideCup orbs can't be pushed through walls
+    for (const orb of orbs) {
+      if (!orb.insideCup || orb.merging) continue;
+      if (orb.y > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
+        const leftWall = cupLeftX(orb.y);
+        const rightWall = cupRightX(orb.y);
+        if (orb.x - orb.radius < leftWall) {
+          orb.x = leftWall + orb.radius;
+          if (orb.vx < 0) orb.vx = 0;
+        }
+        if (orb.x + orb.radius > rightWall) {
+          orb.x = rightWall - orb.radius;
+          if (orb.vx > 0) orb.vx = 0;
+        }
+        if (orb.y + orb.radius > CUP_BOTTOM_Y) {
+          orb.y = CUP_BOTTOM_Y - orb.radius;
+          if (orb.vy > 0) orb.vy = 0;
         }
       }
     }
