@@ -460,6 +460,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
 
     if (currentRound >= TOTAL_ROUNDS - 1) {
       setPhase("results");
+      setBreakdownData(null);
       saveStats(pending.newTotal);
       saveGame({
         rounds: pending.newResults,
@@ -481,7 +482,6 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
       setChoosingFade(-1);
       setChosenCardIdx(-1);
     }
-    setBreakdownData(null);
   }, [currentRound, isQuickplay, quickplaySeed, dateStr, activePowerUps, allOfferings, saveStats, saveGame]);
 
   // Animate breakdown steps
@@ -493,8 +493,8 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
 
     if (breakdownStep >= totalSteps) {
       setBreakdownDone(true);
-      // Auto-advance after 800ms
-      breakdownTimerRef.current = setTimeout(advanceFromBreakdown, 800);
+      // Advance immediately — power-ups appear above the breakdown card
+      advanceFromBreakdown();
       return;
     }
 
@@ -508,19 +508,15 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
     };
   }, [phase, breakdownData, breakdownStep, breakdownDone, advanceFromBreakdown]);
 
-  // Skip breakdown on tap
+  // Skip breakdown animation on tap
   const handleBreakdownTap = () => {
-    if (!breakdownData) return;
-    if (breakdownDone) {
-      advanceFromBreakdown();
-    } else {
-      // Fast-forward: show everything
-      if (breakdownTimerRef.current) clearTimeout(breakdownTimerRef.current);
-      const totalSteps = breakdownData.letterDetails.length + 1 + breakdownData.bonuses.length + 1;
-      setBreakdownStep(totalSteps);
-      setBreakdownDone(true);
-      breakdownTimerRef.current = setTimeout(advanceFromBreakdown, 600);
-    }
+    if (!breakdownData || breakdownDone) return;
+    // Fast-forward: show everything and advance immediately
+    if (breakdownTimerRef.current) clearTimeout(breakdownTimerRef.current);
+    const totalSteps = breakdownData.letterDetails.length + 1 + breakdownData.bonuses.length + 1;
+    setBreakdownStep(totalSteps);
+    setBreakdownDone(true);
+    advanceFromBreakdown();
   };
 
   // ── Power-up selection ─────────────────────────────────────────────────
@@ -530,6 +526,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
     setChoosingFade(cardIdx);
 
     setTimeout(() => {
+      setBreakdownData(null);
       const newPowerUps = [...activePowerUps, powerUp.id];
       setActivePowerUps(newPowerUps);
 
@@ -1019,11 +1016,63 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
         </>
       )}
 
+      {/* Power-up selection overlay — above breakdown so score stays visible */}
+      {phase === "choosing-powerup" && (
+        <div className="mt-4 w-full animate-[fade-up_0.3s_ease]">
+          <p className="mb-3 text-center text-sm font-semibold text-text-secondary">
+            Choose a power-up
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+            {powerUpOfferings.map((pu, idx) => (
+              <button
+                key={pu.id}
+                onClick={() => choosePowerUp(pu, idx)}
+                disabled={chosenCardIdx >= 0}
+                className={`
+                  group relative flex flex-1 flex-col items-center rounded-2xl border-2 p-4
+                  transition-all
+                  ${
+                    chosenCardIdx === idx
+                      ? "border-amber bg-amber/10"
+                      : chosenCardIdx >= 0
+                        ? "opacity-0 scale-95"
+                        : "border-gray-200 bg-white hover:border-amber hover:scale-[1.02]"
+                  }
+                `}
+                style={
+                  chosenCardIdx === idx
+                    ? { animation: "ws-card-flip 0.5s ease" }
+                    : chosenCardIdx >= 0 && chosenCardIdx !== idx
+                      ? { animation: "ws-card-fade-out 0.3s ease forwards" }
+                      : { animation: "ws-card-glow 2s ease infinite" }
+                }
+              >
+                <span className="mb-1 text-3xl">{pu.emoji}</span>
+                <span className="mb-0.5 text-sm font-bold text-text-primary">
+                  {pu.name}
+                </span>
+                <span className="text-text-secondary text-center text-xs leading-tight">
+                  {pu.description}
+                </span>
+                <span className="mt-1.5 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-text-secondary">
+                  {pu.type === "persistent"
+                    ? "Permanent"
+                    : pu.type === "one-time"
+                      ? "This round"
+                      : "Next round"}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Score breakdown overlay */}
-      {phase === "score-breakdown" && breakdownData && (
+      {(phase === "score-breakdown" || phase === "choosing-powerup") && breakdownData && (
         <div
-          className="mt-4 w-full animate-[fade-up_0.3s_ease] cursor-pointer"
-          onClick={handleBreakdownTap}
+          className="mt-4 w-full animate-[fade-up_0.3s_ease]"
+          onClick={phase === "score-breakdown" ? handleBreakdownTap : undefined}
+          style={phase === "score-breakdown" ? { cursor: "pointer" } : undefined}
         >
           <div className="clay-card mx-auto w-full max-w-sm p-5">
             {/* Word display */}
@@ -1140,59 +1189,8 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
         </div>
       )}
 
-      {/* Power-up selection overlay */}
-      {phase === "choosing-powerup" && (
-        <div className="mt-4 w-full animate-[fade-up_0.3s_ease]">
-          <p className="mb-3 text-center text-sm font-semibold text-text-secondary">
-            Choose a power-up
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            {powerUpOfferings.map((pu, idx) => (
-              <button
-                key={pu.id}
-                onClick={() => choosePowerUp(pu, idx)}
-                disabled={chosenCardIdx >= 0}
-                className={`
-                  group relative flex flex-1 flex-col items-center rounded-2xl border-2 p-4
-                  transition-all
-                  ${
-                    chosenCardIdx === idx
-                      ? "border-amber bg-amber/10"
-                      : chosenCardIdx >= 0
-                        ? "opacity-0 scale-95"
-                        : "border-gray-200 bg-white hover:border-amber hover:scale-[1.02]"
-                  }
-                `}
-                style={
-                  chosenCardIdx === idx
-                    ? { animation: "ws-card-flip 0.5s ease" }
-                    : chosenCardIdx >= 0 && chosenCardIdx !== idx
-                      ? { animation: "ws-card-fade-out 0.3s ease forwards" }
-                      : { animation: "ws-card-glow 2s ease infinite" }
-                }
-              >
-                <span className="mb-1 text-3xl">{pu.emoji}</span>
-                <span className="mb-0.5 text-sm font-bold text-text-primary">
-                  {pu.name}
-                </span>
-                <span className="text-text-secondary text-center text-xs leading-tight">
-                  {pu.description}
-                </span>
-                <span className="mt-1.5 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-text-secondary">
-                  {pu.type === "persistent"
-                    ? "Permanent"
-                    : pu.type === "one-time"
-                      ? "This round"
-                      : "Next round"}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Round history (compact) */}
-      {roundResults.length > 0 && phase !== "choosing-powerup" && (
+      {roundResults.length > 0 && phase !== "choosing-powerup" && phase !== "score-breakdown" && (
         <div className="mt-6 w-full max-w-sm">
           <div className="space-y-1.5">
             {roundResults.map((r, i) => (
