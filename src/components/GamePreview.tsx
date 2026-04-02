@@ -30,7 +30,7 @@ function ClusterPreview() {
       {clusterWords.map(({ word, selected }, i) => (
         <div
           key={i}
-          className={`rounded-lg py-2 px-1 text-center text-[11px] font-bold uppercase tracking-wide transition-all
+          className={`rounded-lg py-2 px-0.5 text-center text-[8px] sm:text-[11px] font-bold uppercase tracking-wide overflow-hidden truncate transition-all
             ${selected
               ? "bg-coral text-white shadow-sm"
               : "bg-gray-100 text-text-secondary"
