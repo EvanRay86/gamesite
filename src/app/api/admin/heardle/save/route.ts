@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { requireAdmin } from "@/lib/admin-auth";
 
 interface SaveBody {
@@ -30,10 +30,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase();
+    const supabase = getSupabaseAdmin();
     if (!supabase) {
       return NextResponse.json(
-        { error: "Supabase not configured" },
+        { error: "Supabase not configured (missing service role key)" },
         { status: 500 },
       );
     }
