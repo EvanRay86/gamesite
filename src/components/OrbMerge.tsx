@@ -14,8 +14,8 @@ const SLEEP_THRESHOLD = 0.2;
 const DROP_COOLDOWN = 24;
 const PHYSICS_SUBSTEPS = 4;
 const MERGE_TOLERANCE = 3; // px tolerance beyond touching
-const MERGE_SHRINK_FRAMES = 8;
-const SCALE_ANIM_FRAMES = 18;
+const MERGE_SHRINK_FRAMES = 16;
+const SCALE_ANIM_FRAMES = 28;
 const COMBO_WINDOW = 120;
 const STICKY_FORCE = 0.08; // attraction between touching non-merge orbs
 const STICKY_DAMPING = 0.85; // velocity damping on contact
@@ -45,8 +45,37 @@ const DROP_RIGHT = CANVAS_W - 30;
 const DEATH_LINE_Y = CUP_BOTTOM_Y + 100;
 
 // Colors
-const BG_TOP = "#0f0a1e";
+const BG_TOP = "#080515";
+const BG_MID = "#0f0a1e";
 const BG_BOTTOM = "#1a1035";
+
+// Background stars (seeded positions)
+const BG_STARS: { x: number; y: number; size: number; twinkleSpeed: number; brightness: number }[] = [];
+for (let i = 0; i < 60; i++) {
+  // Simple pseudo-random from seed
+  const seed = i * 7919 + 13;
+  BG_STARS.push({
+    x: ((seed * 31) % CANVAS_W),
+    y: ((seed * 47) % CANVAS_H),
+    size: 0.5 + ((seed * 17) % 100) / 60,
+    twinkleSpeed: 0.01 + ((seed * 23) % 100) / 2500,
+    brightness: 0.2 + ((seed * 41) % 100) / 200,
+  });
+}
+
+// Floating background motes
+const BG_MOTES: { x: number; y: number; vx: number; vy: number; size: number; hue: number }[] = [];
+for (let i = 0; i < 15; i++) {
+  const seed = i * 3571 + 7;
+  BG_MOTES.push({
+    x: ((seed * 31) % CANVAS_W),
+    y: ((seed * 47) % CANVAS_H),
+    vx: ((seed * 13) % 100 - 50) / 400,
+    vy: ((seed * 19) % 100 - 50) / 400,
+    size: 1.5 + ((seed * 29) % 100) / 40,
+    hue: (seed * 11) % 360,
+  });
+}
 
 // ── Orb Tiers ────────────────────────────────────────────────────────────────
 
@@ -868,15 +897,20 @@ export default function OrbMerge() {
       }
     }
 
-    // Update scale animations
+    // Update scale animations — elastic bounce
     for (const orb of orbs) {
       if (orb.scalePhase > 0) {
         orb.scalePhase--;
-        const progress = 1 - orb.scalePhase / SCALE_ANIM_FRAMES;
-        if (progress < 0.5) {
-          orb.scaleAnim = progress * 2 * 1.2;
+        const t = 1 - orb.scalePhase / SCALE_ANIM_FRAMES;
+        // Elastic ease-out: pop big, bounce past 1.0, settle
+        if (t < 0.35) {
+          orb.scaleAnim = (t / 0.35) * 1.35; // 0 → 1.35
+        } else if (t < 0.55) {
+          orb.scaleAnim = 1.35 - ((t - 0.35) / 0.2) * 0.45; // 1.35 → 0.9
+        } else if (t < 0.75) {
+          orb.scaleAnim = 0.9 + ((t - 0.55) / 0.2) * 0.18; // 0.9 → 1.08
         } else {
-          orb.scaleAnim = 1.2 - (progress - 0.5) * 2 * 0.2;
+          orb.scaleAnim = 1.08 - ((t - 0.75) / 0.25) * 0.08; // 1.08 → 1.0
         }
       }
     }
@@ -1082,12 +1116,49 @@ export default function OrbMerge() {
       ctx.save();
       ctx.translate(shake.x, shake.y);
 
-      // Background gradient
+      // Background gradient (deeper, 3-stop)
       const grad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
       grad.addColorStop(0, BG_TOP);
+      grad.addColorStop(0.5, BG_MID);
       grad.addColorStop(1, BG_BOTTOM);
       ctx.fillStyle = grad;
       ctx.fillRect(-10, -10, CANVAS_W + 20, CANVAS_H + 20);
+
+      // Subtle radial glow behind the cup
+      const glowX = CUP_CX;
+      const glowY = (CUP_RIM_Y + CUP_BOTTOM_Y) / 2;
+      const bgGlow = ctx.createRadialGradient(glowX, glowY, 30, glowX, glowY, 280);
+      bgGlow.addColorStop(0, "rgba(168, 85, 247, 0.06)");
+      bgGlow.addColorStop(0.5, "rgba(99, 50, 200, 0.03)");
+      bgGlow.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = bgGlow;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      // Stars
+      for (const star of BG_STARS) {
+        const twinkle = 0.5 + 0.5 * Math.sin(frame * star.twinkleSpeed);
+        const alpha = star.brightness * twinkle;
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Floating motes (slow drifting colored dots)
+      for (const mote of BG_MOTES) {
+        mote.x += mote.vx;
+        mote.y += mote.vy;
+        if (mote.x < 0) mote.x += CANVAS_W;
+        if (mote.x > CANVAS_W) mote.x -= CANVAS_W;
+        if (mote.y < 0) mote.y += CANVAS_H;
+        if (mote.y > CANVAS_H) mote.y -= CANVAS_H;
+
+        const alpha = 0.12 + 0.08 * Math.sin(frame * 0.015 + mote.hue);
+        ctx.fillStyle = `hsla(${mote.hue}, 70%, 70%, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(mote.x, mote.y, mote.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // Draw cup
       drawCup(ctx, frame);
