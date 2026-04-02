@@ -459,8 +459,8 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
     pendingRoundRef.current = null;
 
     if (currentRound >= TOTAL_ROUNDS - 1) {
+      // Keep breakdown visible — results screen will appear above it
       setPhase("results");
-      setBreakdownData(null);
       saveStats(pending.newTotal);
       saveGame({
         rounds: pending.newResults,
@@ -708,145 +708,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
     );
   }
 
-  // Results screen
-  if (phase === "results") {
-    return (
-      <div
-        ref={gameRef}
-        className="flex min-h-[calc(100vh-64px)] items-center justify-center p-4"
-      >
-        <div className="clay-card mx-auto w-full max-w-md p-6 text-center">
-          <div className="mb-1 text-4xl">{"\u2692\uFE0F"}</div>
-          <h2 className="font-display mb-1 text-2xl font-bold text-amber">
-            {isQuickplay ? "WORDSMITH Quickplay" : `WORDSMITH #${dayNumber}`}
-          </h2>
-
-          {/* Round breakdown */}
-          <div className="my-4 space-y-2">
-            {roundResults.map((r, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between rounded-lg bg-white/60 px-3 py-2 opacity-0"
-                style={{
-                  animation: `ws-stagger-in 0.3s ease ${i * 0.15}s forwards`,
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-text-secondary text-xs font-medium">
-                    R{r.roundNumber}
-                  </span>
-                  <span className="font-grotesk text-sm font-bold tracking-wider">
-                    {r.word}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {r.powerUpChosen && (
-                    <span className="text-sm" title={r.powerUpChosen.name}>
-                      {r.powerUpChosen.emoji}
-                    </span>
-                  )}
-                  <span className="font-grotesk text-sm font-bold text-amber">
-                    {r.totalScore}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Total */}
-          <div
-            className="mb-4 opacity-0"
-            style={{
-              animation: `ws-stagger-in 0.3s ease ${roundResults.length * 0.15}s forwards`,
-            }}
-          >
-            <span className="text-text-secondary text-sm">Total</span>
-            <p className="font-display text-4xl font-bold text-amber">
-              {totalScore}
-            </p>
-          </div>
-
-          {/* Rating row */}
-          <div className="mb-4 flex justify-center gap-1 text-xl">
-            {roundResults.map((r, i) => (
-              <span key={i}>
-                {r.totalScore >= 200
-                  ? "\u{1F7E9}"
-                  : r.totalScore >= 80
-                    ? "\u{1F7E8}"
-                    : "\u{1F7E7}"}
-              </span>
-            ))}
-          </div>
-
-          {/* Personal best */}
-          {totalScore >= stats.bestScore && stats.gamesPlayed > 0 && (
-            <p className="mb-3 text-sm font-medium text-amber animate-[ws-score-pop_0.4s_ease]">
-              {"\u{1F31F}"} New personal best!
-            </p>
-          )}
-
-          {/* Stats row */}
-          <div className="mb-5 flex justify-center gap-6 text-center text-xs text-text-secondary">
-            <div>
-              <p className="text-lg font-bold text-text-primary">
-                {stats.streak}
-              </p>
-              <p>Streak</p>
-            </div>
-            <div>
-              <p className="text-lg font-bold text-text-primary">
-                {stats.bestScore}
-              </p>
-              <p>Best</p>
-            </div>
-            <div>
-              <p className="text-lg font-bold text-text-primary">
-                {stats.averageScore}
-              </p>
-              <p>Average</p>
-            </div>
-            <div>
-              <p className="text-lg font-bold text-text-primary">
-                {stats.gamesPlayed}
-              </p>
-              <p>Played</p>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center justify-center gap-3">
-            <button
-              onClick={handleShare}
-              className="rounded-xl bg-amber px-8 py-3 font-semibold text-white transition-transform hover:scale-105 active:scale-95"
-            >
-              {copied ? "Copied!" : "Share Results"}
-            </button>
-            {isQuickplay && (
-              <button
-                onClick={startNewQuickplay}
-                className="rounded-xl border-2 border-amber px-6 py-2.5 font-semibold text-amber transition-transform hover:scale-105 active:scale-95"
-              >
-                New Game
-              </button>
-            )}
-          </div>
-
-          {/* Quickplay link on daily results */}
-          {!isQuickplay && (
-            <Link
-              href="/daily/wordsmith/quickplay"
-              className="mt-4 inline-block rounded-xl border-2 border-amber px-6 py-2.5 text-sm font-semibold text-amber transition-transform hover:scale-105 active:scale-95 no-underline"
-            >
-              Want more? Try Quickplay &rarr;
-            </Link>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // ── Main game view (playing / rerolling / choosing-powerup) ────────────
+  // ── Main game view (playing / rerolling / choosing-powerup / results) ───
 
   return (
     <div
@@ -861,36 +723,41 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
       )}
 
       {/* Round indicator */}
-      <div className="mb-3 flex items-center gap-3">
-        {Array.from({ length: TOTAL_ROUNDS }).map((_, i) => (
-          <div
-            key={i}
-            className={`h-3 w-3 rounded-full transition-all ${
-              i < currentRound
-                ? "bg-amber"
-                : i === currentRound
-                  ? "bg-amber scale-125"
-                  : "bg-gray-300"
-            }`}
-            style={
-              i === currentRound
-                ? { animation: "ws-round-pulse 1.5s ease infinite" }
-                : undefined
-            }
-          />
-        ))}
-      </div>
+      {phase !== "results" && (
+        <>
+          {/* Round indicator */}
+          <div className="mb-3 flex items-center gap-3">
+            {Array.from({ length: TOTAL_ROUNDS }).map((_, i) => (
+              <div
+                key={i}
+                className={`h-3 w-3 rounded-full transition-all ${
+                  i < currentRound
+                    ? "bg-amber"
+                    : i === currentRound
+                      ? "bg-amber scale-125"
+                      : "bg-gray-300"
+                }`}
+                style={
+                  i === currentRound
+                    ? { animation: "ws-round-pulse 1.5s ease infinite" }
+                    : undefined
+                }
+              />
+            ))}
+          </div>
 
-      {/* Score display */}
-      <div className="mb-4 text-center">
-        <span className="text-text-secondary text-xs">Score</span>
-        <p className="font-display text-3xl font-bold text-amber">
-          {totalScore}
-        </p>
-      </div>
+          {/* Score display */}
+          <div className="mb-4 text-center">
+            <span className="text-text-secondary text-xs">Score</span>
+            <p className="font-display text-3xl font-bold text-amber">
+              {totalScore}
+            </p>
+          </div>
+        </>
+      )}
 
       {/* Active power-ups */}
-      {activePowerUps.length > 0 && (
+      {activePowerUps.length > 0 && phase !== "results" && (
         <div className="mb-3 flex flex-wrap justify-center gap-1.5">
           {activePowerUps.map((id, idx) => {
             const pu = getPowerUpById(id);
@@ -927,45 +794,47 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
       )}
 
       {/* Letter tiles */}
-      <div className="mb-4 flex flex-wrap justify-center gap-2">
-        {tiles.map((tile) => {
-          const isSelected = selectedTileIds.includes(tile.id);
-          const isRerollTarget = rerollSelected.includes(tile.id);
-          return (
-            <button
-              key={tile.id}
-              onClick={() => toggleTile(tile.id)}
-              disabled={phase === "choosing-powerup" || phase === "score-breakdown"}
-              className={`
-                relative flex h-14 w-14 flex-col items-center justify-center rounded-xl
-                border-2 font-bold text-lg transition-all select-none
-                ${
-                  isSelected
-                    ? "border-amber bg-amber/20 text-amber scale-90 opacity-50"
-                    : isRerollTarget
-                      ? "border-red-400 bg-red-50 text-red-600 scale-105"
-                      : tile.isWildcard
-                        ? "border-purple bg-purple/10 text-purple"
-                        : "border-gray-200 bg-white text-text-primary hover:border-amber/50 hover:bg-amber/5"
+      {phase !== "results" && (
+        <div className="mb-4 flex flex-wrap justify-center gap-2">
+          {tiles.map((tile) => {
+            const isSelected = selectedTileIds.includes(tile.id);
+            const isRerollTarget = rerollSelected.includes(tile.id);
+            return (
+              <button
+                key={tile.id}
+                onClick={() => toggleTile(tile.id)}
+                disabled={phase === "choosing-powerup" || phase === "score-breakdown"}
+                className={`
+                  relative flex h-14 w-14 flex-col items-center justify-center rounded-xl
+                  border-2 font-bold text-lg transition-all select-none
+                  ${
+                    isSelected
+                      ? "border-amber bg-amber/20 text-amber scale-90 opacity-50"
+                      : isRerollTarget
+                        ? "border-red-400 bg-red-50 text-red-600 scale-105"
+                        : tile.isWildcard
+                          ? "border-purple bg-purple/10 text-purple"
+                          : "border-gray-200 bg-white text-text-primary hover:border-amber/50 hover:bg-amber/5"
+                  }
+                  ${shake && !isSelected ? "animate-[shake_0.4s_ease]" : ""}
+                `}
+                style={
+                  !isSelected && !isRerollTarget
+                    ? { animation: "ws-tile-return 0.15s ease" }
+                    : undefined
                 }
-                ${shake && !isSelected ? "animate-[shake_0.4s_ease]" : ""}
-              `}
-              style={
-                !isSelected && !isRerollTarget
-                  ? { animation: "ws-tile-return 0.15s ease" }
-                  : undefined
-              }
-            >
-              <span className="font-grotesk text-xl leading-none">
-                {tile.isWildcard ? "\u2605" : tile.letter}
-              </span>
-              <span className="absolute bottom-0.5 right-1 text-[9px] opacity-50">
-                {tile.isWildcard ? "?" : tile.value}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              >
+                <span className="font-grotesk text-xl leading-none">
+                  {tile.isWildcard ? "\u2605" : tile.letter}
+                </span>
+                <span className="absolute bottom-0.5 right-1 text-[9px] opacity-50">
+                  {tile.isWildcard ? "?" : tile.value}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Word building area */}
       {phase === "playing" && (
@@ -1017,6 +886,139 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
             </button>
           </div>
         </>
+      )}
+
+      {/* Results card — above last round's breakdown */}
+      {phase === "results" && (
+        <div className="mt-4 w-full animate-[fade-up_0.3s_ease]">
+          <div className="clay-card mx-auto w-full max-w-md p-6 text-center">
+            <div className="mb-1 text-4xl">{"\u2692\uFE0F"}</div>
+            <h2 className="font-display mb-1 text-2xl font-bold text-amber">
+              {isQuickplay ? "WORDSMITH Quickplay" : `WORDSMITH #${dayNumber}`}
+            </h2>
+
+            {/* Round breakdown */}
+            <div className="my-4 space-y-2">
+              {roundResults.map((r, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between rounded-lg bg-white/60 px-3 py-2 opacity-0"
+                  style={{
+                    animation: `ws-stagger-in 0.3s ease ${i * 0.15}s forwards`,
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-text-secondary text-xs font-medium">
+                      R{r.roundNumber}
+                    </span>
+                    <span className="font-grotesk text-sm font-bold tracking-wider">
+                      {r.word}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {r.powerUpChosen && (
+                      <span className="text-sm" title={r.powerUpChosen.name}>
+                        {r.powerUpChosen.emoji}
+                      </span>
+                    )}
+                    <span className="font-grotesk text-sm font-bold text-amber">
+                      {r.totalScore}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Total */}
+            <div
+              className="mb-4 opacity-0"
+              style={{
+                animation: `ws-stagger-in 0.3s ease ${roundResults.length * 0.15}s forwards`,
+              }}
+            >
+              <span className="text-text-secondary text-sm">Total</span>
+              <p className="font-display text-4xl font-bold text-amber">
+                {totalScore}
+              </p>
+            </div>
+
+            {/* Rating row */}
+            <div className="mb-4 flex justify-center gap-1 text-xl">
+              {roundResults.map((r, i) => (
+                <span key={i}>
+                  {r.totalScore >= 200
+                    ? "\u{1F7E9}"
+                    : r.totalScore >= 80
+                      ? "\u{1F7E8}"
+                      : "\u{1F7E7}"}
+                </span>
+              ))}
+            </div>
+
+            {/* Personal best */}
+            {totalScore >= stats.bestScore && stats.gamesPlayed > 0 && (
+              <p className="mb-3 text-sm font-medium text-amber animate-[ws-score-pop_0.4s_ease]">
+                {"\u{1F31F}"} New personal best!
+              </p>
+            )}
+
+            {/* Stats row */}
+            <div className="mb-5 flex justify-center gap-6 text-center text-xs text-text-secondary">
+              <div>
+                <p className="text-lg font-bold text-text-primary">
+                  {stats.streak}
+                </p>
+                <p>Streak</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-text-primary">
+                  {stats.bestScore}
+                </p>
+                <p>Best</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-text-primary">
+                  {stats.averageScore}
+                </p>
+                <p>Average</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-text-primary">
+                  {stats.gamesPlayed}
+                </p>
+                <p>Played</p>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={handleShare}
+                className="rounded-xl bg-amber px-8 py-3 font-semibold text-white transition-transform hover:scale-105 active:scale-95"
+              >
+                {copied ? "Copied!" : "Share Results"}
+              </button>
+              {isQuickplay && (
+                <button
+                  onClick={startNewQuickplay}
+                  className="rounded-xl border-2 border-amber px-6 py-2.5 font-semibold text-amber transition-transform hover:scale-105 active:scale-95"
+                >
+                  New Game
+                </button>
+              )}
+            </div>
+
+            {/* Quickplay link on daily results */}
+            {!isQuickplay && (
+              <Link
+                href="/daily/wordsmith/quickplay"
+                className="mt-4 inline-block rounded-xl border-2 border-amber px-6 py-2.5 text-sm font-semibold text-amber transition-transform hover:scale-105 active:scale-95 no-underline"
+              >
+                Want more? Try Quickplay &rarr;
+              </Link>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Power-up selection overlay — above breakdown so score stays visible */}
@@ -1071,7 +1073,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
       )}
 
       {/* Score breakdown overlay */}
-      {(phase === "score-breakdown" || phase === "choosing-powerup") && breakdownData && (
+      {(phase === "score-breakdown" || phase === "choosing-powerup" || phase === "results") && breakdownData && (
         <div
           className="mt-4 w-full animate-[fade-up_0.3s_ease]"
           onClick={phase === "score-breakdown" ? handleBreakdownTap : undefined}
