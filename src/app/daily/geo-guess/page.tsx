@@ -7,7 +7,7 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "GeoGuess",
+  title: "Where in the World",
   description:
     "Guess the country from progressive hints: flag, capital, population, and fun facts. 4 guesses, 1 country per day.",
   path: "daily/geo-guess",
@@ -19,7 +19,7 @@ export default function GeoGuessPage() {
 
   return (
     <main>
-      <GameJsonLd name="GeoGuess" description="Guess the country from progressive hints: flag, capital, population, and fun facts. 4 guesses, 1 country per day." path="daily/geo-guess" category="daily" />
+      <GameJsonLd name="Where in the World" description="Guess the country from progressive hints: flag, capital, population, and fun facts. 4 guesses, 1 country per day." path="daily/geo-guess" category="daily" />
       <GeoGuessGame puzzle={puzzle} />
       <MoreDailyGames currentSlug="geo-guess" />
     </main>

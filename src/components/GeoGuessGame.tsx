@@ -172,7 +172,7 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
     );
     while (squares.length < MAX_GUESSES) squares.push("\u2B1C");
 
-    const text = `\u{1F30D} GeoGuess ${date} — ${guessCount}/${MAX_GUESSES}\n${squares.join("")}\ngamesite.app/daily/geo-guess`;
+    const text = `\u{1F30D} Where in the World ${date} — ${guessCount}/${MAX_GUESSES}\n${squares.join("")}\ngamesite.app/daily/geo-guess`;
 
     const ok = await shareOrCopy(text);
     if (ok) {
@@ -193,7 +193,7 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
       >
         <div className="bg-white rounded-2xl shadow-lg border border-border-light p-8 max-w-md w-full text-center">
           <div className="text-5xl mb-4">{"\u{1F30D}"}</div>
-          <h1 className="text-2xl font-bold text-text-primary mb-1">GeoGuess</h1>
+          <h1 className="text-2xl font-bold text-text-primary mb-1">Where in the World</h1>
           <p className="text-text-muted text-sm mb-6">
             Guess the country from progressive hints. You get 4 guesses — each
             wrong answer reveals a new clue.
@@ -246,7 +246,7 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-bold text-text-primary">
-              GeoGuess
+              Where in the World
             </h1>
             <p className="text-text-dim text-xs">{date}</p>
           </div>
@@ -495,7 +495,7 @@ export default function GeoGuessGame({ puzzle }: { puzzle: GeoPuzzle }) {
         open={showStats}
         onClose={() => setShowStats(false)}
         stats={stats}
-        gameName="GeoGuess"
+        gameName="Where in the World"
         color="green"
         maxGuesses={MAX_GUESSES}
       />

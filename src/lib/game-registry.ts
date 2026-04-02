@@ -151,15 +151,6 @@ export const games: Game[] = [
   },
 
   {
-    slug: "geo-guess",
-    name: "GeoGuess",
-    description:
-      "Guess the country from progressive hints: flag, capital, population, and fun facts.",
-    category: "daily",
-    color: "green",
-  },
-
-  {
     slug: "mathler",
     name: "Mathler",
     description:
@@ -184,24 +175,6 @@ export const games: Game[] = [
       "Unscramble five jumbled words before the clock runs out.",
     category: "daily",
     color: "teal",
-  },
-
-  {
-    slug: "emoji-word",
-    name: "Emoji Decoder",
-    description:
-      "Guess the word or phrase from emoji clues — five rounds that get progressively harder.",
-    category: "daily",
-    color: "amber",
-  },
-
-  {
-    slug: "top-5",
-    name: "Top 5",
-    description:
-      "Rank five items in the correct order. How well do you know your facts?",
-    category: "daily",
-    color: "amber",
   },
 
   {
@@ -247,6 +220,33 @@ export const games: Game[] = [
       "Build words from seven letters — every word must use the center. How many can you find?",
     category: "daily",
     color: "green",
+  },
+
+  {
+    slug: "geo-guess",
+    name: "Where in the World",
+    description:
+      "Guess the country from progressive hints: flag, capital, population, and fun facts.",
+    category: "daily",
+    color: "green",
+  },
+
+  {
+    slug: "emoji-word",
+    name: "Emoji Decoder",
+    description:
+      "Guess the word or phrase from emoji clues — five rounds that get progressively harder.",
+    category: "daily",
+    color: "amber",
+  },
+
+  {
+    slug: "top-5",
+    name: "Top 5",
+    description:
+      "Rank five items in the correct order. How well do you know your facts?",
+    category: "daily",
+    color: "amber",
   },
 
   // ── Community Games ──────────────────────────────────────────────────────

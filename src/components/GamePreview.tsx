@@ -148,7 +148,7 @@ function CrosswordPreview() {
   );
 }
 
-/* ─── GeoGuess Mini Preview ────────────────────────────────────────────── */
+/* ─── Where in the World Mini Preview ─────────────────────────────────── */
 
 function GeoGuessPreview() {
   return (
