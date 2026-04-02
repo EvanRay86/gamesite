@@ -162,6 +162,8 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
   const [submitted, setSubmitted] = useState(
     isDaily && savedGame?.finished ? true : false
   );
+  const [showTimesUp, setShowTimesUp] = useState(false);
+  const [dailyScore, setDailyScore] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -193,8 +195,8 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
-          // Don't go to results — show the "keep going?" prompt
           setPhase("endless");
+          setShowTimesUp(true);
           return 0;
         }
         return prev - 1;
@@ -205,6 +207,41 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [phase]);
+
+  // ── Auto-submit score when daily timer expires ────────────────────────
+  useEffect(() => {
+    if (!showTimesUp || !isDaily) return;
+    // Lock in the daily score at time of expiry
+    setDailyScore(currentScore);
+    // Save progress
+    recordGame(currentScore > 0, found.length);
+    saveGame(puzzle.puzzle_date, {
+      found,
+      score: currentScore,
+      finished: true,
+      playerName,
+    });
+    // Auto-submit to leaderboard if player has a name
+    if (playerName.trim()) {
+      fetch("/api/word-bloom/leaderboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: playerName.trim(),
+          score: currentScore,
+          words: found.length,
+          date: puzzle.puzzle_date,
+        }),
+      }).catch(() => {});
+      setSubmitted(true);
+    }
+    // Fetch leaderboard
+    fetch(`/api/word-bloom/leaderboard?date=${puzzle.puzzle_date}`)
+      .then((r) => r.json())
+      .then((data) => setLeaderboard(data.entries ?? []))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showTimesUp]);
 
   // ── Broadcast score in multiplayer ─────────────────────────────────────
   useEffect(() => {
@@ -334,7 +371,11 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
   // ── Submit score to leaderboard ────────────────────────────────────────
   const submitScore = useCallback(async () => {
     if (!playerName.trim()) return;
+    if (submitted) return; // Already submitted (e.g. auto-submitted on timer expiry)
     savePlayerName(playerName.trim());
+
+    // For daily mode, use the locked-in score from timer expiry
+    const scoreToSubmit = isDaily && dailyScore !== null ? dailyScore : currentScore;
 
     try {
       await fetch("/api/word-bloom/leaderboard", {
@@ -342,7 +383,7 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: playerName.trim(),
-          score: currentScore,
+          score: scoreToSubmit,
           words: found.length,
           date: puzzle.puzzle_date,
         }),
@@ -355,7 +396,7 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
     if (isDaily) {
       saveGame(puzzle.puzzle_date, {
         found,
-        score: currentScore,
+        score: scoreToSubmit,
         finished: true,
         playerName: playerName.trim(),
       });
@@ -370,7 +411,7 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
     } catch {
       // silent
     }
-  }, [playerName, currentScore, found, puzzle.puzzle_date, isDaily]);
+  }, [playerName, currentScore, found, puzzle.puzzle_date, isDaily, submitted, dailyScore]);
 
   const handleShare = async () => {
     const pct = Math.round(progressPct);
@@ -588,7 +629,7 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
   }
 
   // ════════════════════════════════════════════════════════════════════════
-  // ENDLESS PROMPT (timer expired — choose to keep going or finish)
+  // ENDLESS PHASE (timer expired — show modal or free play)
   // ════════════════════════════════════════════════════════════════════════
   if (phase === "endless") {
     return (
@@ -597,44 +638,53 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
           {/* Score header */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-text-muted">
-              Endless Mode
+              {showTimesUp ? "" : "Endless Mode"}
             </span>
             <span className="text-sm font-semibold text-text-muted">
               {currentScore} pts &middot; {found.length} words
             </span>
           </div>
 
-          {/* Keep going prompt */}
-          <div className="bg-white rounded-2xl border border-border-light shadow-sm p-5 mb-4 text-center">
-            <p className="text-lg font-bold text-text-primary mb-1">
-              Time&apos;s up!
-            </p>
-            <p className="text-3xl font-bold text-green mb-1">
-              {currentScore} pts
-            </p>
-            <p className="text-text-muted text-sm mb-4">
-              {found.length} words &middot; {rank.label}
-            </p>
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={finishGame}
-                className="rounded-full bg-green px-6 py-2.5 text-sm font-semibold
-                           text-white hover:bg-green/90 transition-colors"
-              >
-                Finish &amp; Submit
-              </button>
-              <button
-                onClick={() => {
-                  /* Already in endless phase — just dismiss the prompt */
-                }}
-                className="rounded-full border border-border-light px-6 py-2.5
-                           text-sm font-semibold text-text-muted hover:bg-surface
-                           transition-colors"
-              >
-                Keep Going
-              </button>
+          {/* Time's up prompt — shown once, then dismissed */}
+          {showTimesUp && (
+            <div className="bg-white rounded-2xl border border-border-light shadow-sm p-5 mb-4 text-center">
+              <p className="text-lg font-bold text-text-primary mb-1">
+                Time&apos;s up!
+              </p>
+              <p className="text-3xl font-bold text-green mb-1">
+                {(isDaily ? dailyScore ?? currentScore : currentScore)} pts
+              </p>
+              <p className="text-text-muted text-sm mb-1">
+                {found.length} words &middot; {rank.label}
+              </p>
+              {isDaily && submitted && (
+                <p className="text-xs text-green mb-3">Score submitted!</p>
+              )}
+              {isDaily && !submitted && (
+                <p className="text-xs text-text-muted mb-3">Enter a name on the results screen to submit your score.</p>
+              )}
+              {!isDaily && (
+                <div className="mb-3" />
+              )}
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={finishGame}
+                  className="rounded-full bg-green px-6 py-2.5 text-sm font-semibold
+                             text-white hover:bg-green/90 transition-colors"
+                >
+                  See Results
+                </button>
+                <button
+                  onClick={() => setShowTimesUp(false)}
+                  className="rounded-full border border-border-light px-6 py-2.5
+                             text-sm font-semibold text-text-muted hover:bg-surface
+                             transition-colors"
+                >
+                  Keep Going
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Message toast */}
           <div className="h-7 flex items-center justify-center mb-1">
@@ -715,10 +765,17 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
             <h2 className="font-display text-3xl text-text-primary mb-1">
               {rank.label}
             </h2>
-            <p className="text-4xl font-bold text-green mb-1">{currentScore}</p>
+            <p className="text-4xl font-bold text-green mb-1">
+              {isDaily && dailyScore !== null ? dailyScore : currentScore}
+            </p>
             <p className="text-text-muted text-sm mb-4">
               {found.length} words &middot; {Math.round(progressPct)}% of max
             </p>
+            {isDaily && dailyScore !== null && currentScore > dailyScore && (
+              <p className="text-xs text-text-muted mb-2">
+                +{currentScore - dailyScore} pts in endless mode (not scored)
+              </p>
+            )}
 
             <div className="w-full h-2.5 bg-surface rounded-full overflow-hidden mb-4">
               <div
