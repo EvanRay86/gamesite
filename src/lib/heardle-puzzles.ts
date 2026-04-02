@@ -53,6 +53,23 @@ const seedPuzzles: HeardlePuzzle[] = [
     soundcloudUrl: "https://soundcloud.com/nirvana/smells-like-teen-spirit",
   },
 
+  {
+    date: "2026-04-02",
+    variant: "all",
+    title: "Run Away With Me",
+    artist: "Carly Rae Jepsen",
+    year: 2015,
+    soundcloudUrl: "https://soundcloud.com/carlyraejepsen/run-away-with-me",
+  },
+  {
+    date: "2026-04-03",
+    variant: "all",
+    title: "Dracula (JENNIE Remix)",
+    artist: "Tame Impala, JENNIE",
+    year: 2026,
+    soundcloudUrl: "https://soundcloud.com/tame-impala/dracula-jennie-remix",
+  },
+
   // ── Pop variant ───────────────────────────────────────────────────────
   {
     date: "2026-03-24",
@@ -217,6 +234,10 @@ export const songBank: string[] = [
   "We Found Love – Rihanna",
   "Poker Face – Lady Gaga",
   "Bad Romance – Lady Gaga",
+  "Run Away With Me – Carly Rae Jepsen",
+  "Call Me Maybe – Carly Rae Jepsen",
+  "Dracula (JENNIE Remix) – Tame Impala, JENNIE",
+  "The Less I Know the Better – Tame Impala",
 ];
 
 // ---------------------------------------------------------------------------
