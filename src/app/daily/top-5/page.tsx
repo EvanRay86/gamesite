@@ -1,18 +1,22 @@
 import Link from "next/link";
 import Top5Game from "@/components/Top5Game";
 import MoreDailyGames from "@/components/MoreDailyGames";
+import GameJsonLd from "@/components/seo/GameJsonLd";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import {
   getTop5PuzzleByDate,
   getTodayDate,
   getFallbackTop5Puzzle,
 } from "@/lib/top5-puzzles";
+import { buildGameMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
-export const metadata = {
-  title: "Top 5 — Gamesite",
+export const metadata = buildGameMetadata({
+  title: "Top 5",
   description: "Rank five items in the correct order. A new challenge every day.",
-};
+  path: "daily/top-5",
+});
 
 export default async function Top5Page() {
   const today = getTodayDate();
@@ -25,6 +29,12 @@ export default async function Top5Page() {
 
   return (
     <main>
+      <GameJsonLd name="Top 5" description="Rank five items in the correct order. A new challenge every day." path="daily/top-5" category="daily" />
+      <Breadcrumbs crumbs={[
+        { label: "Home", href: "/" },
+        { label: "Daily", href: "/daily" },
+        { label: "Top 5" },
+      ]} />
       <Top5Game puzzle={puzzle} />
       <div className="flex justify-center py-6">
         <Link

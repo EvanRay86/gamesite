@@ -1,15 +1,19 @@
 import Link from "next/link";
 import WordLadderGame from "@/components/WordLadderGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
+import GameJsonLd from "@/components/seo/GameJsonLd";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { getWordLadderPuzzle, getTodayDate } from "@/lib/word-ladder-puzzles";
+import { buildGameMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
-export const metadata = {
-  title: "Word Ladder — Gamesite",
+export const metadata = buildGameMetadata({
+  title: "Word Ladder",
   description:
     "Change one letter at a time to transform the start word into the target word.",
-};
+  path: "daily/word-ladder",
+});
 
 export default function WordLadderPage() {
   const today = getTodayDate();
@@ -17,6 +21,12 @@ export default function WordLadderPage() {
 
   return (
     <main>
+      <GameJsonLd name="Word Ladder" description="Change one letter at a time to transform the start word into the target word." path="daily/word-ladder" category="daily" />
+      <Breadcrumbs crumbs={[
+        { label: "Home", href: "/" },
+        { label: "Daily", href: "/daily" },
+        { label: "Word Ladder" },
+      ]} />
       <WordLadderGame puzzle={puzzle} date={today} />
       <div className="flex justify-center py-6">
         <Link

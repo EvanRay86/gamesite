@@ -1,15 +1,19 @@
 import Link from "next/link";
 import ClusterGame from "@/components/ClusterGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
+import GameJsonLd from "@/components/seo/GameJsonLd";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { getPuzzleByDate, getTodayDate, getFallbackPuzzle } from "@/lib/puzzles";
+import { buildGameMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
-export const metadata = {
+export const metadata = buildGameMetadata({
   title: "Cluster",
   description:
     "Find five groups of three words that share a hidden connection. A new puzzle every day.",
-};
+  path: "daily/cluster",
+});
 
 export default async function ClusterPage() {
   const today = getTodayDate();
@@ -21,6 +25,12 @@ export default async function ClusterPage() {
 
   return (
     <main>
+      <GameJsonLd name="Cluster" description="Find five groups of three words that share a hidden connection. A new puzzle every day." path="daily/cluster" category="daily" />
+      <Breadcrumbs crumbs={[
+        { label: "Home", href: "/" },
+        { label: "Daily", href: "/daily" },
+        { label: "Cluster" },
+      ]} />
       <ClusterGame puzzle={puzzle} />
       <div className="flex justify-center py-6">
         <Link

@@ -1,18 +1,22 @@
 import Link from "next/link";
 import AnagramGame from "@/components/AnagramGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
+import GameJsonLd from "@/components/seo/GameJsonLd";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import {
   getAnagramPuzzleByDate,
   getTodayDate,
   getFallbackAnagramPuzzle,
 } from "@/lib/anagram-puzzles";
+import { buildGameMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
-export const metadata = {
-  title: "Anagram Scramble — Gamesite",
+export const metadata = buildGameMetadata({
+  title: "Anagram Scramble",
   description: "Unscramble five words before time runs out. A new challenge every day.",
-};
+  path: "daily/anagram",
+});
 
 export default async function AnagramPage() {
   const today = getTodayDate();
@@ -25,6 +29,12 @@ export default async function AnagramPage() {
 
   return (
     <main>
+      <GameJsonLd name="Anagram Scramble" description="Unscramble five words before time runs out. A new challenge every day." path="daily/anagram" category="daily" />
+      <Breadcrumbs crumbs={[
+        { label: "Home", href: "/" },
+        { label: "Daily", href: "/daily" },
+        { label: "Anagram Scramble" },
+      ]} />
       <AnagramGame puzzle={puzzle} />
       <div className="flex justify-center py-6">
         <Link

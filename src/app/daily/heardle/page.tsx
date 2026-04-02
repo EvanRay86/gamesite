@@ -1,14 +1,18 @@
 import Link from "next/link";
 import HeardleGame from "@/components/HeardleGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
+import GameJsonLd from "@/components/seo/GameJsonLd";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { getHeardlePuzzleAsync, getTodayDate } from "@/lib/heardle-puzzles";
+import { buildGameMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
-export const metadata = {
-  title: "Heardle — Gamesite",
+export const metadata = buildGameMetadata({
+  title: "Heardle",
   description: "Name the song from its opening seconds. 6 clips, 6 guesses.",
-};
+  path: "daily/heardle",
+});
 
 export default async function HeardlePage() {
   const today = getTodayDate();
@@ -16,6 +20,12 @@ export default async function HeardlePage() {
 
   return (
     <main>
+      <GameJsonLd name="Heardle" description="Name the song from its opening seconds. 6 clips, 6 guesses." path="daily/heardle" category="daily" />
+      <Breadcrumbs crumbs={[
+        { label: "Home", href: "/" },
+        { label: "Daily", href: "/daily" },
+        { label: "Heardle" },
+      ]} />
       <HeardleGame puzzle={puzzle} variant="all" />
       <div className="flex justify-center py-6">
         <Link

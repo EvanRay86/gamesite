@@ -1,15 +1,19 @@
 import Link from "next/link";
 import HexleGame from "@/components/HexleGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
+import GameJsonLd from "@/components/seo/GameJsonLd";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { getHexlePuzzle, getFallbackHexleWord } from "@/lib/hexle-words";
+import { buildGameMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
-export const metadata = {
+export const metadata = buildGameMetadata({
   title: "Hexle",
   description:
     "Seven guesses to crack the six-letter word. A new puzzle every day.",
-};
+  path: "daily/hexle",
+});
 
 function getTodayDate(): string {
   return new Date().toISOString().split("T")[0];
@@ -25,6 +29,12 @@ export default async function HexlePage() {
 
   return (
     <main>
+      <GameJsonLd name="Hexle" description="Seven guesses to crack the six-letter word. A new puzzle every day." path="daily/hexle" category="daily" />
+      <Breadcrumbs crumbs={[
+        { label: "Home", href: "/" },
+        { label: "Daily", href: "/daily" },
+        { label: "Hexle" },
+      ]} />
       <HexleGame answer={answer} puzzleDate={today} />
       <div className="flex justify-center py-6">
         <Link

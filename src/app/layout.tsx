@@ -40,18 +40,28 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "Gamesite",
-  url: siteUrl,
-  description:
-    "Play daily word puzzles, trivia, arcade games, and more — free in your browser.",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${siteUrl}/daily`,
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Gamesite",
+    url: siteUrl,
+    description:
+      "Play daily word puzzles, trivia, arcade games, and more — free in your browser.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${siteUrl}/daily`,
+    },
   },
-};
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Gamesite",
+    url: siteUrl,
+    logo: `${siteUrl}/icon.png`,
+    sameAs: [],
+  },
+];
 
 export default function RootLayout({
   children,
@@ -71,10 +81,13 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        {jsonLd.map((schema, i) => (
+          <script
+            key={i}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+        ))}
         <AuthProvider>
           <div className="overflow-wrapper">
             <a href="#main-content" className="skip-to-content">

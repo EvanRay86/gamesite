@@ -6,6 +6,9 @@ import {
   getTodayDate,
   getAvailableVariants,
 } from "@/lib/heardle-puzzles";
+import { buildGameMetadata } from "@/lib/seo";
+import GameJsonLd from "@/components/seo/GameJsonLd";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
 
 export const revalidate = 60;
 
@@ -23,10 +26,11 @@ export function generateMetadata({
   const label = params.variant
     ? params.variant.charAt(0).toUpperCase() + params.variant.slice(1)
     : "Heardle";
-  return {
+  return buildGameMetadata({
     title: `Heardle ${label}`,
     description: `Name the ${label.toLowerCase()} song from its opening seconds.`,
-  };
+    path: `daily/heardle/${params.variant}`,
+  });
 }
 
 export default async function HeardleVariantPage({
@@ -44,8 +48,26 @@ export default async function HeardleVariantPage({
   const today = getTodayDate();
   const puzzle = await getHeardlePuzzleAsync(today, variant);
 
+  const label = variant
+    ? variant.charAt(0).toUpperCase() + variant.slice(1)
+    : "Heardle";
+
   return (
     <main>
+      <GameJsonLd
+        name={`Heardle ${label}`}
+        description={`Name the ${label.toLowerCase()} song from its opening seconds.`}
+        path={`daily/heardle/${variant}`}
+        category="daily"
+      />
+      <Breadcrumbs
+        crumbs={[
+          { label: "Home", href: "/" },
+          { label: "Daily", href: "/daily" },
+          { label: "Heardle", href: "/daily/heardle" },
+          { label },
+        ]}
+      />
       <HeardleGame puzzle={puzzle} variant={variant} />
       <div className="flex justify-center py-6">
         <Link

@@ -1,18 +1,28 @@
 import Link from "next/link";
 import WordsmithModeSelect from "@/components/WordsmithModeSelect";
 import MoreDailyGames from "@/components/MoreDailyGames";
+import GameJsonLd from "@/components/seo/GameJsonLd";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
+import { buildGameMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Wordsmith — Gamesite",
+export const metadata = buildGameMetadata({
+  title: "Wordsmith",
   description:
     "Forge words through five rounds, collect power-ups, and chase the daily high score.",
-};
+  path: "daily/wordsmith",
+});
 
 export default function WordsmithPage() {
   const today = new Date().toISOString().slice(0, 10);
 
   return (
     <main>
+      <GameJsonLd name="Wordsmith" description="Forge words through five rounds, collect power-ups, and chase the daily high score." path="daily/wordsmith" category="daily" />
+      <Breadcrumbs crumbs={[
+        { label: "Home", href: "/" },
+        { label: "Daily", href: "/daily" },
+        { label: "Wordsmith" },
+      ]} />
       <WordsmithModeSelect dateStr={today} />
       <div className="flex justify-center py-6">
         <Link

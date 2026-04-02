@@ -1,23 +1,33 @@
 import CrosswordGame from "@/components/CrosswordGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
+import GameJsonLd from "@/components/seo/GameJsonLd";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { getCrosswordPuzzle } from "@/lib/crossword-puzzles";
+import { buildGameMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
-export const metadata = {
+export const metadata = buildGameMetadata({
   title: "News Crossword",
   description:
     "A daily crossword puzzle built from today's headlines and pop culture.",
-};
+  path: "daily/crossword",
+});
 
 export default async function CrosswordPage() {
   const today = new Date().toISOString().slice(0, 10);
   const puzzle = await getCrosswordPuzzle(today);
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 py-8">
+    <main className="mx-auto max-w-[1100px] px-4 py-8">
+      <GameJsonLd name="News Crossword" description="A daily crossword puzzle built from today's headlines and pop culture." path="daily/crossword" category="daily" />
+      <Breadcrumbs crumbs={[
+        { label: "Home", href: "/" },
+        { label: "Daily", href: "/daily" },
+        { label: "News Crossword" },
+      ]} />
       <CrosswordGame puzzle={puzzle} />
       <MoreDailyGames currentSlug="crossword" />
-    </div>
+    </main>
   );
 }
