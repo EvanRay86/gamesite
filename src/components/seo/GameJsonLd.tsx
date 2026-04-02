@@ -7,16 +7,22 @@ interface Props {
   description: string;
   /** e.g. "daily/cluster" */
   path: string;
-  category: "daily" | "arcade";
+  category: "daily" | "arcade" | "learn";
 }
+
+const sectionMap: Record<string, { label: string; slug: string }> = {
+  daily: { label: "Daily Games", slug: "daily" },
+  arcade: { label: "Arcade", slug: "arcade" },
+  learn: { label: "Learn", slug: "learn" },
+};
 
 export default function GameJsonLd({ name, description, path, category }: Props) {
   const gameSchema = buildGameJsonLd({ name, description, path, category });
 
-  const section = category === "daily" ? "Daily Games" : "Arcade";
+  const { label: section, slug } = sectionMap[category];
   const breadcrumbs = buildBreadcrumbJsonLd([
     { name: "Home", url: siteUrl },
-    { name: section, url: `${siteUrl}/${category === "daily" ? "daily" : "arcade"}` },
+    { name: section, url: `${siteUrl}/${slug}` },
     { name, url: `${siteUrl}/${path}` },
   ]);
 

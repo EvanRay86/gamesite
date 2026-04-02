@@ -43,7 +43,7 @@ export function buildGameJsonLd(opts: {
   description: string;
   /** e.g. "daily/cluster" */
   path: string;
-  category: "daily" | "arcade";
+  category: "daily" | "arcade" | "learn";
 }) {
   return {
     "@context": "https://schema.org",
