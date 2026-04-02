@@ -10,7 +10,7 @@ const siteUrl = "https://gamesite.app";
 
 export const metadata: Metadata = {
   title: {
-    default: "Gamesite — Browser Games",
+    default: "Gamesite — Free Daily Puzzles, Trivia & Arcade Games",
     template: "%s | Gamesite",
   },
   description:
@@ -21,13 +21,13 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "Gamesite",
-    title: "Gamesite — Browser Games",
+    title: "Gamesite — Free Daily Puzzles, Trivia & Arcade Games",
     description:
       "Play daily word puzzles, trivia, arcade games, and more — free in your browser.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Gamesite — Browser Games",
+    title: "Gamesite — Free Daily Puzzles, Trivia & Arcade Games",
     description:
       "Play daily word puzzles, trivia, arcade games, and more — free in your browser.",
   },
