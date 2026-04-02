@@ -583,7 +583,7 @@ export default function OrbMerge() {
       x,
       y: DROP_Y,
       vx: 0,
-      vy: 0.2,
+      vy: 0.1,
       tier,
       radius: def.radius,
       merging: false,
@@ -703,8 +703,11 @@ export default function OrbMerge() {
         }
       }
 
-      // Bottom collision — only if orb center is inside the cup
-      if (orb.y + orb.radius > CUP_BOTTOM_Y && orb.x > cupLeftX(orb.y) && orb.x < cupRightX(orb.y)) {
+      // Bottom collision — only if orb is truly inside the cup
+      // Check against wall position just above the bottom to avoid
+      // orbs outside the wall snagging on the floor edge
+      const wallCheckY = Math.min(orb.y, CUP_BOTTOM_Y - 5);
+      if (orb.y + orb.radius > CUP_BOTTOM_Y && orb.x > cupLeftX(wallCheckY) + orb.radius * 0.5 && orb.x < cupRightX(wallCheckY) - orb.radius * 0.5) {
         const impact = Math.abs(orb.vy);
         orb.y = CUP_BOTTOM_Y - orb.radius;
         orb.vy = -Math.abs(orb.vy) * RESTITUTION_WALL;
