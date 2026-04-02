@@ -2,22 +2,32 @@ import Image from "next/image";
 
 /* ─── Cluster Mini Preview ───────────────────────────────────────────────── */
 
+/*
+ * Valid Cluster groups (5 groups × 3 words):
+ *   Birds:       ROBIN, EAGLE, RAVEN
+ *   Trees:       MAPLE, CEDAR, BIRCH
+ *   Instruments: PIANO, DRUMS, FLUTE
+ *   Games:       CHESS, POKER, DARTS
+ *   Planets:     MARS, VENUS, PLUTO
+ *
+ * Preview shows a mid-game state with the "Birds" group selected.
+ */
 const clusterWords = [
-  { word: "CASH", selected: false },
-  { word: "LOVER", selected: true },
-  { word: "TABLE", selected: false },
-  { word: "RADIO", selected: false },
-  { word: "FOLK", selected: true },
-  { word: "HEAT", selected: false },
-  { word: "PHOTO", selected: false },
-  { word: "NIGHT", selected: true },
-  { word: "CARD", selected: false },
-  { word: "SALSA", selected: false },
-  { word: "SOUND", selected: false },
+  { word: "CHESS", selected: false },
+  { word: "ROBIN", selected: true },
+  { word: "MAPLE", selected: false },
+  { word: "VENUS", selected: false },
+  { word: "DRUMS", selected: false },
+  { word: "EAGLE", selected: true },
+  { word: "BIRCH", selected: false },
+  { word: "MARS", selected: false },
+  { word: "FLUTE", selected: false },
   { word: "POKER", selected: false },
-  { word: "CLUB", selected: false },
-  { word: "RIDGE", selected: false },
-  { word: "RUMMY", selected: false },
+  { word: "RAVEN", selected: true },
+  { word: "CEDAR", selected: false },
+  { word: "PIANO", selected: false },
+  { word: "PLUTO", selected: false },
+  { word: "DARTS", selected: false },
 ];
 
 function ClusterPreview() {
