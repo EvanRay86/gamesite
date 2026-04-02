@@ -6,11 +6,11 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 const CANVAS_W = 440;
 const CANVAS_H = 700;
-const GRAVITY = 0.45;
+const GRAVITY = 0.18;
 const FRICTION = 0.982;
 const RESTITUTION_WALL = 0.2;
 const RESTITUTION_ORB = 0.12; // very low — sticky, squelchy
-const SLEEP_THRESHOLD = 0.25;
+const SLEEP_THRESHOLD = 0.2;
 const DROP_COOLDOWN = 24;
 const PHYSICS_SUBSTEPS = 4;
 const MERGE_TOLERANCE = 3; // px tolerance beyond touching
@@ -19,26 +19,30 @@ const SCALE_ANIM_FRAMES = 18;
 const COMBO_WINDOW = 120;
 const STICKY_FORCE = 0.08; // attraction between touching non-merge orbs
 const STICKY_DAMPING = 0.85; // velocity damping on contact
-const OVERFLOW_GRACE = 90; // frames above rim before game over
 const SAVE_KEY = "orb-merge-best";
 const STATS_KEY = "orb-merge-stats";
 
 // ── Cup Geometry ─────────────────────────────────────────────────────────────
-// Trapezoid cup: wider at top, narrower at bottom, with rounded bottom
+// Trapezoid cup: wider at top, narrower at bottom, shorter height
 
-const CUP_RIM_Y = 160; // y-position of cup opening
-const CUP_BOTTOM_Y = 600; // y-position of cup floor
-const CUP_TOP_W = 320; // width at rim
-const CUP_BOTTOM_W = 240; // width at bottom
-const CUP_CORNER_R = 30; // bottom corner rounding
+const CUP_RIM_Y = 200; // y-position of cup opening
+const CUP_BOTTOM_Y = 520; // y-position of cup floor (shorter cup)
+const CUP_TOP_W = 300; // width at rim
+const CUP_BOTTOM_W = 220; // width at bottom
+const CUP_CORNER_R = 25; // bottom corner rounding
 const CUP_CX = CANVAS_W / 2; // cup center x
 const CUP_RIM_L = CUP_CX - CUP_TOP_W / 2;
 const CUP_RIM_R = CUP_CX + CUP_TOP_W / 2;
 const CUP_BOT_L = CUP_CX - CUP_BOTTOM_W / 2;
 const CUP_BOT_R = CUP_CX + CUP_BOTTOM_W / 2;
 
-// Drop zone is above the cup
-const DROP_Y = CUP_RIM_Y - 30;
+// Drop zone — wider than the cup so you can aim past the edges
+const DROP_Y = CUP_RIM_Y - 40;
+const DROP_LEFT = 30; // much wider than cup
+const DROP_RIGHT = CANVAS_W - 30;
+
+// Death line — orbs falling below this = game over
+const DEATH_LINE_Y = CUP_BOTTOM_Y + 100;
 
 // Colors
 const BG_TOP = "#0f0a1e";
@@ -480,7 +484,6 @@ export default function OrbMerge() {
   const cursorXRef = useRef(CANVAS_W / 2);
   const currentTierRef = useRef(0);
   const nextTierRef = useRef(0);
-  const overflowTimerRef = useRef(0);
   const shakeRef = useRef({ x: 0, y: 0, intensity: 0 });
   const statsRef = useRef<GameStats>({
     gamesPlayed: 0,
@@ -559,7 +562,6 @@ export default function OrbMerge() {
     highestTierRef.current = 0;
     bestComboRef.current = 0;
     dropCooldownRef.current = 0;
-    overflowTimerRef.current = 0;
     currentTierRef.current = randomDropTier();
     nextTierRef.current = randomDropTier();
     nextIdRef.current = 0;
@@ -574,9 +576,7 @@ export default function OrbMerge() {
 
     const tier = currentTierRef.current;
     const def = TIERS[tier];
-    const leftBound = cupLeftX(DROP_Y) + def.radius + 4;
-    const rightBound = cupRightX(DROP_Y) - def.radius - 4;
-    const x = clamp(cursorXRef.current, leftBound, rightBound);
+    const x = clamp(cursorXRef.current, DROP_LEFT + def.radius, DROP_RIGHT - def.radius);
 
     orbsRef.current.push({
       id: nextIdRef.current++,
@@ -630,66 +630,71 @@ export default function OrbMerge() {
       orb.x += orb.vx;
       orb.y += orb.vy;
 
-      // Cup wall collisions (angled walls)
-      const leftWall = cupLeftX(orb.y);
-      const rightWall = cupRightX(orb.y);
+      // Cup wall collisions — only apply inside the cup's vertical range
+      if (orb.y + orb.radius > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
+        const leftWall = cupLeftX(orb.y);
+        const rightWall = cupRightX(orb.y);
 
-      if (orb.x - orb.radius < leftWall) {
-        orb.x = leftWall + orb.radius;
-        // Reflect off angled wall — compute wall normal
-        const wallDx = CUP_BOT_L - CUP_RIM_L;
-        const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
-        const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
-        const nx = -wallDy / wallLen; // normal pointing inward (right)
-        const ny = wallDx / wallLen;
-        const dot = orb.vx * nx + orb.vy * ny;
-        if (dot < 0) {
-          orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
-          orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
-          orb.vx *= 0.7;
-          orb.vy *= 0.7;
+        if (orb.x - orb.radius < leftWall) {
+          orb.x = leftWall + orb.radius;
+          const wallDx = CUP_BOT_L - CUP_RIM_L;
+          const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
+          const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
+          const nx = -wallDy / wallLen;
+          const ny = wallDx / wallLen;
+          const dot = orb.vx * nx + orb.vy * ny;
+          if (dot < 0) {
+            orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
+            orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
+            orb.vx *= 0.7;
+            orb.vy *= 0.7;
+          }
+        }
+
+        if (orb.x + orb.radius > rightWall) {
+          orb.x = rightWall - orb.radius;
+          const wallDx = CUP_BOT_R - CUP_RIM_R;
+          const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
+          const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
+          const nx = wallDy / wallLen;
+          const ny = -wallDx / wallLen;
+          const dot = orb.vx * nx + orb.vy * ny;
+          if (dot < 0) {
+            orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
+            orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
+            orb.vx *= 0.7;
+            orb.vy *= 0.7;
+          }
         }
       }
 
-      if (orb.x + orb.radius > rightWall) {
-        orb.x = rightWall - orb.radius;
-        const wallDx = CUP_BOT_R - CUP_RIM_R;
-        const wallDy = (CUP_BOTTOM_Y - CUP_CORNER_R) - CUP_RIM_Y;
-        const wallLen = Math.sqrt(wallDx * wallDx + wallDy * wallDy);
-        const nx = wallDy / wallLen; // normal pointing inward (left)
-        const ny = -wallDx / wallLen;
-        const dot = orb.vx * nx + orb.vy * ny;
-        if (dot < 0) {
-          orb.vx -= 2 * dot * nx * (1 - RESTITUTION_WALL);
-          orb.vy -= 2 * dot * ny * (1 - RESTITUTION_WALL);
-          orb.vx *= 0.7;
-          orb.vy *= 0.7;
-        }
-      }
-
-      // Bottom collision
-      if (orb.y + orb.radius > CUP_BOTTOM_Y) {
+      // Bottom collision — only if orb is inside the cup horizontally
+      const isInsideCup = orb.x > cupLeftX(orb.y) && orb.x < cupRightX(orb.y);
+      if (orb.y + orb.radius > CUP_BOTTOM_Y && isInsideCup) {
         const impact = Math.abs(orb.vy);
         orb.y = CUP_BOTTOM_Y - orb.radius;
         orb.vy = -Math.abs(orb.vy) * RESTITUTION_WALL;
         orb.vx *= 0.85;
-        // Squish on floor impact — flatten vertically, widen horizontally
-        const squishAmt = Math.min(0.3, impact * 0.06);
-        orb.squishX = Math.min(1.3, orb.squishX + squishAmt);
-        orb.squishY = Math.max(0.7, orb.squishY - squishAmt);
+        // Squish on floor impact
+        const squishAmt = Math.min(0.5, impact * 0.12);
+        orb.squishX = Math.min(1.5, orb.squishX + squishAmt);
+        orb.squishY = Math.max(0.5, orb.squishY - squishAmt);
       }
 
-      // Wall squish
-      if (orb.x - orb.radius < cupLeftX(orb.y) + 2 || orb.x + orb.radius > cupRightX(orb.y) - 2) {
-        const impact = Math.abs(orb.vx);
-        const squishAmt = Math.min(0.25, impact * 0.05);
-        orb.squishX = Math.max(0.75, orb.squishX - squishAmt);
-        orb.squishY = Math.min(1.25, orb.squishY + squishAmt);
+      // Wall collisions only apply within the cup's vertical range
+      if (orb.y > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
+        // Wall squish
+        if (orb.x - orb.radius < cupLeftX(orb.y) + 2 || orb.x + orb.radius > cupRightX(orb.y) - 2) {
+          const impact = Math.abs(orb.vx);
+          const squishAmt = Math.min(0.4, impact * 0.1);
+          orb.squishX = Math.max(0.55, orb.squishX - squishAmt);
+          orb.squishY = Math.min(1.45, orb.squishY + squishAmt);
+        }
       }
 
-      // Decay squish back to circle
-      orb.squishX += (1 - orb.squishX) * 0.15;
-      orb.squishY += (1 - orb.squishY) * 0.15;
+      // Decay squish back to circle (slow spring for jelly feel)
+      orb.squishX += (1 - orb.squishX) * 0.08;
+      orb.squishY += (1 - orb.squishY) * 0.08;
 
       if (orb.justDropped > 0) orb.justDropped--;
     }
@@ -740,25 +745,22 @@ export default function OrbMerge() {
           b.vx *= STICKY_DAMPING;
           b.vy *= STICKY_DAMPING;
 
-          // Squish on orb-orb contact
+          // Squish on orb-orb contact (much squishier)
           const impactSpeed = Math.abs(dvDotN);
-          const sqAmt = Math.min(0.2, impactSpeed * 0.04);
-          if (sqAmt > 0.02) {
-            // Squish along collision normal
+          const sqAmt = Math.min(0.4, impactSpeed * 0.1);
+          if (sqAmt > 0.015) {
             const absNx = Math.abs(nx);
             const absNy = Math.abs(ny);
             if (absNx > absNy) {
-              // Mostly horizontal collision — compress X, expand Y
-              a.squishX = Math.max(0.75, a.squishX - sqAmt);
-              a.squishY = Math.min(1.25, a.squishY + sqAmt);
-              b.squishX = Math.max(0.75, b.squishX - sqAmt);
-              b.squishY = Math.min(1.25, b.squishY + sqAmt);
+              a.squishX = Math.max(0.55, a.squishX - sqAmt);
+              a.squishY = Math.min(1.45, a.squishY + sqAmt);
+              b.squishX = Math.max(0.55, b.squishX - sqAmt);
+              b.squishY = Math.min(1.45, b.squishY + sqAmt);
             } else {
-              // Mostly vertical — compress Y, expand X
-              a.squishX = Math.min(1.25, a.squishX + sqAmt);
-              a.squishY = Math.max(0.75, a.squishY - sqAmt);
-              b.squishX = Math.min(1.25, b.squishX + sqAmt);
-              b.squishY = Math.max(0.75, b.squishY - sqAmt);
+              a.squishX = Math.min(1.45, a.squishX + sqAmt);
+              a.squishY = Math.max(0.55, a.squishY - sqAmt);
+              b.squishX = Math.min(1.45, b.squishX + sqAmt);
+              b.squishY = Math.max(0.55, b.squishY - sqAmt);
             }
           }
         }
@@ -980,42 +982,37 @@ export default function OrbMerge() {
           if (comboTimerRef.current <= 0) comboRef.current = 0;
         }
 
-        // Overflow check — any settled orb above the rim?
-        let overflowing = false;
+        // Death check — any orb fallen below the death line?
+        let fallen = false;
         for (const orb of orbs) {
           if (orb.justDropped > 0 || orb.merging) continue;
-          if (orb.y - orb.radius < CUP_RIM_Y) {
-            overflowing = true;
+          if (orb.y > DEATH_LINE_Y) {
+            fallen = true;
             break;
           }
         }
-        if (overflowing) {
-          overflowTimerRef.current++;
-          if (overflowTimerRef.current >= OVERFLOW_GRACE) {
-            phaseRef.current = "dead";
-            setDisplayPhase("dead");
-            setDisplayScore(scoreRef.current);
+        if (fallen) {
+          phaseRef.current = "dead";
+          setDisplayPhase("dead");
+          setDisplayScore(scoreRef.current);
 
-            if (scoreRef.current > bestRef.current) {
-              bestRef.current = scoreRef.current;
-              setDisplayBest(scoreRef.current);
-              try {
-                localStorage.setItem(SAVE_KEY, String(scoreRef.current));
-              } catch {}
-            }
-
-            const st = statsRef.current;
-            st.gamesPlayed++;
-            if (highestTierRef.current > st.highestTier)
-              st.highestTier = highestTierRef.current;
-            if (bestComboRef.current > st.bestCombo)
-              st.bestCombo = bestComboRef.current;
+          if (scoreRef.current > bestRef.current) {
+            bestRef.current = scoreRef.current;
+            setDisplayBest(scoreRef.current);
             try {
-              localStorage.setItem(STATS_KEY, JSON.stringify(st));
+              localStorage.setItem(SAVE_KEY, String(scoreRef.current));
             } catch {}
           }
-        } else {
-          overflowTimerRef.current = Math.max(0, overflowTimerRef.current - 2);
+
+          const st = statsRef.current;
+          st.gamesPlayed++;
+          if (highestTierRef.current > st.highestTier)
+            st.highestTier = highestTierRef.current;
+          if (bestComboRef.current > st.bestCombo)
+            st.bestCombo = bestComboRef.current;
+          try {
+            localStorage.setItem(STATS_KEY, JSON.stringify(st));
+          } catch {}
         }
       }
 
@@ -1070,15 +1067,23 @@ export default function OrbMerge() {
       // Draw cup
       drawCup(ctx, frame);
 
-      // Overflow warning — rim glow when close to game over
-      if (phase === "playing" && overflowTimerRef.current > 10) {
-        const warningAlpha = 0.3 + 0.3 * Math.sin(frame * 0.15);
-        ctx.strokeStyle = `rgba(239, 68, 68, ${warningAlpha})`;
-        ctx.lineWidth = 3;
+      // Death line indicator
+      if (phase === "playing") {
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.2)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 6]);
         ctx.beginPath();
-        ctx.moveTo(CUP_RIM_L, CUP_RIM_Y);
-        ctx.lineTo(CUP_RIM_R, CUP_RIM_Y);
+        ctx.moveTo(20, DEATH_LINE_Y);
+        ctx.lineTo(CANVAS_W - 20, DEATH_LINE_Y);
         ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Small "X" labels at death line edges
+        ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
+        ctx.font = "bold 11px 'Space Grotesk', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("x", 30, DEATH_LINE_Y + 4);
+        ctx.fillText("x", CANVAS_W - 30, DEATH_LINE_Y + 4);
       }
 
       // ── Draw orbs ───────────────────────────────────────────────────
@@ -1192,9 +1197,7 @@ export default function OrbMerge() {
       if (phase === "playing" && dropCooldownRef.current <= 0) {
         const tier = currentTierRef.current;
         const def = TIERS[tier];
-        const leftBound = cupLeftX(DROP_Y) + def.radius + 4;
-        const rightBound = cupRightX(DROP_Y) - def.radius - 4;
-        const cx2 = clamp(cursorXRef.current, leftBound, rightBound);
+        const cx2 = clamp(cursorXRef.current, DROP_LEFT + def.radius, DROP_RIGHT - def.radius);
 
         // Guide line (down into cup)
         ctx.strokeStyle = "rgba(255,255,255,0.1)";
@@ -1340,7 +1343,7 @@ export default function OrbMerge() {
       const rect = canvasRef.current?.getBoundingClientRect();
       if (!rect) return;
       const x = ((e.clientX - rect.left) / rect.width) * CANVAS_W;
-      cursorXRef.current = clamp(x, CUP_RIM_L + 10, CUP_RIM_R - 10);
+      cursorXRef.current = clamp(x, DROP_LEFT + 10, DROP_RIGHT - 10);
     },
     []
   );
@@ -1367,7 +1370,7 @@ export default function OrbMerge() {
         const rect = canvasRef.current?.getBoundingClientRect();
         if (rect) {
           const x = ((e.clientX - rect.left) / rect.width) * CANVAS_W;
-          cursorXRef.current = clamp(x, CUP_RIM_L + 10, CUP_RIM_R - 10);
+          cursorXRef.current = clamp(x, DROP_LEFT + 10, DROP_RIGHT - 10);
         }
         dropOrb();
       }
@@ -1393,10 +1396,10 @@ export default function OrbMerge() {
         }
       }
       if (e.code === "ArrowLeft") {
-        cursorXRef.current = clamp(cursorXRef.current - 8, CUP_RIM_L + 10, CUP_RIM_R - 10);
+        cursorXRef.current = clamp(cursorXRef.current - 8, DROP_LEFT + 10, DROP_RIGHT - 10);
       }
       if (e.code === "ArrowRight") {
-        cursorXRef.current = clamp(cursorXRef.current + 8, CUP_RIM_L + 10, CUP_RIM_R - 10);
+        cursorXRef.current = clamp(cursorXRef.current + 8, DROP_LEFT + 10, DROP_RIGHT - 10);
       }
     }
     window.addEventListener("keydown", onKey);
@@ -1467,7 +1470,7 @@ export default function OrbMerge() {
 
       <p className="text-text-dim text-sm max-w-md text-center">
         Drop orbs into the cup — matching orbs merge on contact into bigger
-        tiers. Don&apos;t let them overflow!
+        tiers. Don&apos;t let any fall out!
       </p>
     </section>
   );
