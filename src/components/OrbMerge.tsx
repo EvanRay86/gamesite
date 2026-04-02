@@ -6,19 +6,22 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 const CANVAS_W = 440;
 const CANVAS_H = 700;
-const GRAVITY = 0.25;
-const FRICTION = 0.995;
-const RESTITUTION_WALL = 0.35;
-const RESTITUTION_ORB = 0.25;
-const SLEEP_THRESHOLD = 0.15;
+const GRAVITY = 0.55;
+const FRICTION = 0.985;
+const RESTITUTION_WALL = 0.25;
+const RESTITUTION_ORB = 0.35;
+const SLEEP_THRESHOLD = 0.3;
 const MERGE_OVERLAP = 0.25; // fraction of radius overlap needed
-const DROP_COOLDOWN = 28; // frames (~0.47s at 60fps)
+const DROP_COOLDOWN = 22; // frames (~0.37s at 60fps)
+const PHYSICS_SUBSTEPS = 4;
 const DANGER_Y = 155; // y-position of danger line (relative to container top)
 const DANGER_GRACE = 90; // frames above danger line before game over
 const COMBO_WINDOW = 120; // frames to chain combos (~2s)
 const GRAVITY_SHIFT_DURATION = 180; // frames (~3s)
 const GRAVITY_SHIFT_MAX_CHARGES = 3;
 const GRAVITY_SHIFT_RECHARGE = 1800; // frames (~30s)
+const MERGE_SHRINK_FRAMES = 8;
+const SCALE_ANIM_FRAMES = 18;
 const SAVE_KEY = "orb-merge-best";
 const STATS_KEY = "orb-merge-stats";
 
@@ -83,7 +86,12 @@ interface Orb {
   tier: number;
   radius: number;
   merging: boolean; // marked for removal after merge
+  mergingTimer: number; // frames left in shrink animation (0 = not shrinking)
+  mergeTargetX: number; // midpoint to shrink toward
+  mergeTargetY: number;
   justDropped: number; // frames since drop (ignore danger line briefly)
+  scaleAnim: number; // 0→1.15→1.0 bounce on spawn from merge
+  scalePhase: number; // frames into scale animation (0 = done)
 }
 
 interface Particle {
@@ -105,6 +113,16 @@ interface ScorePopup {
   life: number;
 }
 
+interface FlashRing {
+  x: number;
+  y: number;
+  radius: number;
+  maxRadius: number;
+  color: string;
+  life: number;
+  maxLife: number;
+}
+
 interface GameStats {
   gamesPlayed: number;
   highestTier: number;
@@ -123,6 +141,182 @@ function dist(x1: number, y1: number, x2: number, y2: number) {
   return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 }
 
+// ── Face Drawing ────────────────────────────────────────────────────────────
+
+function drawFace(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, tier: number) {
+  const s = r / 30; // scale factor relative to a "standard" 30px radius
+
+  if (tier <= 2) {
+    // Small orbs: simple dot eyes + tiny smile
+    const eyeR = Math.max(1.5, 2 * s);
+    const eyeSpacing = 5 * s;
+    const eyeY = y - 2 * s;
+
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.beginPath();
+    ctx.arc(x - eyeSpacing, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + eyeSpacing, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Smile
+    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+    ctx.lineWidth = Math.max(1, 1.2 * s);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(x, y + 1 * s, 4 * s, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+  } else if (tier <= 5) {
+    // Medium orbs: circle eyes with pupils, wider smile
+    const eyeR = Math.max(2, 3.5 * s);
+    const pupilR = Math.max(1, 1.8 * s);
+    const eyeSpacing = 7 * s;
+    const eyeY = y - 3 * s;
+
+    // Eye whites
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.beginPath();
+    ctx.arc(x - eyeSpacing, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + eyeSpacing, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pupils (slightly toward center-bottom for a cute look)
+    ctx.fillStyle = "rgba(0,0,0,0.8)";
+    ctx.beginPath();
+    ctx.arc(x - eyeSpacing + 0.5 * s, eyeY + 0.5 * s, pupilR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + eyeSpacing - 0.5 * s, eyeY + 0.5 * s, pupilR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Smile
+    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+    ctx.lineWidth = Math.max(1, 1.5 * s);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(x, y + 2 * s, 6 * s, 0.1 * Math.PI, 0.9 * Math.PI);
+    ctx.stroke();
+  } else if (tier <= 8) {
+    // Large orbs: expressive eyes with brows, big grin
+    const eyeR = Math.max(3, 4.5 * s);
+    const pupilR = Math.max(1.5, 2.2 * s);
+    const eyeSpacing = 9 * s;
+    const eyeY = y - 4 * s;
+
+    // Eye whites
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.beginPath();
+    ctx.arc(x - eyeSpacing, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + eyeSpacing, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pupils
+    ctx.fillStyle = "rgba(0,0,0,0.85)";
+    ctx.beginPath();
+    ctx.arc(x - eyeSpacing + 0.5 * s, eyeY + 0.5 * s, pupilR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + eyeSpacing - 0.5 * s, eyeY + 0.5 * s, pupilR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eye shine
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.beginPath();
+    ctx.arc(x - eyeSpacing - 1 * s, eyeY - 1 * s, pupilR * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + eyeSpacing - 1 * s, eyeY - 1 * s, pupilR * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eyebrows
+    ctx.strokeStyle = "rgba(0,0,0,0.4)";
+    ctx.lineWidth = Math.max(1.2, 1.8 * s);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(x - eyeSpacing - 3 * s, eyeY - eyeR - 2 * s);
+    ctx.lineTo(x - eyeSpacing + 3 * s, eyeY - eyeR - 3 * s);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + eyeSpacing - 3 * s, eyeY - eyeR - 3 * s);
+    ctx.lineTo(x + eyeSpacing + 3 * s, eyeY - eyeR - 2 * s);
+    ctx.stroke();
+
+    // Big grin
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.beginPath();
+    ctx.arc(x, y + 3 * s, 7 * s, 0, Math.PI);
+    ctx.fill();
+
+    // Teeth (white line)
+    ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    ctx.lineWidth = Math.max(1, 1 * s);
+    ctx.beginPath();
+    ctx.moveTo(x - 6 * s, y + 3 * s);
+    ctx.lineTo(x + 6 * s, y + 3 * s);
+    ctx.stroke();
+  } else {
+    // Cosmos (tier 9): star eyes, biggest grin
+    const eyeSpacing = 10 * s;
+    const eyeY = y - 5 * s;
+    const starR = Math.max(3, 4.5 * s);
+
+    // Star eyes
+    for (const sx of [x - eyeSpacing, x + eyeSpacing]) {
+      ctx.fillStyle = "rgba(255,215,0,0.9)";
+      ctx.beginPath();
+      for (let p = 0; p < 5; p++) {
+        const angle = -Math.PI / 2 + (p * 2 * Math.PI) / 5;
+        const innerAngle = angle + Math.PI / 5;
+        const ox = sx + Math.cos(angle) * starR;
+        const oy = eyeY + Math.sin(angle) * starR;
+        const ix = sx + Math.cos(innerAngle) * starR * 0.45;
+        const iy = eyeY + Math.sin(innerAngle) * starR * 0.45;
+        if (p === 0) ctx.moveTo(ox, oy);
+        else ctx.lineTo(ox, oy);
+        ctx.lineTo(ix, iy);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      // Center dot
+      ctx.fillStyle = "rgba(0,0,0,0.7)";
+      ctx.beginPath();
+      ctx.arc(sx, eyeY, starR * 0.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Excited eyebrows (raised)
+    ctx.strokeStyle = "rgba(0,0,0,0.4)";
+    ctx.lineWidth = Math.max(1.5, 2 * s);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(x - eyeSpacing, eyeY - starR - 4 * s, 5 * s, 1.1 * Math.PI, 1.9 * Math.PI);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x + eyeSpacing, eyeY - starR - 4 * s, 5 * s, 1.1 * Math.PI, 1.9 * Math.PI);
+    ctx.stroke();
+
+    // Huge grin
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.beginPath();
+    ctx.arc(x, y + 4 * s, 9 * s, 0, Math.PI);
+    ctx.fill();
+
+    // Teeth
+    ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    ctx.lineWidth = Math.max(1, 1.2 * s);
+    ctx.beginPath();
+    ctx.moveTo(x - 8 * s, y + 4 * s);
+    ctx.lineTo(x + 8 * s, y + 4 * s);
+    ctx.stroke();
+  }
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function OrbMerge() {
@@ -137,6 +331,7 @@ export default function OrbMerge() {
   const orbsRef = useRef<Orb[]>([]);
   const particlesRef = useRef<Particle[]>([]);
   const popupsRef = useRef<ScorePopup[]>([]);
+  const flashRingsRef = useRef<FlashRing[]>([]);
   const scoreRef = useRef(0);
   const bestRef = useRef(0);
   const comboRef = useRef(0);
@@ -226,6 +421,7 @@ export default function OrbMerge() {
     orbsRef.current = [];
     particlesRef.current = [];
     popupsRef.current = [];
+    flashRingsRef.current = [];
     scoreRef.current = 0;
     comboRef.current = 0;
     comboTimerRef.current = 0;
@@ -265,7 +461,12 @@ export default function OrbMerge() {
       tier,
       radius: def.radius,
       merging: false,
+      mergingTimer: 0,
+      mergeTargetX: 0,
+      mergeTargetY: 0,
       justDropped: 60, // ~1s grace period
+      scaleAnim: 1,
+      scalePhase: 0,
     });
 
     currentTierRef.current = nextTierRef.current;
@@ -300,18 +501,23 @@ export default function OrbMerge() {
     for (const orb of orbs) {
       if (orb.merging) continue;
 
-      // Apply gravity
-      orb.vx += gx;
-      orb.vy += gy;
+      // Apply gravity (scaled for substep)
+      orb.vx += gx / PHYSICS_SUBSTEPS;
+      orb.vy += gy / PHYSICS_SUBSTEPS;
 
       // Apply friction
-      orb.vx *= FRICTION;
-      orb.vy *= FRICTION;
+      const fric = Math.pow(FRICTION, 1 / PHYSICS_SUBSTEPS);
+      orb.vx *= fric;
+      orb.vy *= fric;
+
+      // Extra horizontal damping when resting on surface (prevents sliding on piles)
+      if (orb.y + orb.radius >= CB - 4) {
+        orb.vx *= 0.92;
+      }
 
       // Sleep
       if (Math.abs(orb.vx) < SLEEP_THRESHOLD && Math.abs(orb.vy) < SLEEP_THRESHOLD) {
-        // Only sleep vy if resting on bottom
-        if (orb.y + orb.radius >= CB - 2) {
+        if (orb.y + orb.radius >= CB - 4) {
           orb.vy = 0;
         }
         if (Math.abs(orb.vx) < SLEEP_THRESHOLD * 0.5) orb.vx = 0;
@@ -382,6 +588,12 @@ export default function OrbMerge() {
             b.vx += impulse * massA * nx;
             b.vy += impulse * massA * ny;
           }
+
+          // Extra damping on contact to help stacking settle
+          a.vx *= 0.98;
+          a.vy *= 0.98;
+          b.vx *= 0.98;
+          b.vy *= 0.98;
         }
       }
     }
@@ -392,6 +604,39 @@ export default function OrbMerge() {
     const orbs = orbsRef.current;
     let merged = false;
 
+    // First: process orbs that are currently shrinking (merge animation)
+    for (let i = orbs.length - 1; i >= 0; i--) {
+      const orb = orbs[i];
+      if (orb.merging && orb.mergingTimer > 0) {
+        orb.mergingTimer--;
+        // Lerp toward merge target
+        orb.x += (orb.mergeTargetX - orb.x) * 0.25;
+        orb.y += (orb.mergeTargetY - orb.y) * 0.25;
+        orb.vx = 0;
+        orb.vy = 0;
+
+        if (orb.mergingTimer <= 0) {
+          // Actually remove — the new orb was already spawned when merge started
+          orbs.splice(i, 1);
+        }
+      }
+    }
+
+    // Update scale animations
+    for (const orb of orbs) {
+      if (orb.scalePhase > 0) {
+        orb.scalePhase--;
+        const progress = 1 - orb.scalePhase / SCALE_ANIM_FRAMES;
+        // Bounce easing: overshoot to 1.2 then settle to 1.0
+        if (progress < 0.5) {
+          orb.scaleAnim = progress * 2 * 1.2; // 0 → 1.2
+        } else {
+          orb.scaleAnim = 1.2 - (progress - 0.5) * 2 * 0.2; // 1.2 → 1.0
+        }
+      }
+    }
+
+    // Check for new merges
     for (let i = 0; i < orbs.length; i++) {
       const a = orbs[i];
       if (a.merging || a.tier >= TIERS.length - 1) continue;
@@ -404,25 +649,38 @@ export default function OrbMerge() {
         const mergeThreshold = (a.radius + b.radius) * (1 - MERGE_OVERLAP);
 
         if (d < mergeThreshold) {
-          // Merge! Create new orb at midpoint
+          // Merge! Start shrink animation on source orbs
           const newTier = a.tier + 1;
           const def = TIERS[newTier];
           const mx = (a.x + b.x) / 2;
           const my = (a.y + b.y) / 2;
 
           a.merging = true;
-          b.merging = true;
+          a.mergingTimer = MERGE_SHRINK_FRAMES;
+          a.mergeTargetX = mx;
+          a.mergeTargetY = my;
 
+          b.merging = true;
+          b.mergingTimer = MERGE_SHRINK_FRAMES;
+          b.mergeTargetX = mx;
+          b.mergeTargetY = my;
+
+          // Spawn new orb immediately with scale animation
           orbs.push({
             id: nextIdRef.current++,
             x: mx,
             y: my,
             vx: (a.vx + b.vx) * 0.3,
-            vy: (a.vy + b.vy) * 0.3 - 1,
+            vy: (a.vy + b.vy) * 0.3 - 1.5,
             tier: newTier,
             radius: def.radius,
             merging: false,
+            mergingTimer: 0,
+            mergeTargetX: 0,
+            mergeTargetY: 0,
             justDropped: 10,
+            scaleAnim: 0.1,
+            scalePhase: SCALE_ANIM_FRAMES,
           });
 
           // Score
@@ -441,14 +699,25 @@ export default function OrbMerge() {
           if (newTier > highestTierRef.current) highestTierRef.current = newTier;
           if (combo > bestComboRef.current) bestComboRef.current = combo;
 
-          // Effects
-          spawnBurst(mx, my, 12 + newTier * 3, def.color, 2 + newTier * 0.5);
+          // Enhanced effects
+          spawnBurst(mx, my, 16 + newTier * 4, def.color, 2.5 + newTier * 0.6);
           popupsRef.current.push({
             x: mx,
             y: my,
-            text: combo > 1 ? `+${totalPoints} ×${combo}` : `+${totalPoints}`,
+            text: combo > 1 ? `+${totalPoints} x${combo}` : `+${totalPoints}`,
             color: def.color,
             life: 60,
+          });
+
+          // Flash ring
+          flashRingsRef.current.push({
+            x: mx,
+            y: my,
+            radius: def.radius * 0.5,
+            maxRadius: def.radius * 2.5,
+            color: def.color,
+            life: 15,
+            maxLife: 15,
           });
 
           // Screen shake scales with tier
@@ -460,9 +729,6 @@ export default function OrbMerge() {
       }
       if (merged) break;
     }
-
-    // Remove merged orbs
-    orbsRef.current = orbs.filter((o) => !o.merging);
 
     return merged;
   }, [spawnBurst]);
@@ -480,15 +746,15 @@ export default function OrbMerge() {
       const orbs = orbsRef.current;
       const particles = particlesRef.current;
       const popups = popupsRef.current;
+      const flashRings = flashRingsRef.current;
       const shake = shakeRef.current;
       const gs = gravShiftRef.current;
 
       // ── Update ────────────────────────────────────────────────────────
 
       if (phase === "playing") {
-        // Physics (2 sub-steps)
-        physicsStep();
-        physicsStep();
+        // Physics substeps
+        for (let s = 0; s < PHYSICS_SUBSTEPS; s++) physicsStep();
 
         // Check merges (multiple passes for chains)
         let mergePass = 0;
@@ -588,6 +854,15 @@ export default function OrbMerge() {
         if (p.life <= 0) popups.splice(i, 1);
       }
 
+      // Update flash rings
+      for (let i = flashRings.length - 1; i >= 0; i--) {
+        const f = flashRings[i];
+        f.life--;
+        const progress = 1 - f.life / f.maxLife;
+        f.radius = f.maxRadius * 0.5 + (f.maxRadius - f.maxRadius * 0.5) * progress;
+        if (f.life <= 0) flashRings.splice(i, 1);
+      }
+
       // ── Render ────────────────────────────────────────────────────────
 
       ctx.save();
@@ -636,37 +911,80 @@ export default function OrbMerge() {
         }
       }
 
+      // ── Proximity hints (draw before orbs so they appear behind) ───
+      if (phase === "playing") {
+        for (let i = 0; i < orbs.length; i++) {
+          const a = orbs[i];
+          if (a.merging || a.tier >= TIERS.length - 1) continue;
+          for (let j = i + 1; j < orbs.length; j++) {
+            const b = orbs[j];
+            if (b.merging || b.tier !== a.tier) continue;
+            const d = dist(a.x, a.y, b.x, b.y);
+            const mergeThreshold = (a.radius + b.radius) * (1 - MERGE_OVERLAP);
+            const hintThreshold = mergeThreshold * 2.2;
+            if (d < hintThreshold && d > 0.01) {
+              const proximity = 1 - (d - mergeThreshold) / (hintThreshold - mergeThreshold);
+              const alpha = Math.max(0, proximity) * 0.4 * (0.7 + 0.3 * Math.sin(frame * 0.12));
+              const def = TIERS[a.tier];
+              // Glow line between matching orbs
+              ctx.strokeStyle = def.color;
+              ctx.globalAlpha = alpha;
+              ctx.lineWidth = 2 + proximity * 2;
+              ctx.setLineDash([4, 4]);
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.globalAlpha = 1;
+            }
+          }
+        }
+      }
+
       // ── Draw orbs ───────────────────────────────────────────────────
       for (const orb of orbs) {
         const def = TIERS[orb.tier];
+        const drawScale = orb.merging
+          ? Math.max(0, orb.mergingTimer / MERGE_SHRINK_FRAMES)
+          : orb.scaleAnim;
+        const r = orb.radius * drawScale;
+
+        if (r < 0.5) continue; // too small to draw
+
+        // Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.15)";
+        ctx.beginPath();
+        ctx.ellipse(orb.x, orb.y + r + 3, r * 0.7, r * 0.2, 0, 0, Math.PI * 2);
+        ctx.fill();
 
         // Glow
         const glowGrad = ctx.createRadialGradient(
-          orb.x, orb.y, orb.radius * 0.3,
-          orb.x, orb.y, orb.radius * 1.6
+          orb.x, orb.y, r * 0.3,
+          orb.x, orb.y, r * 1.6
         );
         glowGrad.addColorStop(0, def.glow);
         glowGrad.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(orb.x, orb.y, orb.radius * 1.6, 0, Math.PI * 2);
+        ctx.arc(orb.x, orb.y, r * 1.6, 0, Math.PI * 2);
         ctx.fill();
 
         // Body gradient
         const bodyGrad = ctx.createRadialGradient(
-          orb.x - orb.radius * 0.25,
-          orb.y - orb.radius * 0.25,
-          orb.radius * 0.1,
+          orb.x - r * 0.25,
+          orb.y - r * 0.25,
+          r * 0.1,
           orb.x,
           orb.y,
-          orb.radius
+          r
         );
         bodyGrad.addColorStop(0, "#ffffff");
         bodyGrad.addColorStop(0.3, def.color);
         bodyGrad.addColorStop(1, def.color + "aa");
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
-        ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+        ctx.arc(orb.x, orb.y, r, 0, Math.PI * 2);
         ctx.fill();
 
         // Subtle border
@@ -677,24 +995,38 @@ export default function OrbMerge() {
         // Highlight
         ctx.beginPath();
         ctx.arc(
-          orb.x - orb.radius * 0.25,
-          orb.y - orb.radius * 0.3,
-          orb.radius * 0.25,
+          orb.x - r * 0.25,
+          orb.y - r * 0.3,
+          r * 0.25,
           0,
           Math.PI * 2
         );
         ctx.fillStyle = "rgba(255,255,255,0.5)";
         ctx.fill();
 
-        // Tier number (for larger orbs)
-        if (orb.tier >= 3) {
-          ctx.fillStyle = "rgba(255,255,255,0.8)";
-          ctx.font = `bold ${Math.max(10, orb.radius * 0.45)}px 'Space Grotesk', sans-serif`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(String(orb.tier + 1), orb.x, orb.y + 1);
+        // Face (only on non-merging orbs that are big enough)
+        if (!orb.merging && drawScale > 0.5) {
+          drawFace(ctx, orb.x, orb.y, r, orb.tier);
         }
       }
+
+      // ── Flash rings ─────────────────────────────────────────────────
+      for (const f of flashRings) {
+        const alpha = f.life / f.maxLife;
+        ctx.globalAlpha = alpha * 0.6;
+        ctx.strokeStyle = f.color;
+        ctx.lineWidth = 2 + alpha * 3;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        // Inner white flash
+        ctx.strokeStyle = "rgba(255,255,255,0.8)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.radius * 0.7, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
 
       // ── Particles ───────────────────────────────────────────────────
       for (const p of particles) {
