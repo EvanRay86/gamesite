@@ -3,6 +3,8 @@ import WordBloomGame from "@/components/WordBloomGame";
 import { isUserSubscribed } from "@/lib/check-subscription";
 import { generateQuickplayPuzzle } from "@/lib/word-bloom-puzzles";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Word Bloom Quickplay — Gamesite",
   description:
