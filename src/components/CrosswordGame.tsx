@@ -145,25 +145,70 @@ export default function CrosswordGame({ puzzle }: Props) {
     [moveToNext]
   );
 
-  // Check the currently selected word — marks wrong letters red
-  const handleCheck = useCallback(() => {
-    if (!selectedClue) return;
-    const cells = getCellsForClue(selectedClue);
-    const allFilled = cells.every((k) => userGrid[k]);
-    if (!allFilled) return; // don't check incomplete words
+  // Advance to the next clue in the same direction
+  const advanceToNextClue = useCallback(
+    (fromClue: CrosswordClue) => {
+      const list = fromClue.direction === "across" ? clues.across : clues.down;
+      const idx = list.findIndex((c) => c.number === fromClue.number);
+      const nextClue = list[(idx + 1) % list.length];
+      const cells = getCellsForClue(nextClue);
+      setSelectedClue(nextClue);
+      setDirection(nextClue.direction);
+      setSelectedCell(cells[0]);
+      setTimeout(() => inputRefs.current[cells[0]]?.focus(), 0);
+    },
+    [clues]
+  );
 
-    const isCorrect = cells.every(
-      (k, i) => userGrid[k] === selectedClue.answer[i]
-    );
+  // Check the currently selected word — green if correct, red if wrong
+  const handleCheckWord = useCallback(
+    (cellKey: string) => {
+      // Try to find a fully-filled clue through this cell
+      const cluesForCell = cellToClues.get(cellKey) ?? [];
+      let matchedClue: CrosswordClue | null = null;
 
-    if (!isCorrect) {
-      setCheckedWrong((prev) => {
-        const next = new Set(prev);
-        for (const k of cells) next.add(k);
-        return next;
-      });
-    }
-  }, [selectedClue, userGrid]);
+      for (const clue of cluesForCell) {
+        const cells = getCellsForClue(clue);
+        if (cells.every((k) => userGrid[k])) {
+          matchedClue = clue;
+          break;
+        }
+      }
+
+      // If nothing matched at this cell, fall back to selectedClue
+      if (!matchedClue && selectedClue) {
+        const cells = getCellsForClue(selectedClue);
+        if (cells.every((k) => userGrid[k])) {
+          matchedClue = selectedClue;
+        }
+      }
+
+      if (!matchedClue) return;
+
+      const cells = getCellsForClue(matchedClue);
+      const isCorrect = cells.every(
+        (k, i) => userGrid[k] === matchedClue!.answer[i]
+      );
+
+      if (isCorrect) {
+        // Mark cells green and advance to next clue
+        setConfirmedCorrect((prev) => {
+          const next = new Set(prev);
+          for (const k of cells) next.add(k);
+          return next;
+        });
+        advanceToNextClue(matchedClue);
+      } else {
+        // Mark cells red
+        setCheckedWrong((prev) => {
+          const next = new Set(prev);
+          for (const k of cells) next.add(k);
+          return next;
+        });
+      }
+    },
+    [cellToClues, selectedClue, userGrid, advanceToNextClue]
+  );
 
   // Handle key input (desktop keyboard + navigation)
   const handleKeyDown = useCallback(
@@ -239,7 +284,7 @@ export default function CrosswordGame({ puzzle }: Props) {
 
       if (e.key === "Enter") {
         e.preventDefault();
-        handleCheck();
+        handleCheckWord(key);
         return;
       }
 
@@ -248,7 +293,7 @@ export default function CrosswordGame({ puzzle }: Props) {
         enterLetter(row, col, e.key);
       }
     },
-    [userGrid, selectedClue, clues, direction, moveToNext, selectCell, grid, rows, cols, enterLetter, handleCheck]
+    [userGrid, selectedClue, clues, direction, moveToNext, selectCell, grid, rows, cols, enterLetter, handleCheckWord]
   );
 
   // Handle mobile input via beforeinput (fires reliably on mobile virtual keyboards)
@@ -445,7 +490,7 @@ export default function CrosswordGame({ puzzle }: Props) {
           {/* Action buttons */}
           <div className="mt-4 flex gap-2 flex-wrap">
             <button
-              onClick={handleCheck}
+              onClick={() => selectedCell && handleCheckWord(selectedCell)}
               className="px-4 py-2 text-xs font-semibold rounded-full bg-sky/10 text-sky hover:bg-sky/20 transition-colors"
             >
               Check
