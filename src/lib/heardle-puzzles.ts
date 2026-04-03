@@ -238,6 +238,10 @@ export const songBank: string[] = [
   "Call Me Maybe – Carly Rae Jepsen",
   "Dracula (JENNIE Remix) – Tame Impala, JENNIE",
   "The Less I Know the Better – Tame Impala",
+  "Computer Blue – Prince",
+  "Heaven – DJ Sammy",
+  "Roxanne – The Police",
+  "White Rabbit – Jefferson Airplane",
 ];
 
 // ---------------------------------------------------------------------------
