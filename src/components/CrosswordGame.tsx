@@ -145,6 +145,26 @@ export default function CrosswordGame({ puzzle }: Props) {
     [moveToNext]
   );
 
+  // Check the currently selected word — marks wrong letters red
+  const handleCheck = useCallback(() => {
+    if (!selectedClue) return;
+    const cells = getCellsForClue(selectedClue);
+    const allFilled = cells.every((k) => userGrid[k]);
+    if (!allFilled) return; // don't check incomplete words
+
+    const isCorrect = cells.every(
+      (k, i) => userGrid[k] === selectedClue.answer[i]
+    );
+
+    if (!isCorrect) {
+      setCheckedWrong((prev) => {
+        const next = new Set(prev);
+        for (const k of cells) next.add(k);
+        return next;
+      });
+    }
+  }, [selectedClue, userGrid]);
+
   // Handle key input (desktop keyboard + navigation)
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent, row: number, col: number) => {
@@ -217,12 +237,18 @@ export default function CrosswordGame({ puzzle }: Props) {
         return;
       }
 
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleCheck();
+        return;
+      }
+
       if (/^[a-zA-Z]$/.test(e.key)) {
         e.preventDefault();
         enterLetter(row, col, e.key);
       }
     },
-    [userGrid, selectedClue, clues, direction, moveToNext, selectCell, grid, rows, cols, enterLetter]
+    [userGrid, selectedClue, clues, direction, moveToNext, selectCell, grid, rows, cols, enterLetter, handleCheck]
   );
 
   // Handle mobile input via beforeinput (fires reliably on mobile virtual keyboards)
@@ -261,21 +287,6 @@ export default function CrosswordGame({ puzzle }: Props) {
     }
   }, [userGrid, allClues, solved, recordGame]);
 
-  // Check answers
-  const handleCheck = () => {
-    const wrong = new Set<string>();
-    for (const clue of allClues) {
-      for (let i = 0; i < clue.answer.length; i++) {
-        const r = clue.direction === "down" ? clue.row + i : clue.row;
-        const c = clue.direction === "across" ? clue.col + i : clue.col;
-        const key = `${r},${c}`;
-        if (userGrid[key] && userGrid[key] !== clue.answer[i]) {
-          wrong.add(key);
-        }
-      }
-    }
-    setCheckedWrong(wrong);
-  };
 
   // Reveal current word
   const handleRevealWord = () => {
