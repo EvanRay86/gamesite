@@ -30,6 +30,8 @@ export function buildGameMetadata(opts: {
     },
     twitter: {
       card: "summary_large_image",
+      site: "@GamesiteAppEvan",
+      creator: "@GamesiteAppEvan",
       title: opts.title,
       description: opts.description,
       images: [ogImage],

@@ -33,6 +33,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@GamesiteAppEvan",
+    creator: "@GamesiteAppEvan",
     title: "Gamesite — Free Daily Puzzles, Trivia & Arcade Games",
     description:
       "Play daily word puzzles, trivia, arcade games, and more — free in your browser.",
