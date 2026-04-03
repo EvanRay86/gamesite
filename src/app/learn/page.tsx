@@ -52,7 +52,7 @@ export default function LearnPage() {
           Learn
         </h1>
         <p className="mt-2 text-text-muted">
-          Master geography and world knowledge through interactive games. Track your progress as you learn.
+          Sharpen your mind with math, history, quotes, and world knowledge. Track your progress as you learn.
         </p>
       </div>
 

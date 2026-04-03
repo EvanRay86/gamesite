@@ -155,7 +155,7 @@ export const games: Game[] = [
     name: "Mathler",
     description:
       "Find the hidden math equation that equals the target number.",
-    category: "daily",
+    category: "learn",
     color: "purple",
   },
 
@@ -182,7 +182,7 @@ export const games: Game[] = [
     name: "Quotable",
     description:
       "Guess who said the famous quote as words are progressively revealed.",
-    category: "daily",
+    category: "learn",
     color: "purple",
   },
 
@@ -191,7 +191,7 @@ export const games: Game[] = [
     name: "Timeline",
     description:
       "Put five historical events in chronological order. Three attempts to get it right.",
-    category: "daily",
+    category: "learn",
     color: "teal",
   },
 
