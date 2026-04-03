@@ -6,6 +6,7 @@ import { shareOrCopy } from "@/lib/share";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 import StatsButton from "@/components/StatsButton";
+import XShareButton from "@/components/XShareButton";
 
 const MAX_GUESSES_PER_ROUND = 3;
 
@@ -153,13 +154,17 @@ export default function EmojiWordGame({
   const totalStars = results.reduce((sum, r) => sum + getStars(r), 0);
   const maxStars = totalRounds * MAX_GUESSES_PER_ROUND;
 
-  const handleShare = async () => {
+  const getShareText = useCallback(() => {
     const lines = results.map((r, i) => {
       const stars = getStars(r);
       const starEmoji = stars > 0 ? "⭐".repeat(stars) : "❌";
       return `${rounds[i].emojis} ${starEmoji}`;
     });
-    const text = `Emoji Decoder ${puzzle.puzzle_date}\n${lines.join("\n")}\n${solvedCount}/${totalRounds} solved — ${totalStars}/${maxStars} ⭐\ngamesite.app/daily/emoji-word`;
+    return `Emoji Decoder ${puzzle.puzzle_date}\n${lines.join("\n")}\n${solvedCount}/${totalRounds} solved — ${totalStars}/${maxStars} ⭐\ngamesite.app/daily/emoji-word`;
+  }, [results, rounds, puzzle.puzzle_date, solvedCount, totalRounds, totalStars, maxStars]);
+
+  const handleShare = async () => {
+    const text = getShareText();
     const ok = await shareOrCopy(text);
     if (ok) {
       setShared(true);
@@ -280,6 +285,7 @@ export default function EmojiWordGame({
               >
                 {shared ? "Copied!" : "Share Results"}
               </button>
+              <XShareButton getText={getShareText} />
               <button
                 onClick={() => {
                   setScreen("splash");

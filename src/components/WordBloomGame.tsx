@@ -5,6 +5,7 @@ import type { WordBloomPuzzle } from "@/types/word-bloom";
 import { isValidEnglishWord } from "@/lib/dictionary";
 import { getWordSet } from "@/lib/dictionary";
 import { shareOrCopy } from "@/lib/share";
+import XShareButton from "@/components/XShareButton";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 
@@ -413,18 +414,21 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
     }
   }, [playerName, currentScore, found, puzzle.puzzle_date, isDaily, submitted, dailyScore]);
 
-  const handleShare = async () => {
+  const getShareText = useCallback(() => {
     const pct = Math.round(progressPct);
     const pangramCount = found.filter((w) => isPangram(w, letters)).length;
     const modeLabel =
       mode === "quickplay" ? "Quickplay" : mode === "multiplayer" ? "Duel" : "";
-    const text = [
+    return [
       `Word Bloom ${modeLabel ? modeLabel + " " : ""}${puzzle.puzzle_date}`,
       `${rank.label} — ${currentScore} pts (${pct}%)`,
       `${found.length} words${phase === "endless" ? "" : " in 60s"}${pangramCount > 0 ? ` (${pangramCount} pangram${pangramCount > 1 ? "s" : ""})` : ""}`,
       `gamesite.app/daily/word-bloom`,
     ].join("\n");
-    const ok = await shareOrCopy(text);
+  }, [progressPct, found, letters, mode, puzzle.puzzle_date, rank.label, currentScore, phase]);
+
+  const handleShare = async () => {
+    const ok = await shareOrCopy(getShareText());
     if (ok) {
       setShared(true);
       setTimeout(() => setShared(false), 2000);
@@ -812,6 +816,7 @@ export default function WordBloomGame({ puzzle, mode = "daily" }: Props) {
               >
                 {shared ? "Copied!" : "Share Results"}
               </button>
+              <XShareButton getText={getShareText} />
               <button
                 onClick={() => setShowStats(true)}
                 className="rounded-full border border-border-light px-6 py-2.5

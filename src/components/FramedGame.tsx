@@ -7,6 +7,7 @@ import { shareOrCopy } from "@/lib/share";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 import StatsButton from "@/components/StatsButton";
+import XShareButton from "@/components/XShareButton";
 
 const MAX_GUESSES = 6;
 
@@ -296,13 +297,16 @@ export default function FramedGame({ puzzle, variant }: Props) {
               )}
             </div>
 
-            <button
-              onClick={handleShare}
-              className="mt-4 bg-green text-white font-bold rounded-full px-6 py-2.5 text-sm
-                         hover:opacity-90 transition-opacity"
-            >
-              {copied ? "Copied!" : "Share result"}
-            </button>
+            <div className="flex gap-3 justify-center mt-4">
+              <button
+                onClick={handleShare}
+                className="bg-green text-white font-bold rounded-full px-6 py-2.5 text-sm
+                           hover:opacity-90 transition-opacity"
+              >
+                {copied ? "Copied!" : "Share result"}
+              </button>
+              <XShareButton getText={generateShareText} />
+            </div>
           </div>
         )}
 

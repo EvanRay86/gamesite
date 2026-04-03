@@ -7,6 +7,7 @@ import { shareOrCopy } from "@/lib/share";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 import StatsButton from "@/components/StatsButton";
+import XShareButton from "@/components/XShareButton";
 
 type Screen = "splash" | "playing" | "results";
 
@@ -160,21 +161,25 @@ export default function Top5Game({ puzzle }: { puzzle: Top5Puzzle }) {
     }
   }, [order, correctOrder, puzzle.puzzle_date]);
 
-  const handleShare = useCallback(async () => {
-    if (!scores) return;
+  const getShareText = useCallback(() => {
+    if (!scores) return "";
     const total = scores.reduce((a, b) => a + b, 0);
     const emoji = scores
       .map((s) => (s === 2 ? "\uD83D\uDFE9" : s === 1 ? "\uD83D\uDFE8" : "\uD83D\uDFE5"))
       .join("");
 
-    const text = `Top 5 \u2014 ${puzzle.puzzle_date}\n"${puzzle.category}"\n${emoji}\nScore: ${total}/10\ngamesite.app/daily/top-5`;
+    return `Top 5 \u2014 ${puzzle.puzzle_date}\n"${puzzle.category}"\n${emoji}\nScore: ${total}/10\ngamesite.app/daily/top-5`;
+  }, [scores, puzzle.puzzle_date, puzzle.category]);
 
+  const handleShare = useCallback(async () => {
+    const text = getShareText();
+    if (!text) return;
     const ok = await shareOrCopy(text);
     if (ok) {
       setShared(true);
       setTimeout(() => setShared(false), 2000);
     }
-  }, [scores, puzzle.puzzle_date, puzzle.category]);
+  }, [getShareText]);
 
   // ── Splash ────────────────────────────────────────────────
   if (screen === "splash") {
@@ -283,6 +288,7 @@ export default function Top5Game({ puzzle }: { puzzle: Top5Puzzle }) {
         >
           {shared ? "Copied!" : "Share Results"}
         </button>
+        <XShareButton getText={getShareText} />
 
         <button
           onClick={() => setShowStats(true)}

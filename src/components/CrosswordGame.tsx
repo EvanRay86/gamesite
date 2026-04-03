@@ -6,6 +6,7 @@ import { shareOrCopy } from "@/lib/share";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 import StatsButton from "@/components/StatsButton";
+import XShareButton from "@/components/XShareButton";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -309,17 +310,20 @@ export default function CrosswordGame({ puzzle }: Props) {
   };
 
   // Share result
-  const handleShare = useCallback(async () => {
+  const getShareText = useCallback(() => {
     const revealedCount = revealedCells.size;
     const hintsUsed = revealedCount > 0 ? ` (${revealedCount} revealed)` : "";
-    const text = `📰 News Crossword — ${puzzle.title}\nSolved!${hintsUsed}\ngamesite.app/daily/crossword`;
+    return `📰 News Crossword — ${puzzle.title}\nSolved!${hintsUsed}\ngamesite.app/daily/crossword`;
+  }, [allClues, revealedCells, puzzle.title]);
 
+  const handleShare = useCallback(async () => {
+    const text = getShareText();
     const ok = await shareOrCopy(text);
     if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-  }, [allClues, revealedCells, puzzle.title]);
+  }, [getShareText]);
 
   // Cell size
   const cellSize = 36;
@@ -347,6 +351,7 @@ export default function CrosswordGame({ puzzle }: Props) {
           >
             {copied ? "Copied!" : "Share Results"}
           </button>
+          <XShareButton getText={getShareText} />
         </div>
       )}
 

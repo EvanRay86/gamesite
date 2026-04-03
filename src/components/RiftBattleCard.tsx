@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { DuelResult, Faction } from "@/types/rift";
 import { FACTION_COLORS, FACTION_NAMES } from "@/types/rift";
 import { getPuzzleTypeName } from "@/lib/rift-puzzles";
 import { getEloTier } from "@/lib/rift-elo";
+import XShareButton from "@/components/XShareButton";
 
 interface RiftBattleCardProps {
   result: DuelResult;
@@ -23,7 +24,7 @@ export default function RiftBattleCard({
 }: RiftBattleCardProps) {
   const [copied, setCopied] = useState(false);
 
-  const shareText = [
+  const getShareText = useCallback(() => [
     `\u2694\uFE0F RIFT BATTLE REPORT`,
     ``,
     `${result.won ? "\u2705 VICTORY" : "\u274C DEFEAT"}`,
@@ -35,11 +36,11 @@ export default function RiftBattleCard({
     `Rank: ${getEloTier(playerElo)}`,
     ``,
     `gamesite.app/rift`,
-  ].join("\n");
+  ].join("\n"), [result, playerElo]);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(shareText);
+      await navigator.clipboard.writeText(getShareText());
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -124,6 +125,7 @@ export default function RiftBattleCard({
             >
               {copied ? "Copied!" : "Share Result"}
             </button>
+            <XShareButton getText={getShareText} />
             <button
               onClick={onClose}
               className="flex-1 rounded-xl bg-surface py-3 text-text-primary font-bold

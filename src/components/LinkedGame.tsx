@@ -5,6 +5,7 @@ import type { Group, Puzzle, GuessEntry } from "@/types/puzzle";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 import StatsButton from "@/components/StatsButton";
+import XShareButton from "@/components/XShareButton";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -145,12 +146,16 @@ export default function LinkedGame({ puzzle, puzzleNumber }: Props) {
     setWords([...solvedWords, ...shuffle(remaining)]);
   };
 
-  const handleShare = async () => {
+  const getShareText = useCallback(() => {
     const title = `Linked ${puzzle.puzzle_date}${puzzleNumber ? ` #${puzzleNumber}` : ""}`;
     const grid = guessHistory
       .map((guess) => guess.colors.map((c) => EMOJI_MAP[c] || "⬛").join(""))
       .join("\n");
-    const text = `${title}\n${grid}`;
+    return `${title}\n${grid}`;
+  }, [puzzle.puzzle_date, puzzleNumber, guessHistory]);
+
+  const handleShare = async () => {
+    const text = getShareText();
 
     try {
       await navigator.clipboard.writeText(text);
@@ -400,6 +405,7 @@ export default function LinkedGame({ puzzle, puzzleNumber }: Props) {
             >
               {copied ? "Copied!" : "Share"}
             </button>
+            <XShareButton getText={getShareText} />
             <StatsButton onClick={() => setShowStats(true)} />
           </div>
         </div>

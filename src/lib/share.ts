@@ -19,3 +19,11 @@ export async function shareOrCopy(text: string): Promise<boolean> {
     return true;
   }
 }
+
+/**
+ * Opens X (Twitter) compose window with pre-filled text.
+ */
+export function shareToX(text: string): void {
+  const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}

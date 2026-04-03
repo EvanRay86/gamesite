@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { shareOrCopy } from "@/lib/share";
+import XShareButton from "@/components/XShareButton";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -222,15 +223,18 @@ export default function Game2048() {
     setStarted(true);
   }, []);
 
-  const handleShare = useCallback(async () => {
+  const getShareText = useCallback(() => {
     const maxTile = Math.max(...board.flat());
-    const text = `🎮 2048 — Score: ${score.toLocaleString()} | Best tile: ${maxTile}\nPlay at gamesite.app/arcade/2048`;
-    const ok = await shareOrCopy(text);
+    return `🎮 2048 — Score: ${score.toLocaleString()} | Best tile: ${maxTile}\nPlay at gamesite.app/arcade/2048`;
+  }, [board, score]);
+
+  const handleShare = useCallback(async () => {
+    const ok = await shareOrCopy(getShareText());
     if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-  }, [board, score]);
+  }, [getShareText]);
 
   const handleMove = useCallback(
     (direction: Direction) => {
@@ -439,6 +443,7 @@ export default function Game2048() {
               >
                 {copied ? "Copied!" : "Share Score"}
               </button>
+              <XShareButton getText={getShareText} />
               <button
                 onClick={() => setKeepPlaying(true)}
                 className="bg-white text-stone-700 px-5 py-2 rounded-lg font-bold
@@ -472,6 +477,7 @@ export default function Game2048() {
               >
                 {copied ? "Copied!" : "Share Score"}
               </button>
+              <XShareButton getText={getShareText} />
               <button
                 onClick={startGame}
                 className="bg-gradient-to-br from-amber-400 to-amber-600 text-white

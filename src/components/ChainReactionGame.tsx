@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { shareOrCopy } from "@/lib/share";
+import XShareButton from "@/components/XShareButton";
 import type { ChainReactionPuzzle } from "@/lib/chain-reaction-puzzles";
 
 // ---------------------------------------------------------------------------
@@ -319,9 +320,13 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
   );
 
   // Share
+  const getShareText = useCallback(
+    () => buildShareText(date, attempts, gameState === "won", slotStatuses),
+    [date, attempts, gameState, slotStatuses],
+  );
+
   const handleShare = async () => {
-    const text = buildShareText(date, attempts, gameState === "won", slotStatuses);
-    const ok = await shareOrCopy(text);
+    const ok = await shareOrCopy(getShareText());
     if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -625,12 +630,15 @@ export default function ChainReactionGame({ puzzle, date }: Props) {
           </div>
 
           {/* Share */}
-          <button
-            onClick={handleShare}
-            className="w-full rounded-2xl border-2 border-emerald-200 bg-white py-3.5 text-lg font-semibold text-emerald-700 shadow-sm transition-all hover:scale-[1.02] hover:bg-emerald-50 hover:shadow-md active:scale-95 dark:border-emerald-800 dark:bg-zinc-900 dark:text-emerald-300 dark:hover:bg-emerald-950"
-          >
-            {copied ? "Copied!" : "Share Result"}
-          </button>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={handleShare}
+              className="flex-1 rounded-2xl border-2 border-emerald-200 bg-white py-3.5 text-lg font-semibold text-emerald-700 shadow-sm transition-all hover:scale-[1.02] hover:bg-emerald-50 hover:shadow-md active:scale-95 dark:border-emerald-800 dark:bg-zinc-900 dark:text-emerald-300 dark:hover:bg-emerald-950"
+            >
+              {copied ? "Copied!" : "Share Result"}
+            </button>
+            <XShareButton getText={getShareText} />
+          </div>
 
           {/* Past puzzles link — centered, inline */}
           <Link

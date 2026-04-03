@@ -6,6 +6,7 @@ import { shareOrCopy } from "@/lib/share";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 import StatsButton from "@/components/StatsButton";
+import XShareButton from "@/components/XShareButton";
 
 const TIME_LIMIT = 30; // seconds per word
 
@@ -124,9 +125,13 @@ export default function AnagramGame({ puzzle }: { puzzle: AnagramPuzzle }) {
   const solvedCount = results.filter((r) => r.solved).length;
   const totalTime = results.reduce((sum, r) => sum + r.timeTaken, 0);
 
-  const handleShare = async () => {
+  const getShareText = useCallback(() => {
     const emoji = results.map((r) => (r.solved ? "✅" : "❌")).join("");
-    const text = `Anagram Scramble ${puzzle.puzzle_date}\n${emoji}\n${solvedCount}/${totalWords} solved\ngamesite.app/daily/anagram`;
+    return `Anagram Scramble ${puzzle.puzzle_date}\n${emoji}\n${solvedCount}/${totalWords} solved\ngamesite.app/daily/anagram`;
+  }, [results, puzzle.puzzle_date, solvedCount, totalWords]);
+
+  const handleShare = async () => {
+    const text = getShareText();
     const ok = await shareOrCopy(text);
     if (ok) {
       setShared(true);
@@ -226,6 +231,7 @@ export default function AnagramGame({ puzzle }: { puzzle: AnagramPuzzle }) {
               >
                 {shared ? "Copied!" : "Share Results"}
               </button>
+              <XShareButton getText={getShareText} />
               <button
                 onClick={() => {
                   setScreen("splash");

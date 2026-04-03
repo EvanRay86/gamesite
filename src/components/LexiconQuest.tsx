@@ -18,6 +18,7 @@ import { getRelicDef, getPotionDef, RELIC_DEFS } from "@/lib/lexicon-quest/relic
 import { NODE_INFO, ACT_CONFIG, getAvailableNodes } from "@/lib/lexicon-quest/dungeon-gen";
 import { getWordTier, TIER_COLORS } from "@/lib/lexicon-quest/word-scoring";
 import { shareOrCopy } from "@/lib/share";
+import XShareButton from "@/components/XShareButton";
 import type {
   GamePhase,
   LetterTile,
@@ -255,14 +256,19 @@ export default function LexiconQuest() {
     [],
   );
 
+  const getShareText = useCallback(
+    () => engineRef.current?.getShareText() ?? "",
+    [],
+  );
+
   const handleShare = useCallback(async () => {
-    const text = engineRef.current?.getShareText();
+    const text = getShareText();
     if (text) {
       await shareOrCopy(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-  }, []);
+  }, [getShareText]);
 
   // ── Helpers ───────────────────────────────────────────────────────────
 
@@ -784,6 +790,7 @@ export default function LexiconQuest() {
             >
               {copied ? "Copied!" : "Share Results"}
             </button>
+            <XShareButton getText={getShareText} />
             <button
               onClick={handleNewRun}
               className="px-6 py-2.5 bg-purple text-white font-bold rounded-xl

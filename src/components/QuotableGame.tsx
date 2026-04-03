@@ -6,6 +6,7 @@ import { shareOrCopy } from "@/lib/share";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 import StatsButton from "@/components/StatsButton";
+import XShareButton from "@/components/XShareButton";
 
 type Screen = "splash" | "playing" | "results";
 
@@ -189,7 +190,7 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
     [highlightIdx, suggestions, submitGuess]
   );
 
-  const handleShare = useCallback(async () => {
+  const getShareText = useCallback(() => {
     const emoji = guesses
       .map((g) =>
         g.toLowerCase() === puzzle.attribution.toLowerCase()
@@ -202,14 +203,17 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
       ? `${guesses.length}/${MAX_GUESSES}`
       : `X/${MAX_GUESSES}`;
 
-    const text = `Quotable \u2014 ${puzzle.puzzle_date}\n${emoji} ${status}\ngamesite.app/daily/quotable`;
+    return `Quotable \u2014 ${puzzle.puzzle_date}\n${emoji} ${status}\ngamesite.app/daily/quotable`;
+  }, [guesses, won, puzzle.attribution, puzzle.puzzle_date]);
 
+  const handleShare = useCallback(async () => {
+    const text = getShareText();
     const ok = await shareOrCopy(text);
     if (ok) {
       setShared(true);
       setTimeout(() => setShared(false), 2000);
     }
-  }, [guesses, won, puzzle.attribution, puzzle.puzzle_date]);
+  }, [getShareText]);
 
   // ── Splash ────────────────────────────────────────────────
   if (screen === "splash") {
@@ -306,6 +310,7 @@ export default function QuotableGame({ puzzle }: { puzzle: QuotablePuzzle }) {
         >
           {shared ? "Copied!" : "Share Results"}
         </button>
+        <XShareButton getText={getShareText} />
         <StatsModal
           open={showStats}
           onClose={() => setShowStats(false)}

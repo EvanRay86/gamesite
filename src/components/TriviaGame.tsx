@@ -6,6 +6,7 @@ import { shareOrCopy } from "@/lib/share";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 import StatsButton from "@/components/StatsButton";
+import XShareButton from "@/components/XShareButton";
 
 const CATEGORY_COLORS: Record<string, string> = {
   Science: "#4ECDC4",
@@ -128,21 +129,24 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
   }, [screen, locked, handleAnswer, questions, current]);
 
   // ── Share ───────────────────────────────────────────────
-  const handleShare = useCallback(async () => {
+  const getShareText = useCallback(() => {
     const lines = answers.map((a, i) => {
       if (a === null) return "\u23f0"; // ⏰ for timeout
       return a === questions[i].correctIndex ? "\u2705" : "\u274c";
     });
 
     const pct = Math.round((score / totalQ) * 100);
-    const text = `Daily Trivia ${puzzle.puzzle_date}\n${score}/${totalQ} (${pct}%)\n${lines.join("")}\ngamesite.app/daily/daily-trivia`;
+    return `Daily Trivia ${puzzle.puzzle_date}\n${score}/${totalQ} (${pct}%)\n${lines.join("")}\ngamesite.app/daily/daily-trivia`;
+  }, [answers, questions, score, totalQ, puzzle.puzzle_date]);
 
+  const handleShare = useCallback(async () => {
+    const text = getShareText();
     const ok = await shareOrCopy(text);
     if (ok) {
       setShared(true);
       setTimeout(() => setShared(false), 2000);
     }
-  }, [answers, questions, score, totalQ, puzzle.puzzle_date]);
+  }, [getShareText]);
 
   // ── Splash ──────────────────────────────────────────────
   if (screen === "splash") {
@@ -253,6 +257,7 @@ export default function TriviaGame({ puzzle }: { puzzle: TriviaPuzzle }) {
         >
           {shared ? "Copied!" : "Share Results"}
         </button>
+        <XShareButton getText={getShareText} />
         <button
           onClick={() => setShowStats(true)}
           className="bg-surface text-text-muted border-[1.5px] border-border-light

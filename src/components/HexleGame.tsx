@@ -7,6 +7,7 @@ import { shareOrCopy } from "@/lib/share";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 import StatsButton from "@/components/StatsButton";
+import XShareButton from "@/components/XShareButton";
 
 const WORD_LENGTH = 6;
 const MAX_GUESSES = 7;
@@ -229,7 +230,7 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
     return map;
   }, [guesses]);
 
-  const handleShare = async () => {
+  const getShareText = useCallback(() => {
     const points = won ? MAX_GUESSES + 1 - guesses.length : 0;
     const title = `Hexle ${puzzleDate}`;
     const score = won ? `${guesses.length}/${MAX_GUESSES}` : `X/${MAX_GUESSES}`;
@@ -240,7 +241,11 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
           .join("")
       )
       .join("\n");
-    const text = `${title} ${score}${won ? ` (+${points}pts)` : ""}\n\n${grid}\ngamesite.app/daily/hexle`;
+    return `${title} ${score}${won ? ` (+${points}pts)` : ""}\n\n${grid}\ngamesite.app/daily/hexle`;
+  }, [won, guesses, puzzleDate]);
+
+  const handleShare = async () => {
+    const text = getShareText();
 
     const ok = await shareOrCopy(text);
     if (ok) {
@@ -423,6 +428,7 @@ export default function HexleGame({ answer, puzzleDate }: Props) {
             >
               {copied ? "Copied!" : "Share"}
             </button>
+            <XShareButton getText={getShareText} />
           </div>
         </div>
       )}

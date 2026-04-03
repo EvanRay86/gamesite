@@ -6,6 +6,7 @@ import { shareOrCopy } from "@/lib/share";
 import { useGameStats } from "@/hooks/useGameStats";
 import StatsModal from "@/components/StatsModal";
 import StatsButton from "@/components/StatsButton";
+import XShareButton from "@/components/XShareButton";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -146,12 +147,16 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
     setWords([...solvedWords, ...shuffle(remaining)]);
   };
 
-  const handleShare = async () => {
+  const getShareText = useCallback(() => {
     const title = `Cluster ${puzzle.puzzle_date}${puzzleNumber ? ` #${puzzleNumber}` : ""}`;
     const grid = guessHistory
       .map((guess) => guess.colors.map((c) => EMOJI_MAP[c] || "⬛").join(""))
       .join("\n");
-    const text = `${title}\n${grid}\ngamesite.app/daily/cluster`;
+    return `${title}\n${grid}\ngamesite.app/daily/cluster`;
+  }, [puzzle.puzzle_date, puzzleNumber, guessHistory]);
+
+  const handleShare = async () => {
+    const text = getShareText();
 
     const ok = await shareOrCopy(text);
     if (ok) {
@@ -452,6 +457,7 @@ export default function ClusterGame({ puzzle, puzzleNumber }: Props) {
             >
               {copied ? "Copied!" : "Share"}
             </button>
+            <XShareButton getText={getShareText} />
           </div>
         </div>
       )}

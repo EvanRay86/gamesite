@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { countries, countryNames, type GeoCountry } from "@/lib/geo-puzzles";
 import { shareOrCopy } from "@/lib/share";
+import XShareButton from "@/components/XShareButton";
 
 const MAX_GUESSES = 5;
 const MASTERY_KEY = "gamesite-country-mastery";
@@ -335,22 +336,26 @@ export default function GeoGuessGame() {
     [highlightIdx, suggestions, submitGuess],
   );
 
-  const handleShare = useCallback(async () => {
-    if (!country) return;
+  const getShareText = useCallback(() => {
+    if (!country) return "";
     const guessCount = gameState === "won" ? guesses.length : "X";
     const squares: string[] = guesses.map((g) =>
       g.toLowerCase() === country.name.toLowerCase() ? "\u{1F7E9}" : "\u{1F7E5}",
     );
     while (squares.length < MAX_GUESSES) squares.push("\u2B1C");
 
-    const text = `\u{1F30D} Country Mastery — ${country.name}\n${guessCount}/${MAX_GUESSES} ${squares.join("")}\ngamesite.app/learn/country-mastery`;
+    return `\u{1F30D} Country Mastery — ${country.name}\n${guessCount}/${MAX_GUESSES} ${squares.join("")}\ngamesite.app/learn/country-mastery`;
+  }, [gameState, guesses, country]);
 
+  const handleShare = useCallback(async () => {
+    const text = getShareText();
+    if (!text) return;
     const ok = await shareOrCopy(text);
     if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-  }, [gameState, guesses, country]);
+  }, [getShareText]);
 
   const nextCountry = useCallback(() => {
     const m = loadMastery();
@@ -581,6 +586,7 @@ export default function GeoGuessGame() {
               >
                 {copied ? "Copied!" : "Share"}
               </button>
+              <XShareButton getText={getShareText} />
               <button
                 onClick={nextCountry}
                 className="bg-green text-white font-bold rounded-full px-6 py-2.5 text-sm

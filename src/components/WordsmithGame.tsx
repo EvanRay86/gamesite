@@ -29,6 +29,7 @@ import {
 } from "@/lib/wordsmith-engine";
 import { isValidEnglishWord } from "@/lib/dictionary";
 import { shareOrCopy } from "@/lib/share";
+import XShareButton from "@/components/XShareButton";
 import Link from "next/link";
 
 const TOTAL_ROUNDS = 5;
@@ -640,14 +641,19 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
 
   // ── Share ──────────────────────────────────────────────────────────────
 
+  const getShareText = useCallback(
+    () =>
+      isQuickplay
+        ? buildShareText(roundResults, totalScore, dateStr).replace(
+            /WORDSMITH .*? #\d+/,
+            "WORDSMITH \u2692\uFE0F Quickplay",
+          )
+        : buildShareText(roundResults, totalScore, dateStr),
+    [roundResults, totalScore, dateStr, isQuickplay],
+  );
+
   const handleShare = async () => {
-    const text = isQuickplay
-      ? buildShareText(roundResults, totalScore, dateStr).replace(
-          /WORDSMITH .*? #\d+/,
-          "WORDSMITH \u2692\uFE0F Quickplay",
-        )
-      : buildShareText(roundResults, totalScore, dateStr);
-    await shareOrCopy(text);
+    await shareOrCopy(getShareText());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -1002,6 +1008,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
               >
                 {copied ? "Copied!" : "Share Results"}
               </button>
+              <XShareButton getText={getShareText} />
               {isQuickplay && (
                 <button
                   onClick={startNewQuickplay}
