@@ -42,9 +42,7 @@ interface Props {
 
 export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
   const isQuickplay = mode === "quickplay";
-  const [quickplaySeed, setQuickplaySeed] = useState(() =>
-    isQuickplay ? Date.now().toString() : "",
-  );
+  const [quickplaySeed, setQuickplaySeed] = useState("");
   // ── Core game state ──────────────────────────────────────────────────────
   const [phase, setPhase] = useState<GamePhase>("splash");
   const [currentRound, setCurrentRound] = useState(0);
@@ -150,8 +148,14 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
       if (raw) setStats(JSON.parse(raw));
     } catch { /* ignore */ }
 
-    // Quickplay: skip save/restore, just init fresh
+    // Quickplay: generate a fresh seed client-side and init
     if (isQuickplay) {
+      if (!quickplaySeed) {
+        // First mount — generate seed, which will re-trigger this effect
+        setQuickplaySeed(Date.now().toString() + Math.random().toString(36).slice(2));
+        initialized.current = false;
+        return;
+      }
       initGame();
       return;
     }
@@ -650,7 +654,7 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
 
   const startNewQuickplay = () => {
     initialized.current = false;
-    setQuickplaySeed(Date.now().toString());
+    setQuickplaySeed(Date.now().toString() + Math.random().toString(36).slice(2));
     setPhase("splash");
   };
 
@@ -764,10 +768,10 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
             return (
               <span
                 key={`${id}-${idx}`}
-                className="rounded-full bg-amber/10 px-2.5 py-1 text-xs font-medium text-amber"
+                className="rounded-full border border-amber/30 bg-white/80 px-3 py-1.5 text-sm font-semibold text-amber-700 shadow-sm backdrop-blur-sm dark:bg-gray-800/80 dark:text-amber-400"
               >
                 {pu.emoji} {pu.name}{" "}
-                <span className="font-normal opacity-70">— {pu.description}</span>
+                <span className="font-normal text-amber-600/80 dark:text-amber-400/80">— {pu.description}</span>
               </span>
             );
           })}
@@ -1166,11 +1170,11 @@ export default function WordsmithGame({ dateStr, mode = "daily" }: Props) {
                       key={i}
                       className={`flex items-center justify-center gap-2 transition-all duration-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
                     >
-                      <span className="rounded-full bg-amber/10 px-3 py-1 text-xs font-bold text-amber">
+                      <span className="rounded-full border border-amber/30 bg-white/80 px-3 py-1.5 text-sm font-bold text-amber-700 shadow-sm dark:bg-gray-800/80 dark:text-amber-400">
                         {b.label}
                       </span>
                       {b.value > 0 && (
-                        <span className="text-sm font-bold text-amber">
+                        <span className="text-sm font-bold text-amber-700 dark:text-amber-400">
                           {b.label.includes("2x") ? `\u2192 ${breakdownData.totalScore}` : `+${b.value}`}
                         </span>
                       )}
