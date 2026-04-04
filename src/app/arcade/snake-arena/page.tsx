@@ -4,9 +4,9 @@ import SnakeGame from "@/components/SnakeGame";
 import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = buildGameMetadata({
-  title: "Snake Arena",
+  title: "Play Snake Arena Online Free — Multiplayer Snake Game",
   description:
-    "Eat, grow, and devour other players in this multiplayer snake battle.",
+    "Play Snake Arena free — eat, grow, and devour other players in this multiplayer snake battle. No download, play instantly in your browser.",
   path: "arcade/snake-arena",
   color: "green",
 });

@@ -3,9 +3,9 @@ import GameJsonLd from "@/components/seo/GameJsonLd";
 import { buildGameMetadata } from "@/lib/seo";
 
 export const metadata = buildGameMetadata({
-  title: "Country Mastery",
+  title: "Play Country Mastery Online Free — Geography Quiz Game",
   description:
-    "Learn every country from progressive hints: outline, population, flag, capital, and fun facts. Track your mastery of all 195 countries.",
+    "Play Country Mastery free — learn every country from progressive hints: outline, population, flag, capital, and fun facts. A free geography quiz game.",
   path: "learn/country-mastery",
   color: "green",
 });

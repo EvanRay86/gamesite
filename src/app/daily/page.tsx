@@ -3,9 +3,9 @@ import Link from "next/link";
 import { getDailyGames, type Game } from "@/lib/game-registry";
 
 export const metadata: Metadata = {
-  title: "Daily Puzzles",
+  title: "Free Daily Puzzles Online — Heardle, Framed, Crossword & More",
   description:
-    "Play a fresh set of word puzzles, trivia, and brain teasers every day — free in your browser.",
+    "Play free daily puzzles including Heardle, Framed, Crossword, Trivia, and word games. New challenges every day — play online in your browser.",
 };
 import {
   colorBg,

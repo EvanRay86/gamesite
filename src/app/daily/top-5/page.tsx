@@ -12,8 +12,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Top 5",
-  description: "Rank five items in the correct order. A new challenge every day.",
+  title: "Play Top 5 Online Free — Daily Ranking Game",
+  description:
+    "Play Top 5 today — rank five items in the correct order. A free daily trivia and ranking game you can play in your browser.",
   path: "daily/top-5",
   color: "amber",
 });

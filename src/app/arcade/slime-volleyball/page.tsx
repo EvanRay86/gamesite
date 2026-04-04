@@ -4,9 +4,9 @@ import SlimeVolleyball from "@/components/SlimeVolleyball";
 import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = buildGameMetadata({
-  title: "Slime Volleyball",
+  title: "Play Slime Volleyball Online Free — Classic Browser Game",
   description:
-    "Jump, bump, and spike your way to 7 points.",
+    "Play Slime Volleyball free — jump, bump, and spike your way to victory. The classic slime volleyball game, playable instantly in your browser.",
   path: "arcade/slime-volleyball",
   color: "teal",
 });

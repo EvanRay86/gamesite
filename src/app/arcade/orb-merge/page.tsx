@@ -4,9 +4,9 @@ import OrbMerge from "@/components/OrbMerge";
 import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = buildGameMetadata({
-  title: "Orb Merge",
+  title: "Play Orb Merge Online Free — Suika-Style Merge Game",
   description:
-    "Drop orbs, match colors, and merge your way to the top tier. Physics-based chaos.",
+    "Play Orb Merge free — drop orbs, match colors, and merge your way to the top tier. A free physics-based merge game like Suika in your browser.",
   path: "arcade/orb-merge",
   color: "purple",
 });

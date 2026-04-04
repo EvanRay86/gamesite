@@ -8,9 +8,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Cluster",
+  title: "Play Cluster Online Free — Daily Word Connection Game",
   description:
-    "Find five groups of three words that share a hidden connection. A new puzzle every day.",
+    "Play Cluster today — find five groups of three words that share a hidden connection. A free daily word puzzle similar to NYT Connections.",
   path: "daily/cluster",
   color: "coral",
 });

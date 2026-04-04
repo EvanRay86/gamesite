@@ -4,9 +4,9 @@ import PixelVilleGame from "@/components/pixelville/PixelVilleGame";
 import MoreCommunityGames from "@/components/MoreCommunityGames";
 
 export const metadata = buildGameMetadata({
-  title: "PixelVille",
+  title: "Play PixelVille Online Free — Pixel Art Community Game",
   description:
-    "Farm, build, chat, and hang out in a pixel-art community world.",
+    "Play PixelVille free — farm, build, chat, and hang out in a pixel-art community world. A free multiplayer browser game.",
   path: "arcade/pixelville",
   color: "green",
 });

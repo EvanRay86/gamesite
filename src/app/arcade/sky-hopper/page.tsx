@@ -4,9 +4,9 @@ import SkyHopper from "@/components/SkyHopper";
 import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = buildGameMetadata({
-  title: "Sky Hopper",
+  title: "Play Sky Hopper Online Free — Flappy Arcade Game",
   description:
-    "Tap to flap, dodge the pipes, and chase your high score in this endless arcade hopper.",
+    "Play Sky Hopper free — tap to flap, dodge the pipes, and chase your high score. A free endless arcade game in your browser.",
   path: "arcade/sky-hopper",
   color: "sky",
 });

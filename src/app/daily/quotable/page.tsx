@@ -12,8 +12,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Quotable",
-  description: "Guess who said the famous quote as words are revealed. A new challenge every day.",
+  title: "Play Quotable Online Free — Daily Quote Guessing Game",
+  description:
+    "Play Quotable today — guess who said the famous quote as words are revealed one by one. A free daily trivia game in your browser.",
   path: "daily/quotable",
   color: "purple",
 });

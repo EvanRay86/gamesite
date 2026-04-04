@@ -8,9 +8,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Hexle",
+  title: "Play Hexle Online Free — Daily 6-Letter Word Game",
   description:
-    "Seven guesses to crack the six-letter word. A new puzzle every day.",
+    "Play Hexle today — guess the six-letter word in seven tries. A free daily word puzzle like Wordle but harder. No download required.",
   path: "daily/hexle",
   color: "amber",
 });

@@ -26,8 +26,8 @@ export function generateMetadata({
     ? params.variant.charAt(0).toUpperCase() + params.variant.slice(1)
     : "Heardle";
   return buildGameMetadata({
-    title: `Heardle ${label}`,
-    description: `Name the ${label.toLowerCase()} song from its opening seconds.`,
+    title: `Play Heardle ${label} Online Free — Guess the Song`,
+    description: `Play Heardle ${label} today — listen to the opening seconds of a ${label.toLowerCase()} song and guess the title. A free daily ${label.toLowerCase()} music guessing game.`,
     path: `daily/heardle/${params.variant}`,
     color: "purple",
   });
@@ -56,7 +56,7 @@ export default async function HeardleVariantPage({
     <main>
       <GameJsonLd
         name={`Heardle ${label}`}
-        description={`Name the ${label.toLowerCase()} song from its opening seconds.`}
+        description={`Play Heardle ${label} today — guess the ${label.toLowerCase()} song from its opening seconds. Free daily music game.`}
         path={`daily/heardle/${variant}`}
         category="daily"
       />

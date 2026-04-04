@@ -4,9 +4,9 @@ import LexiconQuest from "@/components/LexiconQuest";
 import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = buildGameMetadata({
-  title: "Lexicon Quest",
+  title: "Play Lexicon Quest Online Free — Word Roguelike Game",
   description:
-    "Spell words to slay monsters in this roguelike dungeon crawler. How deep can you go?",
+    "Play Lexicon Quest free — spell words to slay monsters in this roguelike dungeon crawler. A free word RPG you can play in your browser.",
   path: "arcade/lexicon-quest",
   color: "purple",
 });

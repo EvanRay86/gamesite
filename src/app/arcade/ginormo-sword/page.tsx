@@ -4,9 +4,9 @@ import GinormoSword from "@/components/GinormoSword";
 import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = buildGameMetadata({
-  title: "Big Ah Sword",
+  title: "Play Big Ah Sword Online Free — Browser Action RPG",
   description:
-    "Slay monsters, collect gold, and grow your sword to absurd proportions in this action RPG.",
+    "Play Big Ah Sword free — slay monsters, collect gold, and grow your sword to absurd proportions. A free browser action RPG, no download needed.",
   path: "arcade/ginormo-sword",
   color: "coral",
 });

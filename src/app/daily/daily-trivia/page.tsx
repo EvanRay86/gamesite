@@ -13,8 +13,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Daily Trivia",
-  description: "Test your knowledge with 8 daily trivia questions featuring current events.",
+  title: "Play Daily Trivia Online Free — News Quiz Today",
+  description:
+    "Play today's trivia — 8 questions about current events and trending news. A free daily trivia quiz you can play in your browser.",
   path: "daily/daily-trivia",
   color: "sky",
 });

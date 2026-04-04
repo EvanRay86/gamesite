@@ -16,28 +16,29 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Gamesite — Free Daily Puzzles, Trivia & Arcade Games",
+    default:
+      "Gamesite — Play Heardle, Framed, Crossword & Free Daily Games Online",
     template: "%s | Gamesite",
   },
   description:
-    "Play daily word puzzles, trivia, arcade games, and more — free in your browser. No downloads required.",
+    "Play free online games — Heardle, Framed, daily crossword, trivia, 2048, word puzzles, and more. New puzzles every day, no download required.",
   metadataBase: new URL(siteUrl),
   openGraph: {
     type: "website",
     locale: "en_US",
     url: siteUrl,
     siteName: "Gamesite",
-    title: "Gamesite — Free Daily Puzzles, Trivia & Arcade Games",
+    title: "Gamesite — Play Heardle, Framed, Crossword & Free Daily Games",
     description:
-      "Play daily word puzzles, trivia, arcade games, and more — free in your browser.",
+      "Play free online games — Heardle, Framed, daily crossword, trivia, 2048, and more. New puzzles every day.",
   },
   twitter: {
     card: "summary_large_image",
     site: "@GamesiteAppEvan",
     creator: "@GamesiteAppEvan",
-    title: "Gamesite — Free Daily Puzzles, Trivia & Arcade Games",
+    title: "Gamesite — Play Heardle, Framed, Crossword & Free Daily Games",
     description:
-      "Play daily word puzzles, trivia, arcade games, and more — free in your browser.",
+      "Play free online games — Heardle, Framed, daily crossword, trivia, 2048, and more. New puzzles every day.",
   },
   robots: {
     index: true,
@@ -55,7 +56,7 @@ const jsonLd = [
     name: "Gamesite",
     url: siteUrl,
     description:
-      "Play daily word puzzles, trivia, arcade games, and more — free in your browser.",
+      "Play free online games including Heardle, Framed, daily crossword, trivia, 2048, and word puzzles. New challenges every day.",
     potentialAction: {
       "@type": "SearchAction",
       target: `${siteUrl}/daily`,

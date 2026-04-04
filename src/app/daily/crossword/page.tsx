@@ -7,9 +7,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "News Crossword",
+  title: "Play Daily Crossword Online Free — News Crossword Today",
   description:
-    "A daily crossword puzzle built from today's headlines and pop culture.",
+    "Play today's crossword — a free daily crossword puzzle built from current headlines and pop culture. Solve online, no app needed.",
   path: "daily/crossword",
   color: "amber",
 });

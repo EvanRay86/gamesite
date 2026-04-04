@@ -4,9 +4,9 @@ import Game2048 from "@/components/Game2048";
 import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = buildGameMetadata({
-  title: "2048",
+  title: "Play 2048 Online Free — Classic Number Puzzle Game",
   description:
-    "Slide tiles, combine numbers, and reach the 2048 tile to win.",
+    "Play 2048 free — slide tiles, combine numbers, and reach the 2048 tile. The classic puzzle game, playable instantly in your browser.",
   path: "arcade/2048",
   color: "amber",
 });

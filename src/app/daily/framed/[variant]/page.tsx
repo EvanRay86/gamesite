@@ -26,8 +26,8 @@ export function generateMetadata({
     ? params.variant.charAt(0).toUpperCase() + params.variant.slice(1)
     : "Framed";
   return buildGameMetadata({
-    title: `Framed ${label}`,
-    description: `Guess the ${label.toLowerCase()} movie one frame at a time.`,
+    title: `Play Framed ${label} Online Free — Guess the Movie`,
+    description: `Play Framed ${label} today — guess the ${label.toLowerCase()} movie from a single frame. A free daily ${label.toLowerCase()} movie guessing game.`,
     path: `daily/framed/${params.variant}`,
     color: "green",
   });
@@ -56,7 +56,7 @@ export default async function FramedVariantPage({
     <main>
       <GameJsonLd
         name={`Framed ${label}`}
-        description={`Guess the ${label.toLowerCase()} movie one frame at a time.`}
+        description={`Play Framed ${label} today — guess the ${label.toLowerCase()} movie from a single frame. Free daily movie game.`}
         path={`daily/framed/${variant}`}
         category="daily"
       />

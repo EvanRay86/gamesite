@@ -12,9 +12,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Word Bloom",
+  title: "Play Word Bloom Online Free — Daily Spelling Bee Game",
   description:
-    "Make words from 7 letters, always using the center. A new bloom every day.",
+    "Play Word Bloom today — make words from 7 letters, always using the center letter. A free daily word game like Spelling Bee in your browser.",
   path: "daily/word-bloom",
   color: "green",
 });

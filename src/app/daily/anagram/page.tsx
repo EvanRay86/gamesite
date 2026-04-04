@@ -12,8 +12,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Anagram Scramble",
-  description: "Unscramble five words before time runs out. A new challenge every day.",
+  title: "Play Anagram Scramble Online Free — Daily Word Game",
+  description:
+    "Play Anagram Scramble today — unscramble five words before time runs out. A free daily word puzzle you can play in your browser.",
   path: "daily/anagram",
   color: "teal",
 });
