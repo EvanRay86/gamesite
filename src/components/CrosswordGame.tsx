@@ -47,6 +47,33 @@ export default function CrosswordGame({ puzzle }: Props) {
 
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
+  // Pinch-zoom & pan refs
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const gridInnerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState<number | undefined>(undefined);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [gridReady, setGridReady] = useState(false);
+  const transformRef = useRef({ scale: 1, tx: 0, ty: 0 });
+  const gestureRef = useRef({
+    initialScale: 1,
+    gridW: 0,
+    gridH: 0,
+    containerW: 0,
+    pinching: false,
+    panning: false,
+    pinchDist0: 0,
+    pinchScale0: 0,
+    pinchTx0: 0,
+    pinchTy0: 0,
+    pinchMidX0: 0,
+    pinchMidY0: 0,
+    panX0: 0,
+    panY0: 0,
+    panTx0: 0,
+    panTy0: 0,
+    suppressUntil: 0,
+  });
+
   const { stats, recordGame } = useGameStats("crossword", puzzle.date);
 
   // All clues flat
@@ -84,6 +111,7 @@ export default function CrosswordGame({ puzzle }: Props) {
   // Select a cell
   const selectCell = useCallback(
     (row: number, col: number) => {
+      if (Date.now() < gestureRef.current.suppressUntil) return;
       const key = `${row},${col}`;
       const cell = grid[row]?.[col];
       if (!cell || cell.isBlack) return;
@@ -381,6 +409,146 @@ export default function CrosswordGame({ puzzle }: Props) {
     }
   }, [getShareText]);
 
+  // ---------------------------------------------------------------------------
+  // Pinch-zoom & pan (mobile)
+  // ---------------------------------------------------------------------------
+
+  const applyTransform = useCallback(() => {
+    const el = gridInnerRef.current;
+    if (!el) return;
+    const { scale, tx, ty } = transformRef.current;
+    el.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+  }, []);
+
+  const clampAndApply = useCallback(() => {
+    const t = transformRef.current;
+    const g = gestureRef.current;
+    const minS = g.initialScale;
+    t.scale = Math.max(minS, Math.min(2.5, t.scale));
+    const sw = g.gridW * t.scale;
+    const sh = g.gridH * t.scale;
+    const ch = g.gridH * g.initialScale;
+    if (sw <= g.containerW) {
+      t.tx = (g.containerW - sw) / 2;
+    } else {
+      t.tx = Math.min(0, Math.max(g.containerW - sw, t.tx));
+    }
+    if (sh <= ch) {
+      t.ty = (ch - sh) / 2;
+    } else {
+      t.ty = Math.min(0, Math.max(ch - sh, t.ty));
+    }
+    setIsZoomed(t.scale > g.initialScale * 1.05);
+    applyTransform();
+  }, [applyTransform]);
+
+  // Measure grid and compute initial scale to fit container width
+  useEffect(() => {
+    const container = gridContainerRef.current;
+    const inner = gridInnerRef.current;
+    if (!container || !inner) return;
+    const measure = () => {
+      const gw = inner.offsetWidth;
+      const gh = inner.offsetHeight;
+      const cw = container.clientWidth;
+      const fit = cw < gw ? cw / gw : 1;
+      const g = gestureRef.current;
+      g.initialScale = fit;
+      g.gridW = gw;
+      g.gridH = gh;
+      g.containerW = cw;
+      transformRef.current = { scale: fit, tx: (cw - gw * fit) / 2, ty: 0 };
+      setContainerHeight(gh * fit);
+      setIsZoomed(false);
+      setGridReady(true);
+      applyTransform();
+    };
+    requestAnimationFrame(measure);
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [cols, rows, applyTransform]);
+
+  const touchDist = (a: Touch, b: Touch) =>
+    Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+
+  const handleGridTouchStart = useCallback((e: React.TouchEvent) => {
+    const g = gestureRef.current;
+    const t = transformRef.current;
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      g.pinching = true;
+      g.panning = false;
+      g.pinchDist0 = touchDist(e.touches[0], e.touches[1]);
+      g.pinchScale0 = t.scale;
+      g.pinchTx0 = t.tx;
+      g.pinchTy0 = t.ty;
+      const rect = gridContainerRef.current!.getBoundingClientRect();
+      g.pinchMidX0 = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+      g.pinchMidY0 = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+    } else if (e.touches.length === 1) {
+      g.panX0 = e.touches[0].clientX;
+      g.panY0 = e.touches[0].clientY;
+      g.panTx0 = t.tx;
+      g.panTy0 = t.ty;
+      g.panning = false;
+    }
+  }, []);
+
+  const handleGridTouchMove = useCallback((e: React.TouchEvent) => {
+    const g = gestureRef.current;
+    const t = transformRef.current;
+    if (e.touches.length === 2 && g.pinching) {
+      e.preventDefault();
+      const d = touchDist(e.touches[0], e.touches[1]);
+      const newScale = g.pinchScale0 * (d / g.pinchDist0);
+      const rect = gridContainerRef.current!.getBoundingClientRect();
+      const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+      const my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+      // Zoom towards the point under the initial pinch midpoint
+      const gx = (g.pinchMidX0 - g.pinchTx0) / g.pinchScale0;
+      const gy = (g.pinchMidY0 - g.pinchTy0) / g.pinchScale0;
+      t.scale = newScale;
+      t.tx = mx - gx * newScale;
+      t.ty = my - gy * newScale;
+      clampAndApply();
+    } else if (e.touches.length === 1 && !g.pinching) {
+      // Only allow single-finger pan when zoomed in
+      if (t.scale <= g.initialScale * 1.05) return;
+      const dx = e.touches[0].clientX - g.panX0;
+      const dy = e.touches[0].clientY - g.panY0;
+      if (!g.panning && Math.hypot(dx, dy) > 8) {
+        g.panning = true;
+      }
+      if (g.panning) {
+        e.preventDefault();
+        t.tx = g.panTx0 + dx;
+        t.ty = g.panTy0 + dy;
+        clampAndApply();
+      }
+    }
+  }, [clampAndApply]);
+
+  const handleGridTouchEnd = useCallback((e: React.TouchEvent) => {
+    const g = gestureRef.current;
+    if (e.touches.length < 2 && g.pinching) {
+      g.pinching = false;
+      g.suppressUntil = Date.now() + 300;
+      if (e.touches.length === 1) {
+        g.panX0 = e.touches[0].clientX;
+        g.panY0 = e.touches[0].clientY;
+        g.panTx0 = transformRef.current.tx;
+        g.panTy0 = transformRef.current.ty;
+      }
+    }
+    if (e.touches.length === 0) {
+      if (g.panning) {
+        g.suppressUntil = Date.now() + 300;
+      }
+      g.panning = false;
+      clampAndApply();
+    }
+  }, [clampAndApply]);
+
   // Cell size
   const cellSize = 36;
 
@@ -415,12 +583,28 @@ export default function CrosswordGame({ puzzle }: Props) {
         {/* Grid */}
         <div className="flex-shrink-0">
           <div
-            className="inline-grid border-2 border-text-primary bg-text-primary gap-px"
+            ref={gridContainerRef}
+            className="relative overflow-hidden"
             style={{
-              gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
-              gridTemplateRows: `repeat(${rows}, ${cellSize}px)`,
+              height: containerHeight,
+              touchAction: isZoomed ? "none" : "pan-y",
             }}
+            onTouchStart={handleGridTouchStart}
+            onTouchMove={handleGridTouchMove}
+            onTouchEnd={handleGridTouchEnd}
           >
+            <div
+              ref={gridInnerRef}
+              className="inline-block"
+              style={{ transformOrigin: "0 0", visibility: gridReady ? "visible" : "hidden" }}
+            >
+              <div
+                className="inline-grid border-2 border-text-primary bg-text-primary gap-px"
+                style={{
+                  gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
+                  gridTemplateRows: `repeat(${rows}, ${cellSize}px)`,
+                }}
+              >
             {grid.flat().map((cell) => {
               const key = `${cell.row},${cell.col}`;
               const isSelected = selectedCell === key;
@@ -485,6 +669,8 @@ export default function CrosswordGame({ puzzle }: Props) {
                 </div>
               );
             })}
+              </div>
+            </div>
           </div>
 
           {/* Action buttons */}
