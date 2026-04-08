@@ -200,7 +200,6 @@ export default function GlobleGame() {
     setError("");
     setShowStats(false);
     setCopied(false);
-    // Focus the input after mode switch
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
@@ -239,7 +238,7 @@ export default function GlobleGame() {
     [guesses],
   );
 
-  // Globe guesses (for the component) — include quickplayRound as dep to reset
+  // Globe guesses (for the component)
   const globeGuesses = useMemo(
     () => guesses.map((g) => ({ country: g.country, distance: g.distance })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -250,10 +249,10 @@ export default function GlobleGame() {
     <div className="mx-auto max-w-2xl px-4 py-6">
       {/* Header */}
       <div className="mb-4 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-white">
+        <h1 className="font-display text-4xl tracking-tight text-text-primary">
           🌍 Globle
         </h1>
-        <p className="mt-1 text-sm text-zinc-400">
+        <p className="mt-1 text-sm text-text-muted">
           {mode === "daily"
             ? "Guess the mystery country. The hotter the color, the closer you are!"
             : "Quickplay — practice with a random country!"}
@@ -268,7 +267,7 @@ export default function GlobleGame() {
             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
               mode === "daily"
                 ? "bg-green-600 text-white"
-                : "bg-zinc-800 text-zinc-400 hover:text-white"
+                : "bg-surface border border-border text-text-muted hover:text-text-primary"
             }`}
           >
             Daily
@@ -280,7 +279,7 @@ export default function GlobleGame() {
             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
               mode === "quickplay"
                 ? "bg-purple-600 text-white"
-                : "bg-zinc-800 text-zinc-400 hover:text-white"
+                : "bg-surface border border-border text-text-muted hover:text-text-primary"
             }`}
           >
             Quickplay
@@ -317,7 +316,7 @@ export default function GlobleGame() {
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
             placeholder="Type a country name..."
-            className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-4 py-3 text-white placeholder-zinc-500 outline-none focus:border-teal/60 focus:ring-2 focus:ring-teal/30 transition-all [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+            className="w-full rounded-xl border-2 border-border bg-white/90 px-4 py-3 text-text-primary placeholder-text-dim outline-none focus:border-teal focus:ring-2 focus:ring-teal/30 transition-all shadow-sm [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
             name="globle-country-search"
             autoComplete="off"
             autoCorrect="off"
@@ -326,13 +325,13 @@ export default function GlobleGame() {
             data-form-type="other"
             data-lpignore="true"
           />
-          {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
+          {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
 
           {/* Suggestions dropdown */}
           {showSuggestions && suggestions.length > 0 && (
             <div
               ref={suggestionsRef}
-              className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-xl border border-zinc-700 bg-zinc-800 shadow-2xl"
+              className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-xl border border-border bg-white shadow-xl"
             >
               {suggestions.map((name) => {
                 const c = globleCountries.find((c) => c.name === name)!;
@@ -340,7 +339,7 @@ export default function GlobleGame() {
                   <button
                     type="button"
                     key={c.code}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-white hover:bg-zinc-700/60 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-text-primary hover:bg-surface transition-colors first:rounded-t-xl last:rounded-b-xl"
                     onMouseDown={(e) => {
                       e.preventDefault();
                       submitGuess(name);
@@ -356,11 +355,11 @@ export default function GlobleGame() {
         </form>
       ) : (
         /* Won — show banner above globe */
-        <div className="mb-4 rounded-2xl bg-gradient-to-r from-green-900/50 to-teal-900/50 p-5 ring-1 ring-green-500/30 text-center">
-          <p className="text-xl font-bold text-green-400">
+        <div className="mb-4 rounded-2xl bg-gradient-to-r from-green-100 to-teal-100 p-5 ring-1 ring-green-300 text-center">
+          <p className="text-xl font-bold text-green-700">
             {target.flag} {target.name}!
           </p>
-          <p className="mt-1 text-sm text-zinc-300">
+          <p className="mt-1 text-sm text-text-secondary">
             Found in <strong>{guesses.length}</strong> guess
             {guesses.length !== 1 ? "es" : ""}
           </p>
@@ -375,7 +374,7 @@ export default function GlobleGame() {
             )}
             <button
               onClick={() => setShowStats(true)}
-              className="rounded-full bg-zinc-700 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-zinc-600 active:scale-95 transition-all"
+              className="rounded-full bg-surface border border-border px-5 py-2.5 text-sm font-semibold text-text-primary shadow-sm hover:bg-surface-hover active:scale-95 transition-all"
             >
               Stats
             </button>
@@ -387,7 +386,7 @@ export default function GlobleGame() {
                 Play again
               </button>
             )}
-            {mode === "daily" && !dailyWon ? null : mode === "daily" && (
+            {mode === "daily" && dailyWon && (
               <button
                 onClick={startQuickplay}
                 className="rounded-full bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-purple-500 active:scale-95 transition-all"
@@ -401,7 +400,7 @@ export default function GlobleGame() {
 
       {/* Globe */}
       <div
-        className="mx-auto mb-6 max-w-lg rounded-2xl bg-zinc-900/60 ring-1 ring-white/10 shadow-xl overflow-hidden"
+        className="mx-auto mb-6 max-w-lg rounded-2xl bg-surface ring-1 ring-border shadow-lg overflow-hidden"
         style={{ height: "min(420px, 60vw)" }}
       >
         <GlobleGlobe guesses={globeGuesses} target={target} won={won} />
@@ -409,7 +408,7 @@ export default function GlobleGame() {
 
       {/* Color legend */}
       <div className="mb-4 flex items-center justify-center gap-1.5">
-        <span className="text-xs text-zinc-500">Far</span>
+        <span className="text-xs text-text-dim">Far</span>
         {[0, 15, 30, 45, 60, 75, 90].map((pct) => (
           <div
             key={pct}
@@ -417,13 +416,13 @@ export default function GlobleGame() {
             style={{ backgroundColor: proximityColor(pct) }}
           />
         ))}
-        <span className="text-xs text-zinc-500">Close</span>
+        <span className="text-xs text-text-dim">Close</span>
       </div>
 
       {/* Guess list */}
       {guesses.length > 0 && (
         <div className="space-y-1.5">
-          <h2 className="mb-2 text-sm font-semibold text-zinc-400 uppercase tracking-wider">
+          <h2 className="mb-2 text-sm font-semibold text-text-muted uppercase tracking-wider">
             Guesses ({guesses.length})
           </h2>
           {sortedGuesses.map((g) => {
@@ -439,8 +438,8 @@ export default function GlobleGame() {
                 key={g.country.code}
                 className={`flex items-center gap-3 rounded-xl px-4 py-2.5 transition-all ${
                   isTarget
-                    ? "bg-green-900/40 ring-1 ring-green-500/30"
-                    : "bg-zinc-800/60"
+                    ? "bg-green-100 ring-1 ring-green-300"
+                    : "bg-white/80 border border-border"
                 }`}
               >
                 {/* Color bar */}
@@ -455,15 +454,15 @@ export default function GlobleGame() {
                 <span className="text-lg flex-shrink-0">
                   {g.country.flag}
                 </span>
-                <span className="flex-1 text-sm font-medium text-white truncate">
+                <span className="flex-1 text-sm font-medium text-text-primary truncate">
                   {g.country.name}
                 </span>
                 {isTarget ? (
-                  <span className="text-sm font-bold text-green-400">
+                  <span className="text-sm font-bold text-green-600">
                     ✓ Correct!
                   </span>
                 ) : (
-                  <div className="flex items-center gap-2 text-sm text-zinc-400">
+                  <div className="flex items-center gap-2 text-sm text-text-muted">
                     <span>
                       {Math.round(g.distance).toLocaleString()} km
                     </span>
@@ -479,18 +478,20 @@ export default function GlobleGame() {
       {/* Stats modal */}
       {showStats && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={() => setShowStats(false)}
         >
           <div
-            className="mx-4 w-full max-w-sm rounded-2xl bg-zinc-900 p-6 ring-1 ring-white/10 shadow-2xl"
+            className="mx-4 w-full max-w-sm rounded-2xl bg-white p-6 ring-1 ring-border shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-white">Statistics</h3>
+              <h3 className="text-lg font-bold text-text-primary">
+                Statistics
+              </h3>
               <button
                 onClick={() => setShowStats(false)}
-                className="text-zinc-500 hover:text-white transition-colors text-xl leading-none"
+                className="text-text-dim hover:text-text-primary transition-colors text-xl leading-none"
               >
                 ×
               </button>
@@ -502,33 +503,37 @@ export default function GlobleGame() {
                 { label: "Last win", value: stats.lastPlayedDate || "—" },
                 {
                   label: "Today's guesses",
-                  value: mode === "daily" && dailyWon
-                    ? dailyGuesses.length
-                    : mode === "quickplay" && won
-                      ? guesses.length
-                      : "—",
+                  value:
+                    mode === "daily" && dailyWon
+                      ? dailyGuesses.length
+                      : mode === "quickplay" && won
+                        ? guesses.length
+                        : "—",
                 },
                 { label: "Games won", value: stats.gamesWon },
                 { label: "Current streak", value: stats.currentStreak },
                 { label: "Max streak", value: stats.maxStreak },
                 {
                   label: "Avg. guesses",
-                  value: stats.gamesWon > 0
-                    ? Math.round(
-                        Object.entries(stats.guessDistribution)
-                          .filter(([k]) => k !== "X")
-                          .reduce((sum, [k, v]) => sum + Number(k) * v, 0) /
-                          stats.gamesWon,
-                      )
-                    : "—",
+                  value:
+                    stats.gamesWon > 0
+                      ? Math.round(
+                          Object.entries(stats.guessDistribution)
+                            .filter(([k]) => k !== "X")
+                            .reduce(
+                              (sum, [k, v]) => sum + Number(k) * v,
+                              0,
+                            ) / stats.gamesWon,
+                        )
+                      : "—",
                 },
               ].map((row) => (
                 <div
                   key={row.label}
-                  className="flex items-center justify-between border-b border-zinc-800 pb-2"
+                  className="flex items-center justify-between border-b border-border pb-2"
                 >
-                  <span className="text-sm text-zinc-400">{row.label}</span>
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-sm text-text-muted">{row.label}</span>
+                  <span className="text-sm font-semibold text-text-primary">
                     {row.value}
                   </span>
                 </div>
