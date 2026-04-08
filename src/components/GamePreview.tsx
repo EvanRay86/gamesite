@@ -1007,6 +1007,73 @@ function OrbMergePreview() {
   );
 }
 
+/* ─── Globle Mini Preview ──────────────────────────────────────────────── */
+
+function GloblePreview() {
+  const guesses = [
+    { flag: "🇧🇷", name: "Brazil", km: "9,450", color: "#67e8f9", arrow: "↗️" },
+    { flag: "🇳🇬", name: "Nigeria", km: "4,120", color: "#fbbf24", arrow: "➡️" },
+    { flag: "🇪🇬", name: "Egypt", km: "1,200", color: "#f97316", arrow: "↗️" },
+    { flag: "🇹🇷", name: "Turkey", km: "340", color: "#ef4444", arrow: "↘️" },
+  ];
+  return (
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-green/5 to-green/10 border border-green/15 p-3.5">
+      {/* Globe icon + label */}
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-green">Mystery Country</span>
+        <span className="text-[10px] font-bold text-green">4 guesses</span>
+      </div>
+
+      {/* Mini globe + guess rows */}
+      <div className="flex gap-3">
+        {/* Simple globe SVG */}
+        <div className="flex-shrink-0 flex items-center justify-center">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="26" fill="#1a3a5c" stroke="#4da6ff" strokeWidth="1" strokeOpacity="0.3" />
+            <ellipse cx="28" cy="28" rx="26" ry="26" fill="none" stroke="#4da6ff" strokeWidth="0.3" strokeOpacity="0.2" />
+            <ellipse cx="28" cy="28" rx="13" ry="26" fill="none" stroke="#4da6ff" strokeWidth="0.3" strokeOpacity="0.2" />
+            <line x1="2" y1="28" x2="54" y2="28" stroke="#4da6ff" strokeWidth="0.3" strokeOpacity="0.2" />
+            <line x1="2" y1="18" x2="54" y2="18" stroke="#4da6ff" strokeWidth="0.3" strokeOpacity="0.15" />
+            <line x1="2" y1="38" x2="54" y2="38" stroke="#4da6ff" strokeWidth="0.3" strokeOpacity="0.15" />
+            {/* Simplified land blobs */}
+            <path d="M20,12 Q24,10 28,12 Q30,16 26,18 Q22,16 20,12Z" fill="#556b5e" opacity="0.7" />
+            <path d="M32,14 Q38,12 40,16 Q38,22 34,20 Q30,18 32,14Z" fill="#556b5e" opacity="0.7" />
+            <path d="M30,24 Q34,22 36,26 Q34,34 30,32 Q28,28 30,24Z" fill="#556b5e" opacity="0.7" />
+            <path d="M14,22 Q20,20 22,24 Q20,30 16,28 Q12,26 14,22Z" fill="#556b5e" opacity="0.7" />
+            <path d="M36,30 Q40,28 42,32 Q40,38 36,36 Q34,34 36,30Z" fill="#556b5e" opacity="0.7" />
+            {/* Colored guess dots */}
+            <circle cx="18" cy="34" r="3" fill="#67e8f9" stroke="white" strokeWidth="0.8" />
+            <circle cx="29" cy="28" r="3" fill="#fbbf24" stroke="white" strokeWidth="0.8" />
+            <circle cx="33" cy="22" r="3" fill="#f97316" stroke="white" strokeWidth="0.8" />
+            <circle cx="35" cy="18" r="3.5" fill="#ef4444" stroke="white" strokeWidth="0.8" />
+          </svg>
+        </div>
+
+        {/* Guess list */}
+        <div className="flex-1 flex flex-col gap-1 min-w-0">
+          {guesses.map((g) => (
+            <div key={g.name} className="flex items-center gap-1.5 min-w-0">
+              <div className="w-1.5 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: g.color }} />
+              <span className="text-[11px]">{g.flag}</span>
+              <span className="text-[10px] font-medium text-text-primary truncate flex-1">{g.name}</span>
+              <span className="text-[9px] text-text-dim flex-shrink-0">{g.km} km {g.arrow}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Color legend */}
+      <div className="mt-2.5 flex items-center justify-center gap-1">
+        <span className="text-[8px] text-text-dim">Far</span>
+        {["#67e8f9", "#4ade80", "#facc15", "#fb923c", "#ef4444"].map((c) => (
+          <div key={c} className="h-2 w-3 rounded-sm" style={{ backgroundColor: c }} />
+        ))}
+        <span className="text-[8px] text-text-dim">Close</span>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Game Preview Router ───────────────────────────────────────────────── */
 
 export default function GamePreview({ slug }: { slug: string }) {
@@ -1038,6 +1105,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "rift": return <RiftPreview />;
     case "word-bloom": return <WordBloomPreview />;
     case "orb-merge": return <OrbMergePreview />;
+    case "globle": return <GloblePreview />;
     default: return null;
   }
 }
