@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Free Arcade Games Online — 2048, Snake, Slime Volleyball & More",
   description:
     "Play free arcade games online — 2048, Snake Arena, Slime Volleyball, Sky Hopper, and more. No download, play instantly in your browser.",
+  alternates: { canonical: "https://gamesite.app/arcade" },
 };
 import {
   colorBg,

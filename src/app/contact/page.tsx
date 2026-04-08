@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Contact",
   description: "Get in touch with the Gamesite team.",
+  alternates: { canonical: "https://gamesite.app/contact" },
 };
 
 export default function ContactPage() {

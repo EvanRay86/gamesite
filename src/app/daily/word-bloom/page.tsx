@@ -51,6 +51,12 @@ export default async function WordBloomPage() {
         >
           Play past puzzles
         </Link>
+        <Link
+          href="/daily/word-bloom/hints"
+          className="inline-flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-600 shadow-sm hover:bg-zinc-50 hover:shadow-md active:scale-95 transition-all no-underline dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+        >
+          Need a hint?
+        </Link>
       </div>
       <MoreDailyGames currentSlug="word-bloom" />
     </main>

@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Free Daily Puzzles Online — Heardle, Framed, Crossword & More",
   description:
     "Play free daily puzzles including Heardle, Framed, Crossword, Trivia, and word games. New challenges every day — play online in your browser.",
+  alternates: { canonical: "https://gamesite.app/daily" },
 };
 import {
   colorBg,

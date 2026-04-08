@@ -27,12 +27,18 @@ export default async function ClusterPage() {
     <main>
       <GameJsonLd name="Cluster" description="Find five groups of three words that share a hidden connection. A new puzzle every day." path="daily/cluster" category="daily" />
       <ClusterGame puzzle={puzzle} />
-      <div className="flex justify-center py-6">
+      <div className="flex flex-wrap justify-center gap-3 py-6">
         <Link
           href="/daily/cluster/archive"
           className="inline-flex items-center gap-2 rounded-full bg-coral px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-coral-dark hover:shadow-lg active:scale-95 transition-all no-underline"
         >
           Play past puzzles &rarr;
+        </Link>
+        <Link
+          href="/daily/cluster/hints"
+          className="inline-flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-600 shadow-sm hover:bg-zinc-50 hover:shadow-md active:scale-95 transition-all no-underline dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+        >
+          Need a hint?
         </Link>
       </div>
       <MoreDailyGames currentSlug="cluster" />

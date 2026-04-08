@@ -17,18 +17,19 @@ export function generateStaticParams() {
     .map((variant) => ({ variant }));
 }
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
-  params: { variant: string };
+  params: Promise<{ variant: string }>;
 }) {
-  const label = params.variant
-    ? params.variant.charAt(0).toUpperCase() + params.variant.slice(1)
+  const { variant } = await params;
+  const label = variant
+    ? variant.charAt(0).toUpperCase() + variant.slice(1)
     : "Framed";
   return buildGameMetadata({
-    title: `Play Framed ${label} Online Free — Guess the Movie`,
-    description: `Play Framed ${label} today — guess the ${label.toLowerCase()} movie from a single frame. A free daily ${label.toLowerCase()} movie guessing game.`,
-    path: `daily/framed/${params.variant}`,
+    title: `Play ${label} Framed Online Free — Guess the Movie`,
+    description: `Play ${label} Framed today — guess the ${label.toLowerCase()} movie from a single frame. A free daily ${label.toLowerCase()} movie guessing game.`,
+    path: `daily/framed/${variant}`,
     color: "green",
   });
 }

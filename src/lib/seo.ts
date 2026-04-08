@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { FAQ } from "@/types/hints";
 
 const siteUrl = "https://gamesite.app";
 
@@ -86,6 +87,46 @@ export function buildBreadcrumbJsonLd(
       position: i + 1,
       name: crumb.name,
       item: crumb.url,
+    })),
+  };
+}
+
+/**
+ * Build metadata for a daily-game hints page.
+ */
+export function buildHintPageMetadata(opts: {
+  gameName: string;
+  gameSlug: string;
+  date: string;
+  color?: string;
+}): Metadata {
+  const d = new Date(opts.date + "T00:00:00");
+  const formatted = d.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+  const title = `${opts.gameName} Hints Today — ${formatted}`;
+  const description = `Need help with today's ${opts.gameName}? Get progressive hints (mild, medium, strong) for the ${formatted} puzzle without spoilers. Free daily hints on Gamesite.`;
+  const path = `daily/${opts.gameSlug}/hints/${opts.date}`;
+
+  return buildGameMetadata({ title, description, path, color: opts.color });
+}
+
+/**
+ * Build FAQPage JSON-LD structured data.
+ */
+export function buildFAQPageJsonLd(faqs: FAQ[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
     })),
   };
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: "How Gamesite collects, uses, and protects your information.",
+  alternates: { canonical: "https://gamesite.app/privacy" },
 };
 
 export default function PrivacyPage() {

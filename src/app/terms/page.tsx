@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "Terms and conditions for using Gamesite.",
+  alternates: { canonical: "https://gamesite.app/terms" },
 };
 
 export default function TermsPage() {

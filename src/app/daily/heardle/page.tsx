@@ -23,12 +23,18 @@ export default async function HeardlePage() {
     <main>
       <GameJsonLd name="Heardle" description="Play Heardle today — listen to the opening seconds of a song and guess the title in 6 tries. A free daily music guessing game." path="daily/heardle" category="daily" />
       <HeardleGame puzzle={puzzle} variant="all" />
-      <div className="flex justify-center py-6">
+      <div className="flex flex-wrap justify-center gap-3 py-6">
         <Link
           href="/daily/heardle/archive"
           className="inline-flex items-center gap-2 rounded-full bg-coral px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-coral-dark hover:shadow-lg active:scale-95 transition-all no-underline"
         >
           Play past puzzles &rarr;
+        </Link>
+        <Link
+          href="/daily/heardle/hints"
+          className="inline-flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-zinc-600 shadow-sm hover:bg-zinc-50 hover:shadow-md active:scale-95 transition-all no-underline dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+        >
+          Need a hint?
         </Link>
       </div>
       <MoreDailyGames currentSlug="heardle" />

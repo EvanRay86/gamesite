@@ -17,18 +17,19 @@ export function generateStaticParams() {
     .map((variant) => ({ variant }));
 }
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
-  params: { variant: string };
+  params: Promise<{ variant: string }>;
 }) {
-  const label = params.variant
-    ? params.variant.charAt(0).toUpperCase() + params.variant.slice(1)
+  const { variant } = await params;
+  const label = variant
+    ? variant.charAt(0).toUpperCase() + variant.slice(1)
     : "Heardle";
   return buildGameMetadata({
-    title: `Play Heardle ${label} Online Free — Guess the Song`,
-    description: `Play Heardle ${label} today — listen to the opening seconds of a ${label.toLowerCase()} song and guess the title. A free daily ${label.toLowerCase()} music guessing game.`,
-    path: `daily/heardle/${params.variant}`,
+    title: `Play ${label} Heardle Online Free — Guess the Song`,
+    description: `Play ${label} Heardle today — listen to the opening seconds of a ${label.toLowerCase()} song and guess the title. A free daily ${label.toLowerCase()} music guessing game.`,
+    path: `daily/heardle/${variant}`,
     color: "purple",
   });
 }

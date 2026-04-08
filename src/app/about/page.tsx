@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About Gamesite — Free Browser Games & Daily Puzzles",
   description: "Learn about Gamesite — free daily puzzles, trivia, and arcade games in your browser.",
+  alternates: { canonical: "https://gamesite.app/about" },
 };
 
 export default function AboutPage() {
