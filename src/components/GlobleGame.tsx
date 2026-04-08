@@ -304,9 +304,13 @@ export default function GlobleGame() {
             onKeyDown={handleKeyDown}
             placeholder="Type a country name..."
             className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-4 py-3 text-white placeholder-zinc-500 outline-none focus:border-teal/60 focus:ring-2 focus:ring-teal/30 transition-all"
-            autoComplete="off"
+            name="globle-country-search"
+            autoComplete="nope"
+            autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
+            data-form-type="other"
+            data-lpignore="true"
           />
           {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
 
