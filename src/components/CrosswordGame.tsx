@@ -468,85 +468,100 @@ export default function CrosswordGame({ puzzle }: Props) {
     return () => window.removeEventListener("resize", measure);
   }, [cols, rows, applyTransform]);
 
-  const touchDist = (a: React.Touch, b: React.Touch) =>
+  const touchDist = (a: Touch, b: Touch) =>
     Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
 
-  const handleGridTouchStart = useCallback((e: React.TouchEvent) => {
-    const g = gestureRef.current;
-    const t = transformRef.current;
-    if (e.touches.length === 2) {
-      e.preventDefault();
-      g.pinching = true;
-      g.panning = false;
-      g.pinchDist0 = touchDist(e.touches[0], e.touches[1]);
-      g.pinchScale0 = t.scale;
-      g.pinchTx0 = t.tx;
-      g.pinchTy0 = t.ty;
-      const rect = gridContainerRef.current!.getBoundingClientRect();
-      g.pinchMidX0 = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
-      g.pinchMidY0 = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
-    } else if (e.touches.length === 1) {
-      g.panX0 = e.touches[0].clientX;
-      g.panY0 = e.touches[0].clientY;
-      g.panTx0 = t.tx;
-      g.panTy0 = t.ty;
-      g.panning = false;
-    }
-  }, []);
+  // Attach touch listeners with { passive: false } so preventDefault() works.
+  // React registers touch handlers as passive by default, which silently
+  // ignores preventDefault and lets the browser's native pinch-zoom win.
+  useEffect(() => {
+    const el = gridContainerRef.current;
+    if (!el) return;
 
-  const handleGridTouchMove = useCallback((e: React.TouchEvent) => {
-    const g = gestureRef.current;
-    const t = transformRef.current;
-    if (e.touches.length === 2 && g.pinching) {
-      e.preventDefault();
-      const d = touchDist(e.touches[0], e.touches[1]);
-      const newScale = g.pinchScale0 * (d / g.pinchDist0);
-      const rect = gridContainerRef.current!.getBoundingClientRect();
-      const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
-      const my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
-      // Zoom towards the point under the initial pinch midpoint
-      const gx = (g.pinchMidX0 - g.pinchTx0) / g.pinchScale0;
-      const gy = (g.pinchMidY0 - g.pinchTy0) / g.pinchScale0;
-      t.scale = newScale;
-      t.tx = mx - gx * newScale;
-      t.ty = my - gy * newScale;
-      clampAndApply();
-    } else if (e.touches.length === 1 && !g.pinching) {
-      // Only allow single-finger pan when zoomed in
-      if (t.scale <= g.initialScale * 1.05) return;
-      const dx = e.touches[0].clientX - g.panX0;
-      const dy = e.touches[0].clientY - g.panY0;
-      if (!g.panning && Math.hypot(dx, dy) > 8) {
-        g.panning = true;
-      }
-      if (g.panning) {
+    const onTouchStart = (e: TouchEvent) => {
+      const g = gestureRef.current;
+      const t = transformRef.current;
+      if (e.touches.length === 2) {
         e.preventDefault();
-        t.tx = g.panTx0 + dx;
-        t.ty = g.panTy0 + dy;
-        clampAndApply();
-      }
-    }
-  }, [clampAndApply]);
-
-  const handleGridTouchEnd = useCallback((e: React.TouchEvent) => {
-    const g = gestureRef.current;
-    if (e.touches.length < 2 && g.pinching) {
-      g.pinching = false;
-      g.suppressUntil = Date.now() + 300;
-      if (e.touches.length === 1) {
+        g.pinching = true;
+        g.panning = false;
+        g.pinchDist0 = touchDist(e.touches[0], e.touches[1]);
+        g.pinchScale0 = t.scale;
+        g.pinchTx0 = t.tx;
+        g.pinchTy0 = t.ty;
+        const rect = el.getBoundingClientRect();
+        g.pinchMidX0 = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+        g.pinchMidY0 = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+      } else if (e.touches.length === 1) {
         g.panX0 = e.touches[0].clientX;
         g.panY0 = e.touches[0].clientY;
-        g.panTx0 = transformRef.current.tx;
-        g.panTy0 = transformRef.current.ty;
+        g.panTx0 = t.tx;
+        g.panTy0 = t.ty;
+        g.panning = false;
       }
-    }
-    if (e.touches.length === 0) {
-      if (g.panning) {
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const g = gestureRef.current;
+      const t = transformRef.current;
+      if (e.touches.length === 2 && g.pinching) {
+        e.preventDefault();
+        const d = touchDist(e.touches[0], e.touches[1]);
+        const newScale = g.pinchScale0 * (d / g.pinchDist0);
+        const rect = el.getBoundingClientRect();
+        const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+        const my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+        const gx = (g.pinchMidX0 - g.pinchTx0) / g.pinchScale0;
+        const gy = (g.pinchMidY0 - g.pinchTy0) / g.pinchScale0;
+        t.scale = newScale;
+        t.tx = mx - gx * newScale;
+        t.ty = my - gy * newScale;
+        clampAndApply();
+      } else if (e.touches.length === 1 && !g.pinching) {
+        if (t.scale <= g.initialScale * 1.05) return;
+        const dx = e.touches[0].clientX - g.panX0;
+        const dy = e.touches[0].clientY - g.panY0;
+        if (!g.panning && Math.hypot(dx, dy) > 8) {
+          g.panning = true;
+        }
+        if (g.panning) {
+          e.preventDefault();
+          t.tx = g.panTx0 + dx;
+          t.ty = g.panTy0 + dy;
+          clampAndApply();
+        }
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const g = gestureRef.current;
+      if (e.touches.length < 2 && g.pinching) {
+        g.pinching = false;
         g.suppressUntil = Date.now() + 300;
+        if (e.touches.length === 1) {
+          g.panX0 = e.touches[0].clientX;
+          g.panY0 = e.touches[0].clientY;
+          g.panTx0 = transformRef.current.tx;
+          g.panTy0 = transformRef.current.ty;
+        }
       }
-      g.panning = false;
-      clampAndApply();
-    }
+      if (e.touches.length === 0) {
+        if (g.panning) {
+          g.suppressUntil = Date.now() + 300;
+        }
+        g.panning = false;
+        clampAndApply();
+      }
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: false });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: false });
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
   }, [clampAndApply]);
 
   // Cell size
@@ -589,9 +604,6 @@ export default function CrosswordGame({ puzzle }: Props) {
               height: containerHeight,
               touchAction: isZoomed ? "none" : "pan-y",
             }}
-            onTouchStart={handleGridTouchStart}
-            onTouchMove={handleGridTouchMove}
-            onTouchEnd={handleGridTouchEnd}
           >
             <div
               ref={gridInnerRef}
