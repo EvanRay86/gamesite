@@ -134,7 +134,6 @@ export default function GlobleGlobe({
           width={size.width}
           height={size.height}
           backgroundColor="rgba(0,0,0,0)"
-          globeImageUrl=""
           showGlobe={true}
           showAtmosphere={true}
           atmosphereColor="#4da6ff"

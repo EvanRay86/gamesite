@@ -293,7 +293,10 @@ export default function GlobleGame() {
         <div className="relative mb-4">
           <input
             ref={inputRef}
-            type="text"
+            type="search"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={showSuggestions && suggestions.length > 0}
             value={input}
             onChange={(e) => {
               setInput(e.target.value);
@@ -303,9 +306,9 @@ export default function GlobleGame() {
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
             placeholder="Type a country name..."
-            className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-4 py-3 text-white placeholder-zinc-500 outline-none focus:border-teal/60 focus:ring-2 focus:ring-teal/30 transition-all"
+            className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-4 py-3 text-white placeholder-zinc-500 outline-none focus:border-teal/60 focus:ring-2 focus:ring-teal/30 transition-all [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
             name="globle-country-search"
-            autoComplete="nope"
+            autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
