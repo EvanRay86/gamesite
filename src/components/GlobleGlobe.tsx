@@ -49,7 +49,7 @@ export default function GlobleGlobe({
           ),
         );
       })
-      .catch(() => {});
+      .catch((err) => console.error("Failed to fetch GeoJSON:", err));
   }, []);
 
   // Measure container size
@@ -89,17 +89,17 @@ export default function GlobleGlobe({
       let altitude: number;
 
       if (!info) {
-        capColor = "#2a3a2e";        // unguessed: dark land
-        sideColor = "rgba(20,40,30,0.4)";
-        altitude = 0.005;
+        capColor = "#556b5e";        // unguessed: visible gray-green land
+        sideColor = "rgba(60,80,70,0.5)";
+        altitude = 0.01;
       } else if (info.isTarget && won) {
-        capColor = "#22c55e";        // correct: green
-        sideColor = "rgba(34,197,94,0.7)";
-        altitude = 0.04;
+        capColor = "#22c55e";        // correct: bright green
+        sideColor = "rgba(34,197,94,0.8)";
+        altitude = 0.05;
       } else {
         capColor = proximityColor(info.pct);
-        sideColor = proximityColor(info.pct) + "aa";
-        altitude = 0.02;
+        sideColor = proximityColor(info.pct) + "cc";
+        altitude = 0.03;
       }
 
       return {
@@ -122,6 +122,24 @@ export default function GlobleGlobe({
     }
   }, [guesses.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Set globe material color after mount (dark ocean blue)
+  useEffect(() => {
+    if (globeRef.current) {
+      const globe = globeRef.current;
+      // Use the three-globe API to set globe material
+      try {
+        const material = globe.globeMaterial();
+        if (material) {
+          material.color.set("#0a1628");
+          material.emissive.set("#0a2040");
+          material.emissiveIntensity = 0.1;
+        }
+      } catch {
+        // fallback: ignore if API unavailable
+      }
+    }
+  }, [rawCountries.length]); // run once globe + data loaded
+
   return (
     <div
       ref={containerRef}
@@ -141,9 +159,9 @@ export default function GlobleGlobe({
           polygonsData={polygonsData}
           polygonCapColor={(d: GeoFeature) => d._capColor}
           polygonSideColor={(d: GeoFeature) => d._sideColor}
-          polygonStrokeColor={() => "#555"}
+          polygonStrokeColor={() => "#333"}
           polygonAltitude={(d: GeoFeature) => d._altitude}
-          polygonsTransitionDuration={400}
+          polygonsTransitionDuration={300}
           animateIn={true}
           enablePointerInteraction={false}
         />
