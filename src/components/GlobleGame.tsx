@@ -27,22 +27,43 @@ interface Guess {
 }
 
 // ---------------------------------------------------------------------------
+// Pick a random country (not the daily one)
+// ---------------------------------------------------------------------------
+
+function randomCountry(exclude?: string): GlobleCountry {
+  const pool = exclude
+    ? globleCountries.filter((c) => c.code !== exclude)
+    : globleCountries;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export default function GlobleGame() {
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
-  const target = useMemo(() => getGloblePuzzle(today), [today]);
+  const dailyTarget = useMemo(() => getGloblePuzzle(today), [today]);
   const { stats, recordGame } = useGameStats("globle", today);
 
-  // Restore saved state from localStorage
+  // Mode: "daily" or "quickplay"
+  const [mode, setMode] = useState<"daily" | "quickplay">("daily");
+  const [quickplayTarget, setQuickplayTarget] = useState<GlobleCountry>(() =>
+    randomCountry(dailyTarget.code),
+  );
+  const [quickplayRound, setQuickplayRound] = useState(0);
+
+  const target = mode === "daily" ? dailyTarget : quickplayTarget;
+
+  // Restore saved daily guesses from localStorage
   const savedKey = `globle-guesses-${today}`;
-  const [guesses, setGuesses] = useState<Guess[]>(() => {
+  const [dailyGuesses, setDailyGuesses] = useState<Guess[]>(() => {
     if (typeof window === "undefined") return [];
     try {
       const raw = localStorage.getItem(savedKey);
       if (raw) {
-        const saved: { code: string; distance: number; pct: number }[] = JSON.parse(raw);
+        const saved: { code: string; distance: number; pct: number }[] =
+          JSON.parse(raw);
         return saved
           .map((s) => {
             const country = globleCountries.find((c) => c.code === s.code);
@@ -51,9 +72,16 @@ export default function GlobleGame() {
           })
           .filter(Boolean) as Guess[];
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return [];
   });
+
+  const [quickplayGuesses, setQuickplayGuesses] = useState<Guess[]>([]);
+
+  const guesses = mode === "daily" ? dailyGuesses : quickplayGuesses;
+  const setGuesses = mode === "daily" ? setDailyGuesses : setQuickplayGuesses;
 
   const [input, setInput] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -64,18 +92,21 @@ export default function GlobleGame() {
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   const won = guesses.some((g) => g.country.code === target.code);
+  const dailyWon = dailyGuesses.some(
+    (g) => g.country.code === dailyTarget.code,
+  );
 
-  // Persist guesses
+  // Persist daily guesses
   useEffect(() => {
-    if (guesses.length > 0) {
-      const data = guesses.map((g) => ({
+    if (dailyGuesses.length > 0) {
+      const data = dailyGuesses.map((g) => ({
         code: g.country.code,
         distance: g.distance,
         pct: g.pct,
       }));
       localStorage.setItem(savedKey, JSON.stringify(data));
     }
-  }, [guesses, savedKey]);
+  }, [dailyGuesses, savedKey]);
 
   // Filtered suggestions
   const suggestions = useMemo(() => {
@@ -123,11 +154,13 @@ export default function GlobleGame() {
       setShowSuggestions(false);
 
       if (country.code === target.code) {
-        recordGame(true, updated.length);
+        if (mode === "daily") {
+          recordGame(true, updated.length);
+        }
         setShowStats(true);
       }
     },
-    [won, guesses, target, recordGame],
+    [won, guesses, target, recordGame, mode, setGuesses],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -157,18 +190,40 @@ export default function GlobleGame() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Build share text
+  // Start quickplay
+  const startQuickplay = useCallback(() => {
+    setQuickplayTarget(randomCountry());
+    setQuickplayGuesses([]);
+    setQuickplayRound((r) => r + 1);
+    setMode("quickplay");
+    setInput("");
+    setError("");
+    setShowStats(false);
+    setCopied(false);
+    // Focus the input after mode switch
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, []);
+
+  // Back to daily
+  const backToDaily = useCallback(() => {
+    setMode("daily");
+    setInput("");
+    setError("");
+    setShowStats(false);
+  }, []);
+
+  // Build share text (daily only)
   const shareText = useMemo(() => {
-    if (!won) return "";
-    const squares = guesses.map((g) => {
+    if (!dailyWon) return "";
+    const squares = dailyGuesses.map((g) => {
       if (g.pct >= 95) return "🟥";
       if (g.pct >= 75) return "🟧";
       if (g.pct >= 55) return "🟨";
       if (g.pct >= 35) return "🟩";
       return "🟦";
     });
-    return `🌍 Globle ${today}\n🎯 ${guesses.length} guesses\n${squares.join("")}\nhttps://playdailygames.com/daily/globle`;
-  }, [won, guesses, today]);
+    return `🌍 Globle ${today}\n🎯 ${dailyGuesses.length} guesses\n${squares.join("")}\nhttps://playdailygames.com/daily/globle`;
+  }, [dailyWon, dailyGuesses, today]);
 
   const handleShare = async () => {
     const ok = await shareOrCopy(shareText);
@@ -184,35 +239,57 @@ export default function GlobleGame() {
     [guesses],
   );
 
-  // Globe guesses (for the component)
+  // Globe guesses (for the component) — include quickplayRound as dep to reset
   const globeGuesses = useMemo(
     () => guesses.map((g) => ({ country: g.country, distance: g.distance })),
-    [guesses],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [guesses, quickplayRound],
   );
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       {/* Header */}
-      <div className="mb-6 text-center">
+      <div className="mb-4 text-center">
         <h1 className="text-3xl font-bold tracking-tight text-white">
           🌍 Globle
         </h1>
         <p className="mt-1 text-sm text-zinc-400">
-          Guess the mystery country. The hotter the color, the closer you are!
+          {mode === "daily"
+            ? "Guess the mystery country. The hotter the color, the closer you are!"
+            : "Quickplay — practice with a random country!"}
         </p>
       </div>
 
-      {/* Globe */}
-      <div className="mx-auto mb-6 max-w-lg rounded-2xl bg-zinc-900/60 ring-1 ring-white/10 shadow-xl overflow-hidden" style={{ height: "min(420px, 60vw)" }}>
-        <GlobleGlobe
-          guesses={globeGuesses}
-          target={target}
-          won={won}
-        />
-      </div>
+      {/* Mode tabs */}
+      {dailyWon && (
+        <div className="mb-4 flex justify-center gap-2">
+          <button
+            onClick={backToDaily}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
+              mode === "daily"
+                ? "bg-green-600 text-white"
+                : "bg-zinc-800 text-zinc-400 hover:text-white"
+            }`}
+          >
+            Daily
+          </button>
+          <button
+            onClick={() => {
+              if (mode !== "quickplay") startQuickplay();
+            }}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
+              mode === "quickplay"
+                ? "bg-purple-600 text-white"
+                : "bg-zinc-800 text-zinc-400 hover:text-white"
+            }`}
+          >
+            Quickplay
+          </button>
+        </div>
+      )}
 
-      {/* Input */}
-      {!won && (
+      {/* Input — above the globe */}
+      {!won ? (
         <div className="relative mb-4">
           <input
             ref={inputRef}
@@ -231,9 +308,7 @@ export default function GlobleGame() {
             autoCapitalize="off"
             spellCheck={false}
           />
-          {error && (
-            <p className="mt-1 text-sm text-red-400">{error}</p>
-          )}
+          {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
 
           {/* Suggestions dropdown */}
           {showSuggestions && suggestions.length > 0 && (
@@ -260,33 +335,58 @@ export default function GlobleGame() {
             </div>
           )}
         </div>
-      )}
-
-      {/* Win banner */}
-      {won && (
-        <div className="mb-6 rounded-2xl bg-gradient-to-r from-green-900/50 to-teal-900/50 p-5 ring-1 ring-green-500/30 text-center">
+      ) : (
+        /* Won — show banner above globe */
+        <div className="mb-4 rounded-2xl bg-gradient-to-r from-green-900/50 to-teal-900/50 p-5 ring-1 ring-green-500/30 text-center">
           <p className="text-xl font-bold text-green-400">
             {target.flag} {target.name}!
           </p>
           <p className="mt-1 text-sm text-zinc-300">
-            Found in <strong>{guesses.length}</strong> guess{guesses.length !== 1 ? "es" : ""}
+            Found in <strong>{guesses.length}</strong> guess
+            {guesses.length !== 1 ? "es" : ""}
           </p>
-          <div className="mt-4 flex justify-center gap-3">
-            <button
-              onClick={handleShare}
-              className="rounded-full bg-teal px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-teal-dark active:scale-95 transition-all"
-            >
-              {copied ? "Copied!" : "Share result"}
-            </button>
+          <div className="mt-4 flex justify-center gap-3 flex-wrap">
+            {mode === "daily" && (
+              <button
+                onClick={handleShare}
+                className="rounded-full bg-teal px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-teal-dark active:scale-95 transition-all"
+              >
+                {copied ? "Copied!" : "Share result"}
+              </button>
+            )}
             <button
               onClick={() => setShowStats(true)}
               className="rounded-full bg-zinc-700 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-zinc-600 active:scale-95 transition-all"
             >
               Stats
             </button>
+            {mode === "quickplay" && (
+              <button
+                onClick={startQuickplay}
+                className="rounded-full bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-purple-500 active:scale-95 transition-all"
+              >
+                Play again
+              </button>
+            )}
+            {mode === "daily" && !dailyWon ? null : mode === "daily" && (
+              <button
+                onClick={startQuickplay}
+                className="rounded-full bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-purple-500 active:scale-95 transition-all"
+              >
+                Quickplay
+              </button>
+            )}
           </div>
         </div>
       )}
+
+      {/* Globe */}
+      <div
+        className="mx-auto mb-6 max-w-lg rounded-2xl bg-zinc-900/60 ring-1 ring-white/10 shadow-xl overflow-hidden"
+        style={{ height: "min(420px, 60vw)" }}
+      >
+        <GlobleGlobe guesses={globeGuesses} target={target} won={won} />
+      </div>
 
       {/* Color legend */}
       <div className="mb-4 flex items-center justify-center gap-1.5">
@@ -333,7 +433,9 @@ export default function GlobleGame() {
                       : proximityColor(g.pct),
                   }}
                 />
-                <span className="text-lg flex-shrink-0">{g.country.flag}</span>
+                <span className="text-lg flex-shrink-0">
+                  {g.country.flag}
+                </span>
                 <span className="flex-1 text-sm font-medium text-white truncate">
                   {g.country.name}
                 </span>
@@ -343,7 +445,9 @@ export default function GlobleGame() {
                   </span>
                 ) : (
                   <div className="flex items-center gap-2 text-sm text-zinc-400">
-                    <span>{Math.round(g.distance).toLocaleString()} km</span>
+                    <span>
+                      {Math.round(g.distance).toLocaleString()} km
+                    </span>
                     <span>{directionArrow(bear)}</span>
                   </div>
                 )}
@@ -433,7 +537,7 @@ export default function GlobleGame() {
               </div>
             )}
 
-            {won && (
+            {won && mode === "daily" && (
               <button
                 onClick={handleShare}
                 className="mt-4 w-full rounded-full bg-teal px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-teal-dark active:scale-95 transition-all"
