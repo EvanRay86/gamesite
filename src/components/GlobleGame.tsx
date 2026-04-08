@@ -203,12 +203,11 @@ export default function GlobleGame() {
       </div>
 
       {/* Globe */}
-      <div className="mx-auto mb-6 aspect-square max-w-md rounded-2xl bg-zinc-900/60 p-2 ring-1 ring-white/10 shadow-xl">
+      <div className="mx-auto mb-6 max-w-lg rounded-2xl bg-zinc-900/60 ring-1 ring-white/10 shadow-xl overflow-hidden" style={{ height: "min(420px, 60vw)" }}>
         <GlobleGlobe
           guesses={globeGuesses}
           target={target}
           won={won}
-          className="rounded-xl"
         />
       </div>
 
