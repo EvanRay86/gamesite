@@ -288,12 +288,23 @@ export default function GlobleGame() {
         </div>
       )}
 
-      {/* Input — above the globe */}
+      {/* Input — above the globe, wrapped in form to hide iOS toolbar */}
       {!won ? (
-        <div className="relative mb-4">
+        <form
+          className="relative mb-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (suggestions.length > 0) {
+              submitGuess(suggestions[0]);
+            } else if (input.trim()) {
+              submitGuess(input.trim());
+            }
+          }}
+        >
           <input
             ref={inputRef}
             type="search"
+            enterKeyHint="search"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={showSuggestions && suggestions.length > 0}
@@ -327,6 +338,7 @@ export default function GlobleGame() {
                 const c = globleCountries.find((c) => c.name === name)!;
                 return (
                   <button
+                    type="button"
                     key={c.code}
                     className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-white hover:bg-zinc-700/60 transition-colors first:rounded-t-xl last:rounded-b-xl"
                     onMouseDown={(e) => {
@@ -341,7 +353,7 @@ export default function GlobleGame() {
               })}
             </div>
           )}
-        </div>
+        </form>
       ) : (
         /* Won — show banner above globe */
         <div className="mb-4 rounded-2xl bg-gradient-to-r from-green-900/50 to-teal-900/50 p-5 ring-1 ring-green-500/30 text-center">
@@ -474,7 +486,7 @@ export default function GlobleGame() {
             className="mx-4 w-full max-w-sm rounded-2xl bg-zinc-900 p-6 ring-1 ring-white/10 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-white">Statistics</h3>
               <button
                 onClick={() => setShowStats(false)}
@@ -483,75 +495,73 @@ export default function GlobleGame() {
                 ×
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-2 text-center mb-4">
+
+            {/* Detailed stats rows */}
+            <div className="space-y-2.5 mb-5">
               {[
-                { label: "Played", value: stats.gamesPlayed },
+                { label: "Last win", value: stats.lastPlayedDate || "—" },
                 {
-                  label: "Win %",
-                  value: stats.gamesPlayed
-                    ? Math.round(
-                        (stats.gamesWon / stats.gamesPlayed) * 100,
-                      )
-                    : 0,
+                  label: "Today's guesses",
+                  value: mode === "daily" && dailyWon
+                    ? dailyGuesses.length
+                    : mode === "quickplay" && won
+                      ? guesses.length
+                      : "—",
                 },
-                { label: "Current", value: stats.currentStreak },
-                { label: "Max", value: stats.maxStreak },
-              ].map((s) => (
-                <div key={s.label}>
-                  <p className="text-2xl font-bold text-white">{s.value}</p>
-                  <p className="text-xs text-zinc-500">{s.label}</p>
+                { label: "Games won", value: stats.gamesWon },
+                { label: "Current streak", value: stats.currentStreak },
+                { label: "Max streak", value: stats.maxStreak },
+                {
+                  label: "Avg. guesses",
+                  value: stats.gamesWon > 0
+                    ? Math.round(
+                        Object.entries(stats.guessDistribution)
+                          .filter(([k]) => k !== "X")
+                          .reduce((sum, [k, v]) => sum + Number(k) * v, 0) /
+                          stats.gamesWon,
+                      )
+                    : "—",
+                },
+              ].map((row) => (
+                <div
+                  key={row.label}
+                  className="flex items-center justify-between border-b border-zinc-800 pb-2"
+                >
+                  <span className="text-sm text-zinc-400">{row.label}</span>
+                  <span className="text-sm font-semibold text-white">
+                    {row.value}
+                  </span>
                 </div>
               ))}
             </div>
 
-            {/* Guess distribution */}
-            {Object.keys(stats.guessDistribution).length > 0 && (
-              <div className="mt-4">
-                <h4 className="mb-2 text-sm font-semibold text-zinc-400">
-                  Guess Distribution
-                </h4>
-                {Object.entries(stats.guessDistribution)
-                  .sort(([a], [b]) => {
-                    if (a === "X") return 1;
-                    if (b === "X") return -1;
-                    return Number(a) - Number(b);
-                  })
-                  .map(([key, count]) => {
-                    const max = Math.max(
-                      ...Object.values(stats.guessDistribution),
-                    );
-                    const pct = max > 0 ? (count / max) * 100 : 0;
-                    return (
-                      <div
-                        key={key}
-                        className="mb-1 flex items-center gap-2 text-sm"
-                      >
-                        <span className="w-4 text-right text-zinc-400">
-                          {key}
-                        </span>
-                        <div
-                          className="rounded bg-teal px-2 py-0.5 text-right text-xs font-semibold text-white"
-                          style={{
-                            minWidth: "1.5rem",
-                            width: `${Math.max(8, pct)}%`,
-                          }}
-                        >
-                          {count}
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
-
-            {won && mode === "daily" && (
-              <button
-                onClick={handleShare}
-                className="mt-4 w-full rounded-full bg-teal px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-teal-dark active:scale-95 transition-all"
-              >
-                {copied ? "Copied!" : "Share result"}
-              </button>
-            )}
+            {/* Action buttons */}
+            <div className="flex gap-3">
+              {mode === "daily" && dailyWon && (
+                <button
+                  onClick={startQuickplay}
+                  className="flex-1 rounded-full bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-purple-500 active:scale-95 transition-all"
+                >
+                  Practice
+                </button>
+              )}
+              {mode === "quickplay" && won && (
+                <button
+                  onClick={startQuickplay}
+                  className="flex-1 rounded-full bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-purple-500 active:scale-95 transition-all"
+                >
+                  Play again
+                </button>
+              )}
+              {won && mode === "daily" && (
+                <button
+                  onClick={handleShare}
+                  className="flex-1 rounded-full bg-teal px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-teal-dark active:scale-95 transition-all"
+                >
+                  {copied ? "Copied!" : "Share"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
