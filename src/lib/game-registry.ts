@@ -234,6 +234,15 @@ export const games: Game[] = [
   },
 
   {
+    slug: "globle",
+    name: "Globle",
+    description:
+      "Guess the mystery country on an interactive globe — color-coded clues show how close you are.",
+    category: "daily",
+    color: "green",
+  },
+
+  {
     slug: "emoji-word",
     name: "Emoji Decoder",
     description:
