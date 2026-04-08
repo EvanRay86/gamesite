@@ -8,8 +8,8 @@ import { proximityColor, proximityPct } from "@/data/globle-countries";
 // Dynamically import react-globe.gl (Three.js can't run server-side)
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
-const GEOJSON_URL =
-  "https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson";
+// Serve from same origin to avoid cross-origin blocks (iOS privacy protections)
+const GEOJSON_URL = "/data/countries.geojson";
 
 interface GlobeGuess {
   country: GlobleCountry;
@@ -122,24 +122,6 @@ export default function GlobleGlobe({
     }
   }, [guesses.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Set globe material color after mount (dark ocean blue)
-  useEffect(() => {
-    if (globeRef.current) {
-      const globe = globeRef.current;
-      // Use the three-globe API to set globe material
-      try {
-        const material = globe.globeMaterial();
-        if (material) {
-          material.color.set("#0a1628");
-          material.emissive.set("#0a2040");
-          material.emissiveIntensity = 0.1;
-        }
-      } catch {
-        // fallback: ignore if API unavailable
-      }
-    }
-  }, [rawCountries.length]); // run once globe + data loaded
-
   return (
     <div
       ref={containerRef}
@@ -152,6 +134,7 @@ export default function GlobleGlobe({
           width={size.width}
           height={size.height}
           backgroundColor="rgba(0,0,0,0)"
+          globeImageUrl="//unpkg.com/three-globe/example/img/earth-water.png"
           showGlobe={true}
           showAtmosphere={true}
           atmosphereColor="#4da6ff"
