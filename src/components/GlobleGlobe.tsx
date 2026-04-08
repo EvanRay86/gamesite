@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, useMemo, useCallback } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import type { GlobleCountry } from "@/data/globle-countries";
 import { proximityColor, proximityPct } from "@/data/globle-countries";
@@ -34,7 +34,7 @@ export default function GlobleGlobe({
 }: GlobleGlobeProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const globeRef = useRef<any>(undefined);
-  const [countries, setCountries] = useState<GeoFeature[]>([]);
+  const [rawCountries, setRawCountries] = useState<GeoFeature[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
 
@@ -43,7 +43,7 @@ export default function GlobleGlobe({
     fetch(GEOJSON_URL)
       .then((r) => r.json())
       .then((data) => {
-        setCountries(
+        setRawCountries(
           data.features.filter(
             (f: GeoFeature) => f.properties.ISO_A2 !== "AQ",
           ),
@@ -76,6 +76,41 @@ export default function GlobleGlobe({
     return m;
   }, [guesses, target]);
 
+  // Stamp each feature with computed color + altitude so react-globe.gl
+  // sees new object references and re-renders when guesses change.
+  const polygonsData = useMemo(() => {
+    if (rawCountries.length === 0) return [];
+    return rawCountries.map((feat: GeoFeature) => {
+      const iso = feat.properties.ISO_A2;
+      const info = guessMap.get(iso);
+
+      let capColor: string;
+      let sideColor: string;
+      let altitude: number;
+
+      if (!info) {
+        capColor = "#2a3a2e";        // unguessed: dark land
+        sideColor = "rgba(20,40,30,0.4)";
+        altitude = 0.005;
+      } else if (info.isTarget && won) {
+        capColor = "#22c55e";        // correct: green
+        sideColor = "rgba(34,197,94,0.7)";
+        altitude = 0.04;
+      } else {
+        capColor = proximityColor(info.pct);
+        sideColor = proximityColor(info.pct) + "aa";
+        altitude = 0.02;
+      }
+
+      return {
+        ...feat,
+        _capColor: capColor,
+        _sideColor: sideColor,
+        _altitude: altitude,
+      };
+    });
+  }, [rawCountries, guessMap, won]);
+
   // Center globe on latest guess
   useEffect(() => {
     if (guesses.length > 0 && globeRef.current) {
@@ -86,41 +121,6 @@ export default function GlobleGlobe({
       );
     }
   }, [guesses.length]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Polygon color based on guess proximity
-  const getCapColor = useCallback(
-    (feat: GeoFeature) => {
-      const iso = feat.properties.ISO_A2;
-      const info = guessMap.get(iso);
-      if (!info) return "rgba(30, 50, 40, 0.6)"; // unguessed: dark muted
-      if (info.isTarget && won) return "#22c55e"; // correct: green
-      return proximityColor(info.pct);
-    },
-    [guessMap, won],
-  );
-
-  const getSideColor = useCallback(
-    (feat: GeoFeature) => {
-      const iso = feat.properties.ISO_A2;
-      const info = guessMap.get(iso);
-      if (!info) return "rgba(20, 40, 30, 0.3)";
-      if (info.isTarget && won) return "rgba(34,197,94,0.6)";
-      const base = proximityColor(info.pct);
-      return base + "99"; // add alpha
-    },
-    [guessMap, won],
-  );
-
-  const getAltitude = useCallback(
-    (feat: GeoFeature) => {
-      const iso = feat.properties.ISO_A2;
-      const info = guessMap.get(iso);
-      if (!info) return 0.005;
-      if (info.isTarget && won) return 0.04;
-      return 0.015;
-    },
-    [guessMap, won],
-  );
 
   return (
     <div
@@ -133,16 +133,18 @@ export default function GlobleGlobe({
           ref={globeRef}
           width={size.width}
           height={size.height}
-          globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-          backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
-          polygonsData={countries}
-          polygonCapColor={getCapColor}
-          polygonSideColor={getSideColor}
-          polygonStrokeColor={() => "#333"}
-          polygonAltitude={getAltitude}
-          polygonsTransitionDuration={400}
+          backgroundColor="rgba(0,0,0,0)"
+          globeImageUrl=""
+          showGlobe={true}
+          showAtmosphere={true}
           atmosphereColor="#4da6ff"
           atmosphereAltitude={0.15}
+          polygonsData={polygonsData}
+          polygonCapColor={(d: GeoFeature) => d._capColor}
+          polygonSideColor={(d: GeoFeature) => d._sideColor}
+          polygonStrokeColor={() => "#555"}
+          polygonAltitude={(d: GeoFeature) => d._altitude}
+          polygonsTransitionDuration={400}
           animateIn={true}
           enablePointerInteraction={false}
         />
