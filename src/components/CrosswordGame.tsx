@@ -468,7 +468,7 @@ export default function CrosswordGame({ puzzle }: Props) {
     return () => window.removeEventListener("resize", measure);
   }, [cols, rows, applyTransform]);
 
-  const touchDist = (a: Touch, b: Touch) =>
+  const touchDist = (a: React.Touch, b: React.Touch) =>
     Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
 
   const handleGridTouchStart = useCallback((e: React.TouchEvent) => {
