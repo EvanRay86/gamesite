@@ -26,6 +26,16 @@ interface GlobleGlobeProps {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GeoFeature = any;
 
+// Fix countries that have -99 as ISO_A2 in Natural Earth data.
+// Map ADM0_A3 (3-letter) → correct ISO_A2 (2-letter).
+const ISO_FIXES: Record<string, string> = {
+  FRA: "FR", // France
+  NOR: "NO", // Norway
+  SOL: "SO", // Somaliland → Somalia
+  CYN: "CY", // N. Cyprus → Cyprus
+  KOS: "XK", // Kosovo
+};
+
 export default function GlobleGlobe({
   guesses,
   target,
@@ -38,16 +48,28 @@ export default function GlobleGlobe({
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
 
-  // Fetch GeoJSON country data
+  // Fetch GeoJSON country data and fix broken ISO codes
   useEffect(() => {
     fetch(GEOJSON_URL)
       .then((r) => r.json())
       .then((data) => {
-        setRawCountries(
-          data.features.filter(
-            (f: GeoFeature) => f.properties.ISO_A2 !== "AQ",
-          ),
-        );
+        const features = data.features
+          .filter((f: GeoFeature) => f.properties.ISO_A2 !== "AQ")
+          .map((f: GeoFeature) => {
+            const iso = f.properties.ISO_A2;
+            if (iso === "-99" || !iso || iso.length !== 2) {
+              const adm = f.properties.ADM0_A3;
+              const fix = ISO_FIXES[adm];
+              if (fix) {
+                return {
+                  ...f,
+                  properties: { ...f.properties, ISO_A2: fix },
+                };
+              }
+            }
+            return f;
+          });
+        setRawCountries(features);
       })
       .catch((err) => console.error("Failed to fetch GeoJSON:", err));
   }, []);
@@ -111,6 +133,28 @@ export default function GlobleGlobe({
     });
   }, [rawCountries, guessMap, won]);
 
+  // Point markers for small countries missing from the 110m GeoJSON
+  // (tiny islands, city-states like Maldives, Malta, Singapore, etc.)
+  const pointsData = useMemo(() => {
+    if (rawCountries.length === 0) return [];
+    const geoIsos = new Set(
+      rawCountries.map((f: GeoFeature) => f.properties.ISO_A2),
+    );
+    return guesses
+      .filter((g) => !geoIsos.has(g.country.code.toUpperCase()))
+      .map((g) => {
+        const pct = proximityPct(g.distance);
+        const isTarget = g.country.code === target.code;
+        return {
+          lat: g.country.lat,
+          lng: g.country.lng,
+          _color: isTarget && won ? "#22c55e" : proximityColor(pct),
+          _radius: isTarget && won ? 0.8 : 0.5,
+          _altitude: 0.05,
+        };
+      });
+  }, [rawCountries, guesses, target, won]);
+
   // Center globe on latest guess
   useEffect(() => {
     if (guesses.length > 0 && globeRef.current) {
@@ -145,6 +189,10 @@ export default function GlobleGlobe({
           polygonStrokeColor={() => "#333"}
           polygonAltitude={(d: GeoFeature) => d._altitude}
           polygonsTransitionDuration={300}
+          pointsData={pointsData}
+          pointColor={(d: GeoFeature) => d._color}
+          pointRadius={(d: GeoFeature) => d._radius}
+          pointAltitude={(d: GeoFeature) => d._altitude}
           animateIn={true}
           enablePointerInteraction={false}
         />
