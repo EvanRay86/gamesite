@@ -4,12 +4,9 @@ import { HINTABLE_GAMES } from "@/lib/hints";
 
 /** Games with high organic search volume get boosted sitemap priority. */
 const HIGH_PRIORITY_SLUGS = new Set([
-  "heardle",
-  "framed",
   "crossword",
   "daily-trivia",
   "2048",
-  "cluster",
   "mathler",
   "word-bloom",
 ]);
@@ -41,7 +38,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }));
 
   const variantPages: MetadataRoute.Sitemap = games
-    .filter((g) => !g.comingSoon && g.variants)
+    .filter((g) => !g.comingSoon && !g.hidden && g.variants)
     .flatMap((game) =>
       (game.variants ?? [])
         .filter((v) => !v.comingSoon)

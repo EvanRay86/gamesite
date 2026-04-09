@@ -61,17 +61,13 @@ import { generateQuotableHints } from "./quotable-hints";
 
 /** All game slugs that support hint pages. */
 export const HINTABLE_GAMES = [
-  "cluster",
   "crossword",
   "daily-trivia",
-  "hexle",
   "word-ladder",
   "anagram",
   "chain-reaction",
   "emoji-word",
   "word-bloom",
-  "heardle",
-  "framed",
   "top-5",
   "mathler",
   "timeline",
@@ -142,11 +138,6 @@ export async function getHintsForGame(
 
 async function generateHintsForSlug(slug: HintableSlug, date: string) {
   switch (slug) {
-    case "cluster": {
-      let puzzle = await getPuzzleByDate(date);
-      if (!puzzle) puzzle = getFallbackPuzzle(date);
-      return generateClusterHints(puzzle);
-    }
     case "crossword": {
       const puzzle = await getCrosswordPuzzle(date);
       return generateCrosswordHints(puzzle);
@@ -155,11 +146,6 @@ async function generateHintsForSlug(slug: HintableSlug, date: string) {
       let puzzle = await getTriviaPuzzleByDate(date);
       if (!puzzle) puzzle = getFallbackTriviaPuzzle(date);
       return generateTriviaHints(puzzle);
-    }
-    case "hexle": {
-      let word = await getHexlePuzzle(date);
-      if (!word) word = getFallbackHexleWord(date);
-      return generateHexleHints(word);
     }
     case "word-ladder": {
       const puzzle = getWordLadderPuzzle(date);
@@ -183,14 +169,6 @@ async function generateHintsForSlug(slug: HintableSlug, date: string) {
       let puzzle = await getWordBloomPuzzleByDate(date);
       if (!puzzle) puzzle = getFallbackWordBloomPuzzle(date);
       return generateWordBloomHints(puzzle);
-    }
-    case "heardle": {
-      const puzzle = await getHeardlePuzzleAsync(date);
-      return generateHeardleHints(puzzle);
-    }
-    case "framed": {
-      const puzzle = await getFramedPuzzleAsync(date);
-      return generateFramedHints(puzzle);
     }
     case "top-5": {
       let puzzle = await getTop5PuzzleByDate(date);
