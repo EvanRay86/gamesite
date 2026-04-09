@@ -47,6 +47,45 @@ export default async function Top5Page() {
         </Link>
       </div>
       <MoreDailyGames currentSlug="top-5" />
+
+      <section className="mx-auto max-w-2xl px-4 pb-12 text-sm text-zinc-500 dark:text-zinc-400 space-y-3">
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          What is Top 5?
+        </h2>
+        <p>
+          Top 5 is a daily ranking game that tests your general knowledge. You are
+          given a category and five items — your challenge is to drag them into the
+          correct order from first to fifth. Categories range from geography and
+          science to sports and pop culture, so every day brings a new surprise.
+        </p>
+        <p>
+          A new Top 5 challenge is published every day on Gamesite. Play for free
+          in your browser on any device. It is a quick, satisfying puzzle that
+          rewards broad knowledge and smart estimation.
+        </p>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          How to Play
+        </h2>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Read the category — it tells you what the items are ranked by.</li>
+          <li>Drag and drop the five items into what you believe is the correct order.</li>
+          <li>Submit your ranking when you are confident.</li>
+          <li>Correct placements are highlighted. Closer guesses score better.</li>
+          <li>Try to get a perfect score by ranking all five correctly.</li>
+        </ol>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          Tips &amp; Strategy
+        </h2>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Start with the items you are most certain about — anchoring the top and bottom makes the middle easier.</li>
+          <li>Use estimation and comparison. Even if you do not know exact values, you can often reason about relative order.</li>
+          <li>Pay close attention to the category wording — &quot;most populated&quot; vs &quot;largest by area&quot; gives very different answers.</li>
+          <li>If two items feel close, go with your first instinct. Second-guessing often makes things worse.</li>
+          <li>The more you play, the better your general knowledge becomes — Top 5 is as educational as it is fun.</li>
+        </ul>
+      </section>
     </main>
   );
 }

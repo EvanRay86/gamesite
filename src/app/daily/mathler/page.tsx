@@ -38,6 +38,49 @@ export default function MathlerPage() {
         </Link>
       </div>
       <MoreDailyGames currentSlug="mathler" />
+
+      <section className="mx-auto max-w-2xl px-4 pb-12 text-sm text-zinc-500 dark:text-zinc-400 space-y-3">
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          What is Mathler?
+        </h2>
+        <p>
+          Mathler is a daily math puzzle that combines the logic of Wordle with
+          arithmetic. You are given a target number and must find the six-character
+          equation that produces it. The equation uses digits (0-9) and basic
+          operators (+, -, *, /). After each guess, tiles turn green, yellow, or
+          gray to show which characters are correct, misplaced, or absent — just
+          like a word game, but with numbers.
+        </p>
+        <p>
+          A new Mathler puzzle is available every day on Gamesite. It is
+          completely free and runs in your browser on any device. Whether you are
+          a math enthusiast or just looking for a different kind of daily
+          challenge, Mathler exercises a different part of your brain than word
+          puzzles.
+        </p>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          How to Play
+        </h2>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>The target number is displayed at the top of the puzzle.</li>
+          <li>Enter a six-character math equation using digits and operators (+, -, *, /).</li>
+          <li>Your equation must evaluate to the target number to be a valid guess.</li>
+          <li>After each guess, tiles change color: green (correct position), yellow (in the equation but wrong spot), gray (not used).</li>
+          <li>Find the exact equation in six guesses or fewer.</li>
+        </ol>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          Tips &amp; Strategy
+        </h2>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Start by thinking about which operations could produce the target. A target of 100 could be 50+50 or 20*5+0.</li>
+          <li>Use your first guess to test common digits and operators — this maximizes the information you get from the color feedback.</li>
+          <li>Remember order of operations — multiplication and division happen before addition and subtraction.</li>
+          <li>If you know certain digits are in the equation, try different positions for them systematically.</li>
+          <li>Leading zeros are not allowed, but zero can appear in other positions (like 10+90).</li>
+        </ul>
+      </section>
     </main>
   );
 }

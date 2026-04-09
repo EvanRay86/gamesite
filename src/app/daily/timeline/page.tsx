@@ -47,6 +47,47 @@ export default async function TimelinePage() {
         </Link>
       </div>
       <MoreDailyGames currentSlug="timeline" />
+
+      <section className="mx-auto max-w-2xl px-4 pb-12 text-sm text-zinc-500 dark:text-zinc-400 space-y-3">
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          What is Timeline?
+        </h2>
+        <p>
+          Timeline is a daily history game where you put five events in
+          chronological order. The events span centuries and categories — from
+          ancient history and scientific discoveries to pop culture milestones and
+          political events. You have three attempts to arrange them correctly,
+          making each guess count.
+        </p>
+        <p>
+          A new Timeline challenge is published every day on Gamesite. Play for
+          free in your browser on any device. It is a fantastic way to test and
+          expand your knowledge of history while having fun. No account or
+          download required.
+        </p>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          How to Play
+        </h2>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Five historical events are presented in random order.</li>
+          <li>Drag and drop them into chronological order from earliest to latest.</li>
+          <li>Submit your arrangement. Correctly placed events are locked in.</li>
+          <li>You have three attempts total to get the order right.</li>
+          <li>Place all five events correctly to win.</li>
+        </ol>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          Tips &amp; Strategy
+        </h2>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Start with the events you are most confident about — anchoring even one or two events makes the rest easier.</li>
+          <li>Use context clues in the event descriptions. Technology-related events often have implicit era hints.</li>
+          <li>Think in terms of centuries first, then narrow down. Knowing an event is &quot;1800s&quot; vs &quot;1900s&quot; is often enough.</li>
+          <li>If two events feel like they happened around the same time, look for cause-and-effect relationships between them.</li>
+          <li>The more you play, the better your historical intuition becomes — Timeline is genuinely educational.</li>
+        </ul>
+      </section>
     </main>
   );
 }

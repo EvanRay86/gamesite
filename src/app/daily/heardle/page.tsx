@@ -46,14 +46,39 @@ export default async function HeardlePage() {
         <p>
           Heardle is a free daily music guessing game. Each day you hear the
           opening seconds of a song and try to name it in six guesses. With
-          every wrong answer, a longer clip is revealed. Think of it as Wordle
-          for music lovers.
+          every wrong answer, a longer clip is revealed — starting from just one
+          second and growing to sixteen seconds by your final attempt. Think of it
+          as Wordle for music lovers.
         </p>
         <p>
           Play Heardle online every day on Gamesite — no app download needed.
           Challenge your friends, share your score, and explore genre variants
-          like Heardle Pop, Heardle Rap, and more.
+          like Heardle Pop, Heardle Rock, Heardle Hip-Hop, Heardle Country, and
+          Heardle R&amp;B. Each variant features songs from its genre, so you can
+          test your expertise in the music you know best.
         </p>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          How to Play Heardle
+        </h2>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Press play to hear the opening seconds of a song.</li>
+          <li>Type the song title or artist to make your guess.</li>
+          <li>If wrong, a longer clip is revealed — each round adds more seconds.</li>
+          <li>You have six total guesses. You can also skip a guess to hear more.</li>
+          <li>Guess correctly in as few tries as possible to get the best score.</li>
+        </ol>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          Tips &amp; Strategy
+        </h2>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Focus on the very first notes — distinctive intros, drum patterns, or synth sounds can identify a song instantly.</li>
+          <li>If the intro is not familiar, listen for the tempo and genre to narrow your options before guessing.</li>
+          <li>Use the skip button strategically. Sometimes one more second of audio is more valuable than a random guess.</li>
+          <li>Play the genre variants to practice in your area of expertise — it is easier to recognize songs you already love.</li>
+          <li>Songs span multiple decades, so do not assume everything is recent. Classic hits appear frequently.</li>
+        </ul>
       </section>
     </main>
   );

@@ -32,6 +32,46 @@ export default async function CrosswordPage() {
         </Link>
       </div>
       <MoreDailyGames currentSlug="crossword" />
+
+      <section className="mx-auto max-w-2xl px-4 pb-12 text-sm text-zinc-500 dark:text-zinc-400 space-y-3">
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          What is the News Crossword?
+        </h2>
+        <p>
+          The News Crossword is a free daily crossword puzzle that draws its clues
+          from current headlines, trending topics, and pop culture. Unlike
+          traditional crosswords that rely on decades-old trivia, this puzzle
+          rewards you for staying up to date with the world around you. A new
+          crossword is published every day on Gamesite.
+        </p>
+        <p>
+          Play online for free in your browser — no app, no account, no paywall.
+          Whether you are a crossword veteran or trying your first grid, the News
+          Crossword is designed to be approachable yet satisfying.
+        </p>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          How to Play
+        </h2>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Click or tap a clue to highlight the corresponding row or column in the grid.</li>
+          <li>Type your answer letter by letter. The cursor advances automatically.</li>
+          <li>Press Enter to check your current word — green means correct, red means try again.</li>
+          <li>Switch between Across and Down clues by clicking the active cell again or pressing the arrow keys.</li>
+          <li>Fill every cell in the grid to complete the puzzle.</li>
+        </ol>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          Tips &amp; Strategy
+        </h2>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Start with the clues you know for sure — filling in confirmed letters helps solve intersecting words.</li>
+          <li>Short words (3-4 letters) are often the easiest entry points into the grid.</li>
+          <li>If a clue ends with a question mark, expect a pun or wordplay rather than a straight definition.</li>
+          <li>Stuck on a clue? Skip it and come back after you have more crossing letters filled in.</li>
+          <li>Pay attention to the puzzle title and subtitle — they often hint at the overall theme.</li>
+        </ul>
+      </section>
     </main>
   );
 }

@@ -47,6 +47,47 @@ export default async function AnagramPage() {
         </Link>
       </div>
       <MoreDailyGames currentSlug="anagram" />
+
+      <section className="mx-auto max-w-2xl px-4 pb-12 text-sm text-zinc-500 dark:text-zinc-400 space-y-3">
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          What is Anagram Scramble?
+        </h2>
+        <p>
+          Anagram Scramble is a fast-paced daily word game where you unscramble
+          five jumbled words before the clock runs out. Each word comes with a
+          category hint to point you in the right direction, but the scrambled
+          letters can be deceptively tricky. It is the perfect quick brain
+          exercise — most rounds take under two minutes.
+        </p>
+        <p>
+          New anagram puzzles are published every day on Gamesite. Play for free
+          in your browser with no account or download needed. Challenge yourself
+          to solve all five before time expires and compare your speed with
+          friends.
+        </p>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          How to Play
+        </h2>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Five scrambled words are presented one at a time with a countdown timer.</li>
+          <li>Read the hint to understand the category of the answer.</li>
+          <li>Rearrange the letters to form the correct word.</li>
+          <li>Type your answer and submit. Correct answers move you to the next word.</li>
+          <li>Solve all five before time runs out to complete the puzzle.</li>
+        </ol>
+
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          Tips &amp; Strategy
+        </h2>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Read the hint first — knowing the category dramatically narrows your options.</li>
+          <li>Look for common letter patterns like TH, ING, TION, or ED to anchor part of the word.</li>
+          <li>Try saying the scrambled letters out loud. Your brain often recognizes words through sound faster than sight.</li>
+          <li>Focus on consonant clusters first, then fit vowels around them.</li>
+          <li>If you are completely stuck, skip and come back — fresh eyes on a scramble often reveal the answer instantly.</li>
+        </ul>
+      </section>
     </main>
   );
 }
