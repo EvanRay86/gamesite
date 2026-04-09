@@ -231,7 +231,7 @@ export const games: Game[] = [
     name: "Vocab Vault",
     description:
       "Guess vocabulary words from their definitions and example sentences.",
-    category: "learn",
+    category: "daily",
     color: "purple",
   },
 
@@ -240,7 +240,7 @@ export const games: Game[] = [
     name: "Root Words",
     description:
       "Find English words built from a Latin or Greek root before time runs out.",
-    category: "learn",
+    category: "daily",
     color: "teal",
   },
 
@@ -249,7 +249,7 @@ export const games: Game[] = [
     name: "Periodic Puzzle",
     description:
       "Guess the chemical element from comparison clues about the periodic table.",
-    category: "learn",
+    category: "daily",
     color: "green",
   },
 
