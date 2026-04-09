@@ -1,63 +1,35 @@
 import type { HintSet, FAQ } from "@/types/hints";
 import { getGameBySlug } from "@/lib/game-registry";
 
-import { getPuzzleByDate, getFallbackPuzzle } from "@/lib/puzzles";
-import {
-  getCrosswordPuzzle,
-} from "@/lib/crossword-puzzles";
-import {
-  getTriviaPuzzleByDate,
-  getFallbackTriviaPuzzle,
-} from "@/lib/trivia-puzzles";
-import {
-  getHexlePuzzle,
-  getFallbackHexleWord,
-} from "@/lib/hexle-words";
+import { getCrosswordPuzzle } from "@/lib/crossword-puzzles";
+import { getTriviaPuzzleByDate, getFallbackTriviaPuzzle } from "@/lib/trivia-puzzles";
 import { getWordLadderPuzzle } from "@/lib/word-ladder-puzzles";
-import {
-  getAnagramPuzzleByDate,
-  getFallbackAnagramPuzzle,
-} from "@/lib/anagram-puzzles";
+import { getAnagramPuzzleByDate, getFallbackAnagramPuzzle } from "@/lib/anagram-puzzles";
 import { getChainReactionPuzzle } from "@/lib/chain-reaction-puzzles";
-import {
-  getEmojiWordPuzzleByDate,
-  getFallbackEmojiWordPuzzle,
-} from "@/lib/emoji-word-puzzles";
-import {
-  getWordBloomPuzzleByDate,
-  getFallbackWordBloomPuzzle,
-} from "@/lib/word-bloom-puzzles";
-import { getHeardlePuzzleAsync } from "@/lib/heardle-puzzles";
-import { getFramedPuzzleAsync } from "@/lib/framed-puzzles";
-import {
-  getTop5PuzzleByDate,
-  getFallbackTop5Puzzle,
-} from "@/lib/top5-puzzles";
+import { getEmojiWordPuzzleByDate, getFallbackEmojiWordPuzzle } from "@/lib/emoji-word-puzzles";
+import { getWordBloomPuzzleByDate, getFallbackWordBloomPuzzle } from "@/lib/word-bloom-puzzles";
+import { getTop5PuzzleByDate, getFallbackTop5Puzzle } from "@/lib/top5-puzzles";
 import { getMathlerPuzzle } from "@/lib/mathler-puzzles";
-import {
-  getTimelinePuzzleByDate,
-  getFallbackTimelinePuzzle,
-} from "@/lib/timeline-puzzles";
-import {
-  getQuotablePuzzleByDate,
-  getFallbackQuotablePuzzle,
-} from "@/lib/quotable-puzzles";
+import { getTimelinePuzzleByDate, getFallbackTimelinePuzzle } from "@/lib/timeline-puzzles";
+import { getQuotablePuzzleByDate, getFallbackQuotablePuzzle } from "@/lib/quotable-puzzles";
+import { getVocabVaultPuzzleByDate, getFallbackVocabVaultPuzzle } from "@/lib/vocab-vault-puzzles";
+import { getRootWordsPuzzleByDate, getFallbackRootWordsPuzzle } from "@/lib/root-words-puzzles";
+import { getPeriodicPuzzleByDate, getFallbackPeriodicPuzzle } from "@/lib/periodic-puzzle-puzzles";
 
-import { generateClusterHints } from "./cluster-hints";
 import { generateCrosswordHints } from "./crossword-hints";
 import { generateTriviaHints } from "./trivia-hints";
-import { generateHexleHints } from "./hexle-hints";
 import { generateWordLadderHints } from "./word-ladder-hints";
 import { generateAnagramHints } from "./anagram-hints";
 import { generateChainReactionHints } from "./chain-reaction-hints";
 import { generateEmojiDecoderHints } from "./emoji-decoder-hints";
 import { generateWordBloomHints } from "./word-bloom-hints";
-import { generateHeardleHints } from "./heardle-hints";
-import { generateFramedHints } from "./framed-hints";
 import { generateTop5Hints } from "./top5-hints";
 import { generateMathlerHints } from "./mathler-hints";
 import { generateTimelineHints } from "./timeline-hints";
 import { generateQuotableHints } from "./quotable-hints";
+import { generateVocabVaultHints } from "./vocab-vault-hints";
+import { generateRootWordsHints } from "./root-words-hints";
+import { generatePeriodicPuzzleHints } from "./periodic-puzzle-hints";
 
 /** All game slugs that support hint pages. */
 export const HINTABLE_GAMES = [
@@ -72,6 +44,9 @@ export const HINTABLE_GAMES = [
   "mathler",
   "timeline",
   "quotable",
+  "vocab-vault",
+  "root-words",
+  "periodic-puzzle",
 ] as const;
 
 export type HintableSlug = (typeof HINTABLE_GAMES)[number];
@@ -188,6 +163,21 @@ async function generateHintsForSlug(slug: HintableSlug, date: string) {
       let puzzle = await getQuotablePuzzleByDate(date);
       if (!puzzle) puzzle = getFallbackQuotablePuzzle(date);
       return generateQuotableHints(puzzle);
+    }
+    case "vocab-vault": {
+      let puzzle = await getVocabVaultPuzzleByDate(date);
+      if (!puzzle) puzzle = getFallbackVocabVaultPuzzle(date);
+      return generateVocabVaultHints(puzzle);
+    }
+    case "root-words": {
+      let puzzle = await getRootWordsPuzzleByDate(date);
+      if (!puzzle) puzzle = getFallbackRootWordsPuzzle(date);
+      return generateRootWordsHints(puzzle);
+    }
+    case "periodic-puzzle": {
+      let puzzle = await getPeriodicPuzzleByDate(date);
+      if (!puzzle) puzzle = getFallbackPeriodicPuzzle(date);
+      return generatePeriodicPuzzleHints(puzzle);
     }
   }
 }

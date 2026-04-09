@@ -226,6 +226,33 @@ export const games: Game[] = [
     color: "green",
   },
 
+  {
+    slug: "vocab-vault",
+    name: "Vocab Vault",
+    description:
+      "Guess vocabulary words from their definitions and example sentences.",
+    category: "learn",
+    color: "purple",
+  },
+
+  {
+    slug: "root-words",
+    name: "Root Words",
+    description:
+      "Find English words built from a Latin or Greek root before time runs out.",
+    category: "learn",
+    color: "teal",
+  },
+
+  {
+    slug: "periodic-puzzle",
+    name: "Periodic Puzzle",
+    description:
+      "Guess the chemical element from comparison clues about the periodic table.",
+    category: "learn",
+    color: "green",
+  },
+
   // ── Learn Games ──────────────────────────────────────────────────────────
 
   {
