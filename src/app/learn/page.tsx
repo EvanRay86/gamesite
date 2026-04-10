@@ -12,9 +12,9 @@ import {
 import GamePreview from "@/components/GamePreview";
 
 export const metadata: Metadata = {
-  title: "Learn — Interactive Geography & Knowledge Games",
+  title: "Free Learning Games — Math Puzzles, Geography & History Trivia | Gamesite",
   description:
-    "Learn geography, flags, and more through interactive games. Track your mastery and progress.",
+    "Learn geography, math, history, and famous quotes through interactive daily games. Track your progress and master every challenge.",
   alternates: { canonical: "https://gamesite.app/learn" },
 };
 

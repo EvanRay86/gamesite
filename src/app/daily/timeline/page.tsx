@@ -12,9 +12,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Timeline Online Free — Daily History Game",
+  title: "Timeline — Put Events in Chronological Order | History Game",
   description:
-    "Play Timeline today — put five events in chronological order. A free daily history and trivia game you can play in your browser.",
+    "Put five historical events in the correct chronological order. Test your history knowledge in this free daily timeline game.",
   path: "daily/timeline",
   color: "teal",
 });

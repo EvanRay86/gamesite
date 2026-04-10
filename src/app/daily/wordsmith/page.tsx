@@ -5,9 +5,9 @@ import GameJsonLd from "@/components/seo/GameJsonLd";
 import { buildGameMetadata } from "@/lib/seo";
 
 export const metadata = buildGameMetadata({
-  title: "Play Wordsmith Online Free — Daily Word Game",
+  title: "Wordsmith — Daily Word Building Game with Power-Ups",
   description:
-    "Play Wordsmith today — forge words through five rounds, collect power-ups, and chase the daily high score. Free in your browser.",
+    "Build words across five rounds, collect power-ups, and chase the daily high score. Free word game updated daily.",
   path: "daily/wordsmith",
   color: "amber",
 });

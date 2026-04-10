@@ -11,9 +11,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Chain Reaction Online Free — Daily Word Chain Game",
+  title: "Chain Reaction Word Game — Complete the Word Chain",
   description:
-    "Play Chain Reaction today — complete the word chain where each pair forms a compound word or phrase. A free daily word puzzle in your browser.",
+    "Complete the word chain where each pair forms a compound word or phrase. Free daily word association puzzle game.",
   path: "daily/chain-reaction",
   color: "coral",
 });

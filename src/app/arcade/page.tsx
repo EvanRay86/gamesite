@@ -3,9 +3,9 @@ import Link from "next/link";
 import { getArcadeGames, type Game } from "@/lib/game-registry";
 
 export const metadata: Metadata = {
-  title: "Free Arcade Games Online — 2048, Snake, Slime Volleyball & More",
+  title: "Free Arcade Games Online — 2048, Snake, Volleyball & More | Gamesite",
   description:
-    "Play free arcade games online — 2048, Snake Arena, Slime Volleyball, Sky Hopper, and more. No download, play instantly in your browser.",
+    "Play classic arcade games free in your browser. 2048, Snake Arena, Slime Volleyball, Sky Hopper, and more. No download required.",
   alternates: { canonical: "https://gamesite.app/arcade" },
 };
 import {

@@ -12,9 +12,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Emoji Decoder Online Free — Daily Emoji Puzzle",
+  title: "Emoji Decoder — Guess the Word from Emojis | Daily Puzzle",
   description:
-    "Play Emoji Decoder today — guess the word or phrase from emoji clues across five rounds. A free daily emoji guessing game in your browser.",
+    "Guess words and phrases from emoji clues across five progressively harder rounds. Free daily emoji guessing game.",
   path: "daily/emoji-word",
   color: "amber",
 });

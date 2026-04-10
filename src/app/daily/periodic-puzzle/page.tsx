@@ -8,8 +8,8 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Periodic Puzzle Online Free — Daily Chemistry Game",
-  description: "Play Periodic Puzzle today — guess the chemical element from progressive clues about atomic number, period, group, and category. A free daily science game.",
+  title: "Periodic Puzzle — Guess the Chemical Element Game",
+  description: "Guess the mystery element from comparison clues about the periodic table. A free daily science puzzle for chemistry fans.",
   path: "daily/periodic-puzzle",
   color: "green",
 });

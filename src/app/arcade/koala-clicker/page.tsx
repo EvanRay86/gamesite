@@ -4,9 +4,9 @@ import KoalaClicker from "@/components/KoalaClicker";
 import MoreArcadeGames from "@/components/MoreArcadeGames";
 
 export const metadata = buildGameMetadata({
-  title: "Play Koala Clicker Online Free — Idle Clicker Game",
+  title: "Koala Clicker — Free Idle Clicker Game",
   description:
-    "Play Koala Clicker free — click the koala, collect eucalyptus leaves, and build the ultimate koala colony. A free idle clicker game in your browser.",
+    "Click the koala, collect eucalyptus leaves, and build the ultimate koala colony. Free idle clicker game — no download needed.",
   path: "arcade/koala-clicker",
   color: "green",
 });

@@ -12,9 +12,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Top 5 Online Free — Daily Ranking Game",
+  title: "Top 5 — Rank Items in Order | Free Daily Trivia Game",
   description:
-    "Play Top 5 today — rank five items in the correct order. A free daily trivia and ranking game you can play in your browser.",
+    "Can you rank five items in the correct order? Test your general knowledge with this free daily ranking puzzle.",
   path: "daily/top-5",
   color: "amber",
 });

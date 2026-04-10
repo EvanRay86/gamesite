@@ -3,9 +3,9 @@ import Link from "next/link";
 import { getDailyGames, type Game } from "@/lib/game-registry";
 
 export const metadata: Metadata = {
-  title: "Free Daily Puzzles Online — Heardle, Framed, Crossword & More",
+  title: "Daily Puzzle Games — Free Word Games, Trivia & Crossword | Gamesite",
   description:
-    "Play free daily puzzles including Heardle, Framed, Crossword, Trivia, and word games. New challenges every day — play online in your browser.",
+    "14 free daily puzzle games updated every day. Crosswords, word ladders, trivia, anagram scrambles, emoji puzzles, and more. Play instantly in your browser.",
   alternates: { canonical: "https://gamesite.app/daily" },
 };
 import {

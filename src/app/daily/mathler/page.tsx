@@ -8,9 +8,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Mathler Online Free — Daily Math Puzzle",
+  title: "Mathler — Daily Math Equation Puzzle Game",
   description:
-    "Play Mathler today — find the hidden math equation that equals the target number in 6 guesses. A free daily math puzzle in your browser.",
+    "Find the hidden math equation that equals the target number. A free daily math puzzle like Wordle but for equations.",
   path: "daily/mathler",
   color: "purple",
 });

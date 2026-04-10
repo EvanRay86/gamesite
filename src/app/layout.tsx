@@ -17,11 +17,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: {
     default:
-      "Gamesite — Play Heardle, Framed, Crossword & Free Daily Games Online",
+      "Free Online Word Games & Daily Puzzles — Play Brain Teasers | Gamesite",
     template: "%s | Gamesite",
   },
   description:
-    "Play free online games — Heardle, Framed, daily crossword, trivia, 2048, word puzzles, and more. New puzzles every day, no download required.",
+    "Play 20+ free browser games daily — word puzzles, trivia, crosswords, geography, and arcade classics. No download, no account. New challenges every day.",
   metadataBase: new URL(siteUrl),
   openGraph: {
     type: "website",

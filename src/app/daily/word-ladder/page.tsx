@@ -8,9 +8,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Word Ladder Online Free — Daily Word Puzzle",
+  title: "Word Ladder Puzzle — Free Daily Word Game",
   description:
-    "Play Word Ladder today — change one letter at a time to transform the start word into the target. A free daily word puzzle in your browser.",
+    "Change one letter at a time to transform one word into another. Free daily word ladder puzzle — train your vocabulary and logic skills.",
   path: "daily/word-ladder",
   color: "teal",
 });

@@ -8,9 +8,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Framed Online Free — Guess the Movie Game",
+  title: "Framed — Guess the Movie One Frame at a Time | Free Film Game",
   description:
-    "Play Framed today — guess the movie from a single frame. Get it wrong and another frame is revealed. A free daily movie guessing game, no download required.",
+    "Guess the movie from a single frame. Each wrong guess reveals a new frame. Free daily movie guessing game with genre variants.",
   path: "daily/framed",
   color: "green",
 });

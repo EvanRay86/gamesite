@@ -8,9 +8,9 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Heardle Online Free — Guess the Song",
+  title: "Heardle — Guess the Song from Opening Seconds | Free Music Game",
   description:
-    "Play Heardle today — listen to the opening seconds of a song and guess the title in 6 tries. A free daily music guessing game, no download required.",
+    "Name the song from its opening seconds in six guesses. Free daily music guessing game with genre variants — Pop, Rock, Hip-Hop, and more.",
   path: "daily/heardle",
   color: "purple",
 });

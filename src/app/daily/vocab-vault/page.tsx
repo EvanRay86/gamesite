@@ -8,8 +8,8 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Vocab Vault Online Free — Daily Vocabulary Game",
-  description: "Play Vocab Vault today — guess vocabulary words from their definitions and example sentences. A free daily word game that builds your vocabulary.",
+  title: "Vocab Vault — Daily Vocabulary Quiz from Definitions",
+  description: "Guess vocabulary words from definitions and example sentences. Build your vocabulary with this free daily word game.",
   path: "daily/vocab-vault",
   color: "purple",
 });

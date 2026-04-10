@@ -8,8 +8,8 @@ import { buildGameMetadata } from "@/lib/seo";
 export const revalidate = 60;
 
 export const metadata = buildGameMetadata({
-  title: "Play Root Words Online Free — Daily Etymology Game",
-  description: "Play Root Words today — discover how many English words you can build from a Latin or Greek root. A free daily vocabulary and etymology game.",
+  title: "Root Words — Latin & Greek Word Roots Game",
+  description: "Find English words built from Latin and Greek roots before time runs out. A free daily vocabulary and etymology game.",
   path: "daily/root-words",
   color: "teal",
 });
