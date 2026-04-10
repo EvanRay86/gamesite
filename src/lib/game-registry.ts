@@ -418,6 +418,16 @@ export const games: Game[] = [
     creditCost: 5,
     comingSoon: true,
   },
+
+  {
+    slug: "echo",
+    name: "ECHO",
+    description:
+      "Death is a tool. Cooperate with your past selves to clear dungeons in as few echoes as possible.",
+    category: "arcade",
+    color: "teal",
+    creditCost: 0,
+  },
 ];
 
 // ---------------------------------------------------------------------------
