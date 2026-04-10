@@ -4,8 +4,6 @@ import { HINTABLE_GAMES } from "@/lib/hints";
 
 /** Games with high organic search volume get boosted sitemap priority. */
 const HIGH_PRIORITY_SLUGS = new Set([
-  "heardle",
-  "framed",
   "crossword",
   "daily-trivia",
   "2048",

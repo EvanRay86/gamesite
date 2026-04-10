@@ -43,8 +43,6 @@ import { generatePeriodicPuzzleHints } from "./periodic-puzzle-hints";
 export const HINTABLE_GAMES = [
   "cluster",
   "hexle",
-  "heardle",
-  "framed",
   "crossword",
   "daily-trivia",
   "word-ladder",
@@ -134,14 +132,6 @@ async function generateHintsForSlug(slug: HintableSlug, date: string) {
       let word = await getHexlePuzzle(date);
       if (!word) word = getFallbackHexleWord(date);
       return generateHexleHints(word);
-    }
-    case "heardle": {
-      const puzzle = await getHeardlePuzzleAsync(date);
-      return generateHeardleHints(puzzle);
-    }
-    case "framed": {
-      const puzzle = await getFramedPuzzleAsync(date);
-      return generateFramedHints(puzzle);
     }
     case "crossword": {
       const puzzle = await getCrosswordPuzzle(date);

@@ -57,6 +57,7 @@ export const games: Game[] = [
     description: "Name the song from its opening seconds.",
     category: "daily",
     color: "purple",
+    hidden: true,
     variants: [
       {
         slug: "pop",
@@ -97,6 +98,7 @@ export const games: Game[] = [
     description: "Guess the movie one frame at a time.",
     category: "daily",
     color: "green",
+    hidden: true,
     variants: [
       {
         slug: "action",

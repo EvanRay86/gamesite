@@ -28,17 +28,17 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "Gamesite",
-    title: "Gamesite — Play Heardle, Framed, Crossword & Free Daily Games",
+    title: "Gamesite — Free Daily Puzzles, Crossword, Trivia & Word Games",
     description:
-      "Play free online games — Heardle, Framed, daily crossword, trivia, 2048, and more. New puzzles every day.",
+      "Play 20+ free browser games daily — word puzzles, trivia, crosswords, geography, and arcade classics. No download, no account. New challenges every day.",
   },
   twitter: {
     card: "summary_large_image",
     site: "@GamesiteAppEvan",
     creator: "@GamesiteAppEvan",
-    title: "Gamesite — Play Heardle, Framed, Crossword & Free Daily Games",
+    title: "Gamesite — Free Daily Puzzles, Crossword, Trivia & Word Games",
     description:
-      "Play free online games — Heardle, Framed, daily crossword, trivia, 2048, and more. New puzzles every day.",
+      "Play 20+ free browser games daily — word puzzles, trivia, crosswords, geography, and arcade classics. No download, no account. New challenges every day.",
   },
   robots: {
     index: true,
@@ -56,7 +56,7 @@ const jsonLd = [
     name: "Gamesite",
     url: siteUrl,
     description:
-      "Play free online games including Heardle, Framed, daily crossword, trivia, 2048, and word puzzles. New challenges every day.",
+      "Play free online games including daily crossword, trivia, word puzzles, 2048, and more. New challenges every day.",
     potentialAction: {
       "@type": "SearchAction",
       target: `${siteUrl}/daily`,
