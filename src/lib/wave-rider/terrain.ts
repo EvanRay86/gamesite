@@ -54,9 +54,9 @@ export function placeObstacles(terrain: TerrainPoint[]): Obstacle[] {
     if (pt.isBeat) {
       obstacles.push({
         x: pt.x,
-        y: pt.height - 30, // sits above terrain surface
-        width: 16,
-        height: 30,
+        y: pt.height - 24, // sits above terrain surface
+        width: 12,
+        height: 24,
         hit: false,
       });
     }

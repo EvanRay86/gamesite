@@ -37,11 +37,11 @@ export async function decodeAndAnalyze(file: File): Promise<WaveRiderAudioData> 
   const maxAmp = Math.max(...rawAmps, 0.001);
   const amplitudes = rawAmps.map((a) => a / maxAmp);
 
-  // Smooth to avoid spiky terrain
-  const smoothed = smoothAmplitudes(amplitudes, 5);
+  // Smooth to avoid spiky terrain (wider window = smoother hills)
+  const smoothed = smoothAmplitudes(amplitudes, 9);
 
-  // Detect beats
-  const beats = detectBeats(smoothed, 1.4);
+  // Detect beats — higher sensitivity = fewer beats = more playable
+  const beats = detectBeats(smoothed, 1.8);
 
   return {
     amplitudes: smoothed,
@@ -69,12 +69,15 @@ export function smoothAmplitudes(amps: number[], windowSize = 5): number[] {
 }
 
 /** Energy-based onset detection — returns indices where energy exceeds local average. */
-export function detectBeats(amplitudes: number[], sensitivity = 1.4): number[] {
+export function detectBeats(amplitudes: number[], sensitivity = 1.8): number[] {
   const beats: number[] = [];
   const localWindow = 20;
-  const minSpacing = Math.floor(200 / WINDOW_MS); // 200ms min between beats
+  // Min 800ms between beats — gives player ~1 second to react and jump
+  const minSpacing = Math.floor(800 / WINDOW_MS);
+  // Skip first 3 seconds so player has a grace period
+  const startIdx = Math.max(localWindow, Math.floor(3000 / WINDOW_MS));
 
-  for (let i = localWindow; i < amplitudes.length - localWindow; i++) {
+  for (let i = startIdx; i < amplitudes.length - localWindow; i++) {
     // Local average energy
     let localSum = 0;
     for (let j = i - localWindow; j < i + localWindow; j++) {
@@ -82,7 +85,7 @@ export function detectBeats(amplitudes: number[], sensitivity = 1.4): number[] {
     }
     const localAvg = localSum / (localWindow * 2);
 
-    if (amplitudes[i] > localAvg * sensitivity && amplitudes[i] > 0.15) {
+    if (amplitudes[i] > localAvg * sensitivity && amplitudes[i] > 0.25) {
       if (beats.length === 0 || i - beats[beats.length - 1] >= minSpacing) {
         beats.push(i);
       }

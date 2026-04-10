@@ -60,12 +60,13 @@ interface SCWidgetStatic {
 
 const CANVAS_W = 800;
 const CANVAS_H = 400;
-const GRAVITY = 0.45;
-const JUMP_FORCE = -9;
-const PLAYER_SIZE = 14;
-const MAX_LIVES = 3;
-const INVINCIBLE_FRAMES = 90;
+const GRAVITY = 0.38;
+const JUMP_FORCE = -9.5;
+const PLAYER_SIZE = 12;
+const MAX_LIVES = 5;
+const INVINCIBLE_FRAMES = 120;
 const SAVE_KEY = "wave-rider-best";
+const HIT_SHRINK = 4; // pixels to shrink collision box (forgiving hitbox)
 
 // Synthwave palette
 const BG_TOP = "#0a0a2e";
@@ -388,7 +389,9 @@ export default function WaveRider() {
     invincibleRef.current = 0;
     frameRef.current = 0;
     particlesRef.current = [];
-    playerRef.current = { x: 150, y: 200, vy: 0, isJumping: false };
+    // Snap player to terrain height at start position
+    const startTerrainY = getTerrainHeightAt(terrainRef.current, 150);
+    playerRef.current = { x: 150, y: startTerrainY - PLAYER_SIZE, vy: 0, isJumping: false };
 
     // Reset obstacles/collectibles
     for (const o of obstaclesRef.current) o.hit = false;
@@ -503,20 +506,33 @@ export default function WaveRider() {
 
       // ── Player physics ──
       const terrainY = getTerrainHeightAt(terrain, scrollX + player.x);
+      const landingY = terrainY - PLAYER_SIZE;
 
       if (jumpRef.current && !player.isJumping) {
         player.vy = JUMP_FORCE;
         player.isJumping = true;
       }
 
-      player.vy += GRAVITY;
-      player.y += player.vy;
+      if (player.isJumping) {
+        // In air — apply gravity
+        player.vy += GRAVITY;
+        player.y += player.vy;
 
-      // Land on terrain
-      if (player.y >= terrainY - PLAYER_SIZE) {
-        player.y = terrainY - PLAYER_SIZE;
+        // Land on terrain
+        if (player.y >= landingY) {
+          player.y = landingY;
+          player.vy = 0;
+          player.isJumping = false;
+        }
+      } else {
+        // On terrain — smoothly follow the surface (lerp to avoid jarring snaps)
+        const diff = landingY - player.y;
+        if (Math.abs(diff) < 2) {
+          player.y = landingY;
+        } else {
+          player.y += diff * 0.3;
+        }
         player.vy = 0;
-        player.isJumping = false;
       }
 
       // Clamp to canvas
@@ -534,14 +550,15 @@ export default function WaveRider() {
         h: PLAYER_SIZE,
       };
 
-      // Obstacles
+      // Obstacles — forgiving hitbox (shrunk by HIT_SHRINK on each side)
       for (const obs of obstaclesRef.current) {
         if (obs.hit) continue;
+        const hs = HIT_SHRINK;
         if (
-          obs.x < playerWorldX + PLAYER_SIZE &&
-          obs.x + obs.width > playerWorldX - PLAYER_SIZE &&
-          obs.y < player.y + PLAYER_SIZE &&
-          obs.y + obs.height > player.y - PLAYER_SIZE
+          obs.x + hs < playerWorldX + PLAYER_SIZE - hs &&
+          obs.x + obs.width - hs > playerWorldX - PLAYER_SIZE + hs &&
+          obs.y + hs < player.y + PLAYER_SIZE - hs &&
+          obs.y + obs.height - hs > player.y - PLAYER_SIZE + hs
         ) {
           if (invincibleRef.current <= 0) {
             obs.hit = true;
