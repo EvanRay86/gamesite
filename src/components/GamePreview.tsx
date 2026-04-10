@@ -1074,6 +1074,91 @@ function GloblePreview() {
   );
 }
 
+/* ─── Vocab Vault Mini Preview ──────────────────────────────────────────── */
+
+function VocabVaultPreview() {
+  return (
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-purple/5 to-purple/10 border border-purple/15 p-3.5">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-purple">Word 3 of 5</span>
+        <span className="text-[10px] font-bold text-purple tabular-nums bg-purple/8 px-2 py-0.5 rounded-full">9/15</span>
+      </div>
+      <p className="text-[10px] text-text-dim mb-1">Lasting only a short time</p>
+      <p className="text-[10px] text-text-dim italic mb-2.5">&quot;The beauty of cherry blossoms is ______.&quot;</p>
+      <div className="flex gap-1.5 items-center justify-center">
+        <div className="flex-1 rounded-lg bg-white/80 border border-purple/20 px-2 py-1.5 text-[10px] text-text-secondary">ephemeral</div>
+        <span className="text-[9px] font-semibold text-white bg-purple rounded-full px-2.5 py-1 shadow-sm">Check</span>
+      </div>
+      <div className="flex gap-1 mt-2 justify-center">
+        <span className="text-[9px] text-purple/60">Hint: starts with &quot;E&quot;</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Root Words Mini Preview ──────────────────────────────────────────── */
+
+function RootWordsPreview() {
+  const foundWords = ["biology", "biography", "biopsy", "biome"];
+  return (
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-teal/5 to-teal/10 border border-teal/15 p-3.5">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-teal">Root: BIO</span>
+        <span className="text-[10px] font-bold text-coral tabular-nums bg-coral/8 px-2 py-0.5 rounded-full">⏱ 67s</span>
+      </div>
+      <p className="text-[10px] text-text-dim mb-2">meaning: life &middot; Greek</p>
+      <div className="flex flex-wrap gap-1 mb-2">
+        {foundWords.map((w) => (
+          <span key={w} className="text-[9px] font-medium bg-teal/15 text-teal border border-teal/20 rounded-full px-2 py-0.5">{w}</span>
+        ))}
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-[9px] text-text-dim">4 words &middot; 8 pts</span>
+        <div className="w-16 h-1 rounded-full bg-gray-200 overflow-hidden">
+          <div className="h-full bg-teal rounded-full" style={{ width: "74%" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Periodic Puzzle Mini Preview ─────────────────────────────────────── */
+
+function PeriodicPuzzlePreview() {
+  const guesses = [
+    { sym: "Fe", name: "Iron", num: "26", numDir: "↓", per: "4", perDir: "↓", grp: "8", grpDir: "↑", cat: false, state: true },
+    { sym: "Cu", name: "Copper", num: "29", numDir: "↓", per: "4", perDir: "↓", grp: "11", grpDir: "↑", cat: false, state: true },
+  ];
+  return (
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-green/5 to-green/10 border border-green/15 p-3.5">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-green">Guess 2/6</span>
+        <span className="text-[10px] font-bold text-green tabular-nums bg-green/8 px-2 py-0.5 rounded-full">⚛️</span>
+      </div>
+      <div className="space-y-1">
+        {guesses.map((g) => (
+          <div key={g.sym} className="flex gap-0.5 items-center">
+            <span className="text-[9px] font-bold text-text-primary w-5">{g.sym}</span>
+            <span className="flex-1 grid grid-cols-5 gap-0.5">
+              <span className="rounded bg-amber-400 text-white text-[8px] font-bold text-center py-0.5">{g.num}{g.numDir}</span>
+              <span className="rounded bg-amber-400 text-white text-[8px] font-bold text-center py-0.5">{g.per}{g.perDir}</span>
+              <span className="rounded bg-amber-400 text-white text-[8px] font-bold text-center py-0.5">{g.grp}{g.grpDir}</span>
+              <span className={`rounded ${g.cat ? "bg-green-500" : "bg-red-500"} text-white text-[8px] font-bold text-center py-0.5`}>Cat</span>
+              <span className={`rounded ${g.state ? "bg-green-500" : "bg-red-500"} text-white text-[8px] font-bold text-center py-0.5`}>St</span>
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-0.5 mt-2 justify-center">
+        {["H", "He", "Li", "Be", "B", "C", "N", "O"].map((s) => (
+          <span key={s} className="w-4 h-4 flex items-center justify-center rounded-sm bg-blue-400/80 text-white text-[7px] font-bold">{s}</span>
+        ))}
+        <span className="text-[8px] text-text-dim ml-0.5">...</span>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Game Preview Router ───────────────────────────────────────────────── */
 
 export default function GamePreview({ slug }: { slug: string }) {
@@ -1106,6 +1191,9 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "word-bloom": return <WordBloomPreview />;
     case "orb-merge": return <OrbMergePreview />;
     case "globle": return <GloblePreview />;
+    case "vocab-vault": return <VocabVaultPreview />;
+    case "root-words": return <RootWordsPreview />;
+    case "periodic-puzzle": return <PeriodicPuzzlePreview />;
     default: return null;
   }
 }
