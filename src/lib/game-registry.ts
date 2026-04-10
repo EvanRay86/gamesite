@@ -410,6 +410,16 @@ export const games: Game[] = [
   },
 
   {
+    slug: "warp",
+    name: "WARP",
+    description:
+      "Aim, launch, and slingshot through gravitational fields in this orbital puzzle game.",
+    category: "arcade",
+    color: "purple",
+    creditCost: 0,
+  },
+
+  {
     slug: "gem-crush",
     name: "Gem Crush",
     description: "Match gems, chain combos, and climb the leaderboard.",
@@ -420,12 +430,11 @@ export const games: Game[] = [
   },
 
   {
-    slug: "echo",
-    name: "ECHO",
-    description:
-      "Death is a tool. Cooperate with your past selves to clear dungeons in as few echoes as possible.",
+    slug: "wave-rider",
+    name: "Wave Rider",
+    description: "Upload a song or paste a SoundCloud link and surf the waveform.",
     category: "arcade",
-    color: "teal",
+    color: "purple",
     creditCost: 0,
   },
 ];
