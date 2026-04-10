@@ -15,7 +15,7 @@ export function buildGameMetadata(opts: {
   color?: string;
 }): Metadata {
   const url = `${siteUrl}/${opts.path}`;
-  const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(opts.title)}&description=${encodeURIComponent(opts.description)}&color=${encodeURIComponent(opts.color ?? "coral")}`;
+  const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(opts.title)}&color=${encodeURIComponent(opts.color ?? "coral")}`;
 
   return {
     title: opts.title,
