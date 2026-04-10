@@ -54,11 +54,7 @@ interface SCWidgetStatic {
   };
 }
 
-declare global {
-  interface Window {
-    SC?: { Widget: SCWidgetStatic };
-  }
-}
+// Window.SC is already declared globally in HeardleGame.tsx
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
