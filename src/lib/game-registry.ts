@@ -41,7 +41,6 @@ export const games: Game[] = [
       "Find five groups of three words that share a hidden connection.",
     category: "daily",
     color: "coral",
-    hidden: true,
   },
 
   {
@@ -50,7 +49,6 @@ export const games: Game[] = [
     description: "Seven guesses to crack the six-letter word.",
     category: "daily",
     color: "amber",
-    hidden: true,
   },
 
   {
@@ -59,7 +57,6 @@ export const games: Game[] = [
     description: "Name the song from its opening seconds.",
     category: "daily",
     color: "purple",
-    hidden: true,
     variants: [
       {
         slug: "pop",
@@ -100,7 +97,6 @@ export const games: Game[] = [
     description: "Guess the movie one frame at a time.",
     category: "daily",
     color: "green",
-    hidden: true,
     variants: [
       {
         slug: "action",

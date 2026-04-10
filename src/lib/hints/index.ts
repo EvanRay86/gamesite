@@ -1,7 +1,11 @@
 import type { HintSet, FAQ } from "@/types/hints";
 import { getGameBySlug } from "@/lib/game-registry";
 
+import { getPuzzleByDate, getFallbackPuzzle } from "@/lib/puzzles";
 import { getCrosswordPuzzle } from "@/lib/crossword-puzzles";
+import { getHexlePuzzle, getFallbackHexleWord } from "@/lib/hexle-words";
+import { getHeardlePuzzleAsync } from "@/lib/heardle-puzzles";
+import { getFramedPuzzleAsync } from "@/lib/framed-puzzles";
 import { getTriviaPuzzleByDate, getFallbackTriviaPuzzle } from "@/lib/trivia-puzzles";
 import { getWordLadderPuzzle } from "@/lib/word-ladder-puzzles";
 import { getAnagramPuzzleByDate, getFallbackAnagramPuzzle } from "@/lib/anagram-puzzles";
@@ -16,6 +20,10 @@ import { getVocabVaultPuzzleByDate, getFallbackVocabVaultPuzzle } from "@/lib/vo
 import { getRootWordsPuzzleByDate, getFallbackRootWordsPuzzle } from "@/lib/root-words-puzzles";
 import { getPeriodicPuzzleByDate, getFallbackPeriodicPuzzle } from "@/lib/periodic-puzzle-puzzles";
 
+import { generateClusterHints } from "./cluster-hints";
+import { generateHexleHints } from "./hexle-hints";
+import { generateHeardleHints } from "./heardle-hints";
+import { generateFramedHints } from "./framed-hints";
 import { generateCrosswordHints } from "./crossword-hints";
 import { generateTriviaHints } from "./trivia-hints";
 import { generateWordLadderHints } from "./word-ladder-hints";
@@ -33,6 +41,10 @@ import { generatePeriodicPuzzleHints } from "./periodic-puzzle-hints";
 
 /** All game slugs that support hint pages. */
 export const HINTABLE_GAMES = [
+  "cluster",
+  "hexle",
+  "heardle",
+  "framed",
   "crossword",
   "daily-trivia",
   "word-ladder",
@@ -113,6 +125,24 @@ export async function getHintsForGame(
 
 async function generateHintsForSlug(slug: HintableSlug, date: string) {
   switch (slug) {
+    case "cluster": {
+      let puzzle = await getPuzzleByDate(date);
+      if (!puzzle) puzzle = getFallbackPuzzle(date);
+      return generateClusterHints(puzzle);
+    }
+    case "hexle": {
+      let word = await getHexlePuzzle(date);
+      if (!word) word = getFallbackHexleWord(date);
+      return generateHexleHints(word);
+    }
+    case "heardle": {
+      const puzzle = await getHeardlePuzzleAsync(date);
+      return generateHeardleHints(puzzle);
+    }
+    case "framed": {
+      const puzzle = await getFramedPuzzleAsync(date);
+      return generateFramedHints(puzzle);
+    }
     case "crossword": {
       const puzzle = await getCrosswordPuzzle(date);
       return generateCrosswordHints(puzzle);
