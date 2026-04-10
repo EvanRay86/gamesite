@@ -5,6 +5,7 @@ import type { PeriodicPuzzle, Element } from "@/types/periodic-puzzle";
 import { ELEMENTS } from "@/lib/periodic-puzzle-data";
 import { getElementByName } from "@/lib/periodic-puzzle-puzzles";
 import { shareOrCopy } from "@/lib/share";
+import PeriodicTable from "@/components/PeriodicTable";
 
 const MAX_GUESSES = 6;
 
@@ -134,6 +135,12 @@ export default function PeriodicPuzzleGame({ puzzle }: Props) {
 
   // ---- autocomplete --------------------------------------------------------
   const guessedNames = new Set(guesses.map((g) => g.element.name.toLowerCase()));
+
+  // Build map for periodic table visual feedback
+  const guessedElementsMap = new Map<string, "correct" | "wrong">();
+  for (const g of guesses) {
+    guessedElementsMap.set(g.element.name, g.correct ? "correct" : "wrong");
+  }
 
   const updateSuggestions = useCallback(
     (val: string) => {
@@ -438,7 +445,7 @@ export default function PeriodicPuzzleGame({ puzzle }: Props) {
   // PLAYING SCREEN
   // =========================================================================
   return (
-    <div className="flex flex-col items-center gap-4 py-6 px-2 sm:px-4 w-full max-w-xl mx-auto">
+    <div className="flex flex-col items-center gap-4 py-6 px-2 sm:px-4 w-full max-w-5xl mx-auto">
       <h1 className="text-xl font-bold text-green-600 dark:text-green-400 flex items-center gap-2">
         {"\u269B\uFE0F"} Periodic Puzzle
       </h1>
@@ -446,6 +453,13 @@ export default function PeriodicPuzzleGame({ puzzle }: Props) {
       <p className="text-sm text-zinc-500 dark:text-zinc-400">
         Guess {guesses.length}/{MAX_GUESSES}
       </p>
+
+      {/* Interactive periodic table */}
+      <PeriodicTable
+        guessedElements={guessedElementsMap}
+        onElementClick={(name) => submitGuess(name)}
+        disabled={gameOver}
+      />
 
       {/* Input area */}
       {!gameOver && (
