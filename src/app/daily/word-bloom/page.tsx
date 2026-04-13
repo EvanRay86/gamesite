@@ -2,6 +2,7 @@ import Link from "next/link";
 import WordBloomGame from "@/components/WordBloomGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import {
   getWordBloomPuzzleByDate,
   getTodayDate,
@@ -100,6 +101,14 @@ export default async function WordBloomPage() {
           <li>If you are stuck, step away and come back. Fresh eyes almost always find words you missed.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Word Bloom free to play?", answer: "Yes! Word Bloom is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Word Bloom on my phone?", answer: "Absolutely. Word Bloom works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Word Bloom update?", answer: "A brand-new Word Bloom puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "Is Word Bloom the same as NYT Spelling Bee?", answer: "Word Bloom is inspired by Spelling Bee and shares the core mechanic of building words from a set of letters with a required center letter. However, Word Bloom features a flower-petal layout, its own word list, and additional modes like Duel and Quickplay." },
+        { question: "Can I reuse letters in Word Bloom?", answer: "Yes! Letters can be reused as many times as you like in a single word. As long as the letter is one of the seven available and you include the center letter, the word is valid." },
+      ]} />
     </main>
   );
 }

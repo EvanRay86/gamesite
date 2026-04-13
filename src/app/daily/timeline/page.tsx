@@ -2,6 +2,7 @@ import Link from "next/link";
 import TimelineGame from "@/components/TimelineGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import {
   getTimelinePuzzleByDate,
   getTodayDate,
@@ -88,6 +89,14 @@ export default async function TimelinePage() {
           <li>The more you play, the better your historical intuition becomes — Timeline is genuinely educational.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Timeline free to play?", answer: "Yes! Timeline is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Timeline on my phone?", answer: "Absolutely. Timeline works on any device with a modern web browser — phones, tablets, and desktops. Drag and drop works with touch controls." },
+        { question: "How often does Timeline update?", answer: "A brand-new Timeline puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "How many attempts do I get in Timeline?", answer: "You have three attempts to arrange the five events in the correct chronological order. After each attempt, correctly placed events are locked in so you can focus on the remaining ones." },
+        { question: "What time periods do the events cover?", answer: "Events span from ancient history to modern times, covering everything from scientific discoveries and political milestones to pop culture moments and technological breakthroughs." },
+      ]} />
     </main>
   );
 }

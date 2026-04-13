@@ -2,6 +2,7 @@ import Link from "next/link";
 import ChainReactionGame from "@/components/ChainReactionGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import {
   getChainReactionPuzzle,
   getTodayDate,
@@ -82,6 +83,14 @@ export default function ChainReactionPage() {
           <li>If stuck, check the hints page for word lengths and first letters.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Chain Reaction free to play?", answer: "Yes! Chain Reaction is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Chain Reaction on my phone?", answer: "Absolutely. Chain Reaction works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Chain Reaction update?", answer: "A brand-new Chain Reaction puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "What counts as a valid word pair in Chain Reaction?", answer: "Each pair of adjacent words must form a compound word or a commonly used two-word phrase. For example, FIRE + HOUSE = firehouse, or HOUSE + WORK = housework." },
+        { question: "How many words do I need to fill in?", answer: "You fill in three hidden words between the given start and end words, creating a chain of five words total where every neighboring pair connects." },
+      ]} />
     </main>
   );
 }

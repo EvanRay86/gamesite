@@ -1,6 +1,7 @@
 import GlobleGame from "@/components/GlobleGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import { buildGameMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
@@ -72,6 +73,14 @@ export default function GloblePage() {
       </section>
 
       <MoreDailyGames currentSlug="globle" />
+
+      <GameFAQ faqs={[
+        { question: "Is Globle free to play?", answer: "Yes! Globle is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Globle on my phone?", answer: "Absolutely. Globle works on any device with a modern web browser — phones, tablets, and desktops. The 3D globe is fully touch-friendly." },
+        { question: "How often does Globle update?", answer: "A brand-new mystery country is selected every day. Come back tomorrow for a fresh challenge." },
+        { question: "How does the color system work in Globle?", answer: "After each guess, the country is colored based on distance from the answer. Red and orange mean you are close, yellow is moderate distance, green is fairly far, and blue means you are on the opposite side of the world." },
+        { question: "Is there a limit to how many guesses I can make?", answer: "No, Globle has unlimited guesses. The goal is to find the mystery country in as few guesses as possible, but you can keep guessing until you get it right." },
+      ]} />
     </main>
   );
 }

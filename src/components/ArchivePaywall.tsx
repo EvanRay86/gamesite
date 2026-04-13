@@ -31,7 +31,7 @@ export default function ArchivePaywall({
   return (
     <main className="min-h-screen flex flex-col items-center px-4 py-8">
       <div className="w-full max-w-[520px]">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <h1 className="font-display text-3xl text-text-primary">
             {gameName} Archive
           </h1>
@@ -42,6 +42,16 @@ export default function ArchivePaywall({
             &larr; Today&apos;s Puzzle
           </Link>
         </div>
+
+        <p className="text-sm text-text-dim mb-2">
+          Browse the full archive of {gameName} puzzles. A new puzzle is
+          published every day — play today&apos;s or revisit past challenges.
+        </p>
+        {dates.length > 0 && (
+          <p className="text-xs text-text-dim mb-6">
+            {dates.length} {dates.length === 1 ? "puzzle" : "puzzles"} available
+          </p>
+        )}
 
         {/* Free: today's puzzle */}
         {freeDates.length > 0 && (
@@ -126,6 +136,28 @@ export default function ArchivePaywall({
             )}
           </div>
         )}
+
+        {/* Internal links for SEO */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm">
+          <Link
+            href={`/daily/${gameSlug}`}
+            className="text-text-muted underline hover:text-text-primary transition-colors"
+          >
+            Play {gameName}
+          </Link>
+          <Link
+            href={`/daily/${gameSlug}/hints`}
+            className="text-text-muted underline hover:text-text-primary transition-colors"
+          >
+            {gameName} Hints
+          </Link>
+          <Link
+            href="/daily"
+            className="text-text-muted underline hover:text-text-primary transition-colors"
+          >
+            All daily games
+          </Link>
+        </div>
       </div>
     </main>
   );

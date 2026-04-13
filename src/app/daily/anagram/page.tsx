@@ -2,6 +2,7 @@ import Link from "next/link";
 import AnagramGame from "@/components/AnagramGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import {
   getAnagramPuzzleByDate,
   getTodayDate,
@@ -88,6 +89,14 @@ export default async function AnagramPage() {
           <li>If you are completely stuck, skip and come back — fresh eyes on a scramble often reveal the answer instantly.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Anagram Scramble free to play?", answer: "Yes! Anagram Scramble is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Anagram Scramble on my phone?", answer: "Absolutely. Anagram Scramble works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Anagram Scramble update?", answer: "A brand-new Anagram Scramble puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "How much time do I get to solve the anagrams?", answer: "You have a countdown timer to unscramble all five words. Most rounds take under two minutes, making it the perfect quick brain exercise during a break." },
+        { question: "Are the anagram words random or themed?", answer: "Each word comes with a category hint to point you in the right direction. The categories vary daily and can range from animals and food to science and geography." },
+      ]} />
     </main>
   );
 }

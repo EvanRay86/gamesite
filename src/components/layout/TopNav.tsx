@@ -9,6 +9,7 @@ const navLinks = [
   { label: "Daily", href: "/daily", color: "text-coral" },
   { label: "Arcade", href: "/arcade", color: "text-teal" },
   { label: "Learn", href: "/learn", color: "text-green" },
+  { label: "Blog", href: "/blog", color: "text-purple" },
 ];
 
 export default function TopNav() {

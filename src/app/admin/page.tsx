@@ -129,7 +129,24 @@ interface PuzzleData {
   fetchedAt: string;
 }
 
-type Tab = "overview" | "trivia" | "crossword" | "clusters" | "framed" | "heardle" | "anagram" | "word-ladder" | "emoji-word" | "top-5" | "quotable" | "timeline" | "hexle" | "chain-reaction" | "prompt";
+interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  tags: string[];
+  author: string;
+  featured_image: string | null;
+  meta_description: string;
+  is_published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+type Tab = "overview" | "trivia" | "crossword" | "clusters" | "framed" | "heardle" | "anagram" | "word-ladder" | "emoji-word" | "top-5" | "quotable" | "timeline" | "hexle" | "chain-reaction" | "prompt" | "blog";
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
 
@@ -398,6 +415,59 @@ export default function AdminPage() {
   const [editDate, setEditDate] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Blog state
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [blogLoading, setBlogLoading] = useState(false);
+  const [blogEditing, setBlogEditing] = useState<Partial<BlogPost> | null>(null);
+  const [blogSaving, setBlogSaving] = useState(false);
+
+  const fetchBlogPosts = useCallback(async () => {
+    setBlogLoading(true);
+    try {
+      const res = await fetch("/api/admin/blog");
+      if (res.ok) {
+        const posts: BlogPost[] = await res.json();
+        setBlogPosts(posts);
+      }
+    } catch { /* ignore */ }
+    setBlogLoading(false);
+  }, []);
+
+  const saveBlogPost = async () => {
+    if (!blogEditing) return;
+    setBlogSaving(true);
+    try {
+      const isNew = !blogEditing.id;
+      const url = isNew ? "/api/admin/blog" : `/api/admin/blog/${blogEditing.id}`;
+      const method = isNew ? "POST" : "PATCH";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(blogEditing),
+      });
+      if (res.ok) {
+        setBlogEditing(null);
+        fetchBlogPosts();
+      }
+    } catch { /* ignore */ }
+    setBlogSaving(false);
+  };
+
+  const deleteBlogPost = async (id: string) => {
+    if (!confirm("Delete this post?")) return;
+    await fetch(`/api/admin/blog/${id}`, { method: "DELETE" });
+    fetchBlogPosts();
+  };
+
+  const togglePublish = async (post: BlogPost) => {
+    await fetch(`/api/admin/blog/${post.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_published: !post.is_published }),
+    });
+    fetchBlogPosts();
+  };
+
   const fetchPuzzles = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -435,6 +505,10 @@ export default function AdminPage() {
   useEffect(() => {
     fetchPuzzles();
   }, [fetchPuzzles]);
+
+  useEffect(() => {
+    if (tab === "blog") fetchBlogPosts();
+  }, [tab, fetchBlogPosts]);
 
   const copyPrompt = () => {
     navigator.clipboard.writeText(buildPrompt(promptStartDate, promptDays));
@@ -622,7 +696,7 @@ export default function AdminPage() {
       <div className="border-b border-border">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex gap-1">
-            {(["overview", "trivia", "crossword", "clusters", "framed", "heardle", "anagram", "word-ladder", "emoji-word", "top-5", "quotable", "timeline", "hexle", "chain-reaction", "prompt"] as Tab[]).map((t) => (
+            {(["overview", "trivia", "crossword", "clusters", "framed", "heardle", "anagram", "word-ladder", "emoji-word", "top-5", "quotable", "timeline", "hexle", "chain-reaction", "prompt", "blog"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -632,7 +706,7 @@ export default function AdminPage() {
                     : "border-transparent text-text-muted hover:text-text-secondary"
                 }`}
               >
-                {t === "prompt" ? "Generate Puzzles" : t === "word-ladder" ? "Word Ladder" : t === "emoji-word" ? "Emoji Decoder" : t === "top-5" ? "Top 5" : t}
+                {t === "prompt" ? "Generate Puzzles" : t === "word-ladder" ? "Word Ladder" : t === "emoji-word" ? "Emoji Decoder" : t === "top-5" ? "Top 5" : t === "blog" ? "Blog" : t}
               </button>
             ))}
           </div>
@@ -1281,6 +1355,178 @@ export default function AdminPage() {
                   </div>
                 )}
               />
+            )}
+
+            {/* ── Blog Tab ──────────────────────────────────────────── */}
+            {tab === "blog" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-display text-xl text-text-primary">Blog Posts</h2>
+                    <p className="text-sm text-text-muted">{blogPosts.length} posts total</p>
+                  </div>
+                  <button
+                    onClick={() => setBlogEditing({ title: "", slug: "", excerpt: "", content: "", category: "guides", tags: [], meta_description: "", is_published: false })}
+                    className="rounded-lg bg-coral px-4 py-2 text-sm font-semibold text-white hover:bg-coral-dark transition-colors"
+                  >
+                    + New Post
+                  </button>
+                </div>
+
+                {/* Blog editor modal */}
+                {blogEditing && (
+                  <div className="rounded-xl border border-border-light bg-white p-6 space-y-4 shadow-sm">
+                    <h3 className="font-semibold text-text-primary">{blogEditing.id ? "Edit Post" : "New Post"}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-text-muted mb-1">Title</label>
+                        <input
+                          value={blogEditing.title ?? ""}
+                          onChange={(e) => setBlogEditing({ ...blogEditing, title: e.target.value, slug: blogEditing.id ? blogEditing.slug : e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") })}
+                          className="w-full rounded-lg border border-border-light px-3 py-2 text-sm"
+                          placeholder="Post title"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-text-muted mb-1">Slug</label>
+                        <input
+                          value={blogEditing.slug ?? ""}
+                          onChange={(e) => setBlogEditing({ ...blogEditing, slug: e.target.value })}
+                          className="w-full rounded-lg border border-border-light px-3 py-2 text-sm"
+                          placeholder="url-slug"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-text-muted mb-1">Category</label>
+                        <select
+                          value={blogEditing.category ?? "guides"}
+                          onChange={(e) => setBlogEditing({ ...blogEditing, category: e.target.value })}
+                          className="w-full rounded-lg border border-border-light px-3 py-2 text-sm"
+                        >
+                          <option value="guides">Guides</option>
+                          <option value="strategy">Strategy</option>
+                          <option value="news">News</option>
+                          <option value="lists">Lists</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-text-muted mb-1">Tags (comma-separated)</label>
+                        <input
+                          value={(blogEditing.tags ?? []).join(", ")}
+                          onChange={(e) => setBlogEditing({ ...blogEditing, tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) })}
+                          className="w-full rounded-lg border border-border-light px-3 py-2 text-sm"
+                          placeholder="puzzle, strategy, tips"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-text-muted mb-1">Excerpt</label>
+                      <textarea
+                        value={blogEditing.excerpt ?? ""}
+                        onChange={(e) => setBlogEditing({ ...blogEditing, excerpt: e.target.value })}
+                        className="w-full rounded-lg border border-border-light px-3 py-2 text-sm"
+                        rows={2}
+                        placeholder="Short description for cards and previews"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-text-muted mb-1">Meta Description (SEO)</label>
+                      <input
+                        value={blogEditing.meta_description ?? ""}
+                        onChange={(e) => setBlogEditing({ ...blogEditing, meta_description: e.target.value })}
+                        className="w-full rounded-lg border border-border-light px-3 py-2 text-sm"
+                        placeholder="160 characters for search results"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-text-muted mb-1">Content (HTML)</label>
+                      <textarea
+                        value={blogEditing.content ?? ""}
+                        onChange={(e) => setBlogEditing({ ...blogEditing, content: e.target.value })}
+                        className="w-full rounded-lg border border-border-light px-3 py-2 text-sm font-mono"
+                        rows={12}
+                        placeholder="<h2>Introduction</h2><p>Your article content...</p>"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={blogEditing.is_published ?? false}
+                          onChange={(e) => setBlogEditing({ ...blogEditing, is_published: e.target.checked })}
+                          className="rounded border-border-light"
+                        />
+                        Publish immediately
+                      </label>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={saveBlogPost}
+                        disabled={blogSaving}
+                        className="rounded-lg bg-coral px-4 py-2 text-sm font-semibold text-white hover:bg-coral-dark transition-colors disabled:opacity-50"
+                      >
+                        {blogSaving ? "Saving..." : blogEditing.id ? "Update" : "Create"}
+                      </button>
+                      <button
+                        onClick={() => setBlogEditing(null)}
+                        className="rounded-lg border border-border-light px-4 py-2 text-sm font-medium text-text-muted hover:bg-surface transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Blog posts list */}
+                {blogLoading ? (
+                  <div className="flex items-center justify-center py-12 text-text-muted">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-coral border-t-transparent mr-2" />
+                    Loading blog posts...
+                  </div>
+                ) : blogPosts.length === 0 ? (
+                  <div className="text-center py-12 text-text-muted">
+                    <p>No blog posts yet.</p>
+                    <p className="text-sm mt-1">Create your first post to start building SEO traffic.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {blogPosts.map((post) => (
+                      <div key={post.id} className="rounded-xl border border-border-light p-4 flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${post.is_published ? "bg-green/10 text-green" : "bg-amber/10 text-amber"}`}>
+                              {post.is_published ? "Published" : "Draft"}
+                            </span>
+                            <span className="text-xs text-text-dim">{post.category}</span>
+                          </div>
+                          <h3 className="font-semibold text-text-primary mt-1 truncate">{post.title}</h3>
+                          <p className="text-xs text-text-dim mt-0.5">/blog/{post.slug}</p>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4 shrink-0">
+                          <button
+                            onClick={() => togglePublish(post)}
+                            className="text-xs px-3 py-1.5 rounded-lg border border-border-light hover:bg-surface transition-colors"
+                          >
+                            {post.is_published ? "Unpublish" : "Publish"}
+                          </button>
+                          <button
+                            onClick={() => setBlogEditing(post)}
+                            className="text-xs px-3 py-1.5 rounded-lg border border-border-light hover:bg-surface transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => deleteBlogPost(post.id)}
+                            className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
             {/* ── Prompt Generator Tab ──────────────────────────────── */}

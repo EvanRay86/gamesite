@@ -2,6 +2,7 @@ import Link from "next/link";
 import HexleGame from "@/components/HexleGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import { getHexlePuzzle, getFallbackHexleWord } from "@/lib/hexle-words";
 import { buildGameMetadata } from "@/lib/seo";
 
@@ -86,6 +87,14 @@ export default async function HexlePage() {
           <li>If you are stuck after four guesses, use the hints page for a nudge in the right direction.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Hexle free to play?", answer: "Yes! Hexle is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Hexle on my phone?", answer: "Absolutely. Hexle works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Hexle update?", answer: "A brand-new Hexle puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "How is Hexle different from Wordle?", answer: "Hexle uses six-letter words instead of five and gives you seven guesses instead of six. The extra letter makes the puzzle significantly harder because there are far more possible six-letter words to consider." },
+        { question: "What happens if I run out of guesses in Hexle?", answer: "If you use all seven guesses without finding the word, the answer is revealed. You can try again with a new puzzle tomorrow or play past puzzles from the archive." },
+      ]} />
     </main>
   );
 }
