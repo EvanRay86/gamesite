@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      // Allow same-origin framing for the Phaser game embed
+      {
+        source: "/lexicon-quest/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
       {
         source: "/(.*)",
         headers: [
