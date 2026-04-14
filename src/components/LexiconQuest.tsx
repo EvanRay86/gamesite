@@ -43,6 +43,7 @@ export default function LexiconQuest() {
   const [copied, setCopied] = useState(false);
   const [meta, setMeta] = useState<MetaProgress | null>(null);
   const [lastWordResult, setLastWordResult] = useState<WordResult | null>(null);
+  const [wildcardTileId, setWildcardTileId] = useState<number | null>(null);
 
   // ── Initialize engine ─────────────────────────────────────────────────
 
@@ -109,7 +110,12 @@ export default function LexiconQuest() {
         e.preventDefault();
         const ids = engine.state.combat.selectedTileIds;
         if (ids.length > 0) {
-          engine.deselectTile(ids[ids.length - 1]);
+          const lastId = ids[ids.length - 1];
+          const lastTile = engine.state.combat.tiles.find((t: LetterTile) => t.id === lastId);
+          if (lastTile && lastTile.modifier === "wildcard") {
+            lastTile.assignedLetter = undefined;
+          }
+          engine.deselectTile(lastId);
         }
         return;
       }
@@ -123,12 +129,24 @@ export default function LexiconQuest() {
       // Type a letter to select matching tile
       if (/^[A-Z]$/.test(key)) {
         const selected = new Set(engine.state.combat.selectedTileIds);
-        const tile = engine.state.combat.tiles.find(
+        // First try to find an exact letter match
+        const exactTile = engine.state.combat.tiles.find(
           (t: LetterTile) =>
-            !selected.has(t.id) &&
-            (t.letter === key || t.modifier === "wildcard"),
+            !selected.has(t.id) && t.letter === key && t.modifier !== "wildcard",
         );
-        if (tile) engine.selectTile(tile.id);
+        if (exactTile) {
+          engine.selectTile(exactTile.id);
+        } else {
+          // No exact match — try a wildcard tile and assign this letter
+          const wildcardTile = engine.state.combat.tiles.find(
+            (t: LetterTile) =>
+              !selected.has(t.id) && t.modifier === "wildcard",
+          );
+          if (wildcardTile) {
+            engine.assignWildcard(wildcardTile.id, key);
+            engine.selectTile(wildcardTile.id);
+          }
+        }
       }
     };
 
@@ -463,14 +481,27 @@ export default function LexiconQuest() {
                 {combat.tiles.map((tile) => {
                   const selected = combat.selectedTileIds.includes(tile.id);
                   const style = TILE_STYLES[tile.modifier];
+                  const displayLetter =
+                    tile.modifier === "wildcard"
+                      ? selected && tile.assignedLetter
+                        ? tile.assignedLetter
+                        : "?"
+                      : tile.letter;
                   return (
                     <button
                       key={tile.id}
-                      onClick={() =>
-                        selected
-                          ? engine?.deselectTile(tile.id)
-                          : engine?.selectTile(tile.id)
-                      }
+                      onClick={() => {
+                        if (selected) {
+                          engine?.deselectTile(tile.id);
+                          if (tile.modifier === "wildcard") {
+                            tile.assignedLetter = undefined;
+                          }
+                        } else if (tile.modifier === "wildcard") {
+                          setWildcardTileId(tile.id);
+                        } else {
+                          engine?.selectTile(tile.id);
+                        }
+                      }}
                       className={`
                         w-11 h-14 sm:w-12 sm:h-16 rounded-lg border-2 font-bold text-lg
                         flex flex-col items-center justify-center transition-all duration-150
@@ -481,7 +512,7 @@ export default function LexiconQuest() {
                       `}
                     >
                       <span className="leading-none">
-                        {tile.modifier === "wildcard" ? "?" : tile.letter}
+                        {displayLetter}
                       </span>
                       <span className="text-[9px] opacity-60 leading-none mt-0.5">
                         {tile.value}
@@ -707,6 +738,47 @@ export default function LexiconQuest() {
                 <div className="text-xs text-text-muted">{option.desc}</div>
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Wildcard Letter Picker ──────────────────────────────────── */}
+      {wildcardTileId !== null && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setWildcardTileId(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl p-5 max-w-xs w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-center font-bold text-text-primary mb-3">
+              Choose a letter for <span className="text-purple">?</span>
+            </h3>
+            <div className="grid grid-cols-7 gap-1.5">
+              {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((letter) => (
+                <button
+                  key={letter}
+                  onClick={() => {
+                    engine?.assignWildcard(wildcardTileId, letter);
+                    engine?.selectTile(wildcardTileId);
+                    setWildcardTileId(null);
+                  }}
+                  className="w-9 h-10 rounded-lg border-2 border-purple/30 bg-purple/5
+                             text-purple font-bold text-sm
+                             hover:bg-purple hover:text-white hover:border-purple
+                             transition-all duration-100"
+                >
+                  {letter}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setWildcardTileId(null)}
+              className="w-full mt-3 text-sm text-text-dim hover:text-text-muted transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}

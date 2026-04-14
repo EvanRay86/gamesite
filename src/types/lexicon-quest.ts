@@ -33,6 +33,8 @@ export interface LetterTile {
   letter: string;
   value: number;
   modifier: TileModifier;
+  /** Letter assigned by the player when this is a wildcard tile. */
+  assignedLetter?: string;
 }
 
 // ── Word Scoring ────────────────────────────────────────────────────────────

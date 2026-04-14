@@ -263,8 +263,18 @@ export class LexiconQuestEngine {
     return this.state.combat.selectedTileIds
       .map((id) => this.state.combat!.tiles.find((t) => t.id === id))
       .filter((t): t is LetterTile => t !== undefined)
-      .map((t) => t.letter)
+      .map((t) => t.modifier === "wildcard" && t.assignedLetter ? t.assignedLetter : t.letter)
       .join("");
+  }
+
+  /** Assign a letter to a wildcard tile. */
+  assignWildcard(tileId: number, letter: string) {
+    if (!this.state.combat) return;
+    const tile = this.state.combat.tiles.find((t) => t.id === tileId);
+    if (tile && tile.modifier === "wildcard") {
+      tile.assignedLetter = letter.toUpperCase();
+      this.emit();
+    }
   }
 
   // ── Submit Word ─────────────────────────────────────────────────────────
