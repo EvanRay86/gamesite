@@ -11,14 +11,32 @@ const CONSONANTS = "BCDFGHJKLMNPQRSTVWXYZ";
 
 const VOWEL_WEIGHTS = [8, 12, 7, 8, 3]; // A E I O U
 const CONSONANT_WEIGHTS = [
-  3, 4, 3, 2, 1, 6, 1, 4, 7, 3, 1, 5, 2, 6, 1, 6, 3, 1, 2, 2, 1,
-]; // B C D F G H J K L M N P Q R S T V W X Y Z
+//B  C  D  F  G  H  J  K  L  M  N  P  Q  R  S  T  V  W  X  Y  Z
+  3, 4, 3, 2, 1, 6, 1, 4, 7, 3, 1, 5, 2, 6, 2, 6, 3, 1, 2, 2, 1,
+]; //                                              ^ S boosted from 1→2
 
-// Duplicate penalty: each copy of a letter already in the rack reduces the
-// weight for that letter. 1st copy = full weight, 2nd = 40%, 3rd = 10%,
-// 4th = 2%. Beyond 4 is blocked entirely.
-const DUPE_MULTIPLIERS = [1, 0.4, 0.1, 0.02];
-const MAX_DUPES = 4;
+// Default dupe curve: 1st full, 2nd full, 3rd 35%, 4th 2%
+const DEFAULT_DUPE_MULTIPLIERS = [1, 1, 0.35, 0.02];
+const DEFAULT_MAX_DUPES = 4;
+
+// Per-letter hard caps — letters that should never exceed a certain count
+// Letters not listed here use DEFAULT_MAX_DUPES (4)
+const LETTER_CAPS: Record<string, number> = {
+  Q: 1,
+  X: 1,
+  Z: 1,
+  J: 1,
+  U: 2,
+  K: 2,
+  V: 2,
+  W: 2,
+  Y: 2,
+};
+
+// Per-letter dupe multipliers for specific letters that need different curves
+const LETTER_DUPE_OVERRIDES: Record<string, number[]> = {
+  U: [1, 0.3],  // 2nd U much less likely
+};
 
 function weightedPick(
   chars: string,
@@ -36,7 +54,7 @@ function weightedPick(
 
 /**
  * Pick a letter using weights adjusted for duplicates already in the rack.
- * Letters at their max dupe count get zero weight.
+ * Respects per-letter hard caps and custom dupe curves.
  */
 function weightedPickWithDupeControl(
   chars: string,
@@ -47,13 +65,15 @@ function weightedPickWithDupeControl(
   const adjusted = baseWeights.map((w, i) => {
     const letter = chars[i];
     const count = existing.get(letter) ?? 0;
-    if (count >= MAX_DUPES) return 0;
-    return w * (DUPE_MULTIPLIERS[count] ?? 0);
+    const cap = LETTER_CAPS[letter] ?? DEFAULT_MAX_DUPES;
+    if (count >= cap) return 0;
+    const multipliers = LETTER_DUPE_OVERRIDES[letter] ?? DEFAULT_DUPE_MULTIPLIERS;
+    return w * (multipliers[count] ?? 0);
   });
 
   const total = adjusted.reduce((a, b) => a + b, 0);
   if (total <= 0) {
-    // Fallback: all letters at max — just pick randomly ignoring dupes
+    // Fallback: all letters at cap — just pick randomly ignoring dupes
     return weightedPick(chars, baseWeights, rng);
   }
 
@@ -139,8 +159,26 @@ export function generateTiles(
   }
 
   // Generate consonants with dupe control
+  // First consonant: guarantee a common starter (S, T, R, N, L) if the rack
+  // doesn't already have one. These letters begin or appear in the most English
+  // words and make racks feel immediately playable.
+  const COMMON_STARTERS = "STRNL";
+  const hasCommonStarter = existingTiles
+    ? existingTiles.some((t) => t.modifier !== "wildcard" && COMMON_STARTERS.includes(t.letter.toUpperCase()))
+    : false;
+
   for (let i = 0; i < consonantsNeeded; i++) {
-    const letter = weightedPickWithDupeControl(CONSONANTS, CONSONANT_WEIGHTS, letterCounts, rng);
+    let letter: string;
+    if (i === 0 && !hasCommonStarter && !tiles.some((t) => COMMON_STARTERS.includes(t.letter))) {
+      // Pick from common starters only, respecting dupe control
+      const starterWeights = COMMON_STARTERS.split("").map((ch) => {
+        const idx = CONSONANTS.indexOf(ch);
+        return idx >= 0 ? CONSONANT_WEIGHTS[idx] : 0;
+      });
+      letter = weightedPickWithDupeControl(COMMON_STARTERS, starterWeights, letterCounts, rng);
+    } else {
+      letter = weightedPickWithDupeControl(CONSONANTS, CONSONANT_WEIGHTS, letterCounts, rng);
+    }
     tiles.push(makeTile(letter));
     letterCounts.set(letter, (letterCounts.get(letter) ?? 0) + 1);
   }
