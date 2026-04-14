@@ -2,6 +2,7 @@ import Link from "next/link";
 import QuotableGame from "@/components/QuotableGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import {
   getQuotablePuzzleByDate,
   getTodayDate,
@@ -88,6 +89,14 @@ export default async function QuotablePage() {
           <li>The more quotes you encounter, the better you get at recognizing speaking styles and famous lines.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Quotable free to play?", answer: "Yes! Quotable is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Quotable on my phone?", answer: "Absolutely. Quotable works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Quotable update?", answer: "A brand-new Quotable puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "How does scoring work in Quotable?", answer: "The fewer words you need to see before guessing correctly, the higher your score. Guessing early with minimal words revealed demonstrates impressive knowledge and earns the best results." },
+        { question: "What kinds of quotes are featured?", answer: "Quotes come from a wide range of sources including historical figures, authors, politicians, scientists, entertainers, and athletes. The variety keeps every day surprising." },
+      ]} />
     </main>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import Top5Game from "@/components/Top5Game";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import {
   getTop5PuzzleByDate,
   getTodayDate,
@@ -86,6 +87,14 @@ export default async function Top5Page() {
           <li>The more you play, the better your general knowledge becomes — Top 5 is as educational as it is fun.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Top 5 free to play?", answer: "Yes! Top 5 is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Top 5 on my phone?", answer: "Absolutely. Top 5 works on any device with a modern web browser — phones, tablets, and desktops. Drag and drop works with touch controls." },
+        { question: "How often does Top 5 update?", answer: "A brand-new Top 5 ranking challenge is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "What kinds of categories appear in Top 5?", answer: "Categories span geography, science, sports, history, pop culture, economics, and more. You might rank countries by population one day and movies by box office the next." },
+        { question: "Do I need to get the exact order right?", answer: "The goal is to rank all five items in the correct order. Closer placements score better, so even partial accuracy is rewarded, but a perfect ranking earns the top score." },
+      ]} />
     </main>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import WordsmithModeSelect from "@/components/WordsmithModeSelect";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import { buildGameMetadata } from "@/lib/seo";
 
 export const metadata = buildGameMetadata({
@@ -70,6 +71,14 @@ export default function WordsmithPage() {
           <li>Play Quickplay mode to practice without affecting your daily score.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Wordsmith free to play?", answer: "Yes! Wordsmith is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Wordsmith on my phone?", answer: "Absolutely. Wordsmith works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Wordsmith update?", answer: "A brand-new Wordsmith puzzle with fresh letters and power-ups is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "What is the difference between Daily and Quickplay mode?", answer: "Daily mode gives everyone the same letters and power-ups so you can compare scores fairly. Quickplay mode generates unlimited random rounds for practice without affecting your daily score." },
+        { question: "How do power-ups work in Wordsmith?", answer: "Between rounds you choose from offered power-ups that boost your strategy. Options include score multipliers, bonus letters, and time extensions. Choosing the right power-ups for your play style is key to high scores." },
+      ]} />
     </main>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import VocabVaultGame from "@/components/VocabVaultGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import { getVocabVaultPuzzleByDate, getTodayDate, getFallbackVocabVaultPuzzle } from "@/lib/vocab-vault-puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 
@@ -56,6 +57,14 @@ export default async function VocabVaultPage() {
           <li>Play every day to build your vocabulary naturally. Repetition and exposure are the best ways to learn new words.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Vocab Vault free to play?", answer: "Yes! Vocab Vault is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Vocab Vault on my phone?", answer: "Absolutely. Vocab Vault works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Vocab Vault update?", answer: "A brand-new set of five vocabulary words is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "Is Vocab Vault useful for SAT or GRE prep?", answer: "Vocab Vault features words ranging from commonly tested SAT and GRE vocabulary to everyday words. Playing daily is a great way to build your vocabulary naturally through context and repetition." },
+        { question: "How is scoring calculated in Vocab Vault?", answer: "You earn 3 points for a correct first guess, 2 points on your second attempt, and 1 point on your third. With five words, the maximum score is 15 points." },
+      ]} />
     </main>
   );
 }

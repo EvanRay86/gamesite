@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { games } from "@/lib/game-registry";
 import { HINTABLE_GAMES } from "@/lib/hints";
+import { getAllPostSlugs } from "@/lib/blog";
 
 /** Games with high organic search volume get boosted sitemap priority. */
 const HIGH_PRIORITY_SLUGS = new Set([
@@ -13,7 +14,7 @@ const HIGH_PRIORITY_SLUGS = new Set([
   "word-bloom",
 ]);
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = "https://gamesite.app";
   const today = new Date();
   // Start of today (midnight) for daily-changing content
@@ -61,5 +62,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...gamePages, ...variantPages, ...hintPages];
+  // Blog pages
+  const blogSlugs = await getAllPostSlugs();
+  const blogPages: MetadataRoute.Sitemap = [
+    { url: `${siteUrl}/blog`, lastModified: todayStart, changeFrequency: "daily", priority: 0.8 },
+    ...blogSlugs.map((slug) => ({
+      url: `${siteUrl}/blog/${slug}`,
+      lastModified: todayStart,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
+  ];
+
+  return [...staticPages, ...gamePages, ...variantPages, ...hintPages, ...blogPages];
 }

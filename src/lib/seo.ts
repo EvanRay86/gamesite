@@ -130,3 +130,77 @@ export function buildFAQPageJsonLd(faqs: FAQ[]) {
     })),
   };
 }
+
+/**
+ * Build metadata for a blog article page.
+ */
+export function buildArticleMetadata(opts: {
+  title: string;
+  description: string;
+  slug: string;
+  image?: string;
+}): Metadata {
+  const url = `${siteUrl}/blog/${opts.slug}`;
+  const ogImage =
+    opts.image ??
+    `${siteUrl}/api/og?title=${encodeURIComponent(opts.title)}&color=${encodeURIComponent("teal")}`;
+
+  return {
+    title: opts.title,
+    description: opts.description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: opts.title,
+      description: opts.description,
+      url,
+      siteName: "Gamesite",
+      type: "article",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: opts.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: "@GamesiteAppEvan",
+      creator: "@GamesiteAppEvan",
+      title: opts.title,
+      description: opts.description,
+      images: [ogImage],
+    },
+  };
+}
+
+/**
+ * Build Article JSON-LD structured data for a blog post.
+ */
+export function buildArticleJsonLd(opts: {
+  title: string;
+  description: string;
+  slug: string;
+  author: string;
+  datePublished: string;
+  dateModified: string;
+  image?: string;
+}) {
+  const ogImage =
+    opts.image ??
+    `${siteUrl}/api/og?title=${encodeURIComponent(opts.title)}&color=${encodeURIComponent("teal")}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: opts.title,
+    description: opts.description,
+    url: `${siteUrl}/blog/${opts.slug}`,
+    image: ogImage,
+    datePublished: opts.datePublished,
+    dateModified: opts.dateModified,
+    author: {
+      "@type": "Person",
+      name: opts.author,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Gamesite",
+      url: siteUrl,
+    },
+  };
+}

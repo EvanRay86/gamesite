@@ -2,6 +2,7 @@ import Link from "next/link";
 import CrosswordGame from "@/components/CrosswordGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import { getCrosswordPuzzle } from "@/lib/crossword-puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 
@@ -72,6 +73,14 @@ export default async function CrosswordPage() {
           <li>Pay attention to the puzzle title and subtitle — they often hint at the overall theme.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is the News Crossword free to play?", answer: "Yes! The News Crossword is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play the News Crossword on my phone?", answer: "Absolutely. The News Crossword works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does the News Crossword update?", answer: "A brand-new crossword puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "What time does the daily crossword reset?", answer: "New puzzles go live every day around 5 AM EST. If you don&apos;t see today&apos;s puzzle yet, try refreshing the page." },
+        { question: "How is the News Crossword different from other crosswords?", answer: "Unlike traditional crosswords that rely on decades-old trivia, the News Crossword draws its clues from current headlines, trending topics, and pop culture so it rewards staying up to date with the world." },
+      ]} />
     </main>
   );
 }

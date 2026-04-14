@@ -2,6 +2,7 @@ import Link from "next/link";
 import WordLadderGame from "@/components/WordLadderGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import { getWordLadderPuzzle, getTodayDate } from "@/lib/word-ladder-puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 
@@ -79,6 +80,14 @@ export default function WordLadderPage() {
           <li>There is usually more than one valid path. If your current route dead-ends, backtrack and try another.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Word Ladder free to play?", answer: "Yes! Word Ladder is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Word Ladder on my phone?", answer: "Absolutely. Word Ladder works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Word Ladder update?", answer: "A brand-new Word Ladder puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "Who invented the Word Ladder puzzle?", answer: "Word Ladders were invented by Lewis Carroll (the author of Alice in Wonderland) in 1877. He originally called the game Doublets. The concept has remained popular for nearly 150 years." },
+        { question: "Is there always a valid path between the two words?", answer: "Yes, every Word Ladder puzzle on Gamesite is guaranteed to have at least one valid solution path. There are often multiple routes, so if one path dead-ends, try a different approach." },
+      ]} />
     </main>
   );
 }

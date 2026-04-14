@@ -2,6 +2,7 @@ import Link from "next/link";
 import EmojiWordGame from "@/components/EmojiWordGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import {
   getEmojiWordPuzzleByDate,
   getTodayDate,
@@ -87,6 +88,14 @@ export default async function EmojiWordPage() {
           <li>Later rounds are harder, so do not spend too long on early ones — save your mental energy.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Emoji Decoder free to play?", answer: "Yes! Emoji Decoder is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Emoji Decoder on my phone?", answer: "Absolutely. Emoji Decoder works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Emoji Decoder update?", answer: "A brand-new set of emoji puzzles is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "How many rounds are in each Emoji Decoder puzzle?", answer: "Each daily puzzle has five rounds that get progressively harder. Early rounds might use straightforward emoji combinations while later rounds require more lateral thinking." },
+        { question: "Can the answer be more than one word?", answer: "Yes! Answers can be single words, multi-word phrases, movie titles, song names, idioms, or common expressions. Pay attention to the number of emojis for a hint about the answer length." },
+      ]} />
     </main>
   );
 }

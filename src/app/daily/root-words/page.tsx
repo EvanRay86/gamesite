@@ -2,6 +2,7 @@ import Link from "next/link";
 import RootWordsGame from "@/components/RootWordsGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import { getRootWordsPuzzleByDate, getTodayDate, getFallbackRootWordsPuzzle } from "@/lib/root-words-puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 
@@ -52,6 +53,14 @@ export default async function RootWordsPage() {
           <li>Play daily to build your root vocabulary. Over time, you will start recognizing roots in unfamiliar words — a genuine superpower for reading comprehension.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Root Words free to play?", answer: "Yes! Root Words is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Root Words on my phone?", answer: "Absolutely. Root Words works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Root Words update?", answer: "A brand-new root word puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "What kinds of roots does Root Words feature?", answer: "Each puzzle features a Latin or Greek root along with its meaning. Roots like CHRON (time), BIO (life), GRAPH (write), and JECT (throw) are examples of the building blocks you will explore." },
+        { question: "How long do I have to find words?", answer: "You have 90 seconds to find as many English words as possible containing the daily root. Points are awarded based on word length: 1 point for 4-5 letters, 2 for 6-7, and 3 for 8 or more." },
+      ]} />
     </main>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import MathlerGame from "@/components/MathlerGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import { getMathlerPuzzle, getTodayDate } from "@/lib/mathler-puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 
@@ -81,6 +82,14 @@ export default function MathlerPage() {
           <li>Leading zeros are not allowed, but zero can appear in other positions (like 10+90).</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Mathler free to play?", answer: "Yes! Mathler is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Mathler on my phone?", answer: "Absolutely. Mathler works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Mathler update?", answer: "A brand-new Mathler puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "Does Mathler follow order of operations?", answer: "Yes, standard mathematical order of operations (PEMDAS/BODMAS) applies. Multiplication and division are evaluated before addition and subtraction, which is important when constructing your equations." },
+        { question: "Can the equation include leading zeros?", answer: "No, leading zeros are not allowed. However, zero can appear in other positions within the equation, such as in the number 10 or 20." },
+      ]} />
     </main>
   );
 }

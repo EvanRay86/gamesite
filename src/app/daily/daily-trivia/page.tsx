@@ -2,6 +2,7 @@ import Link from "next/link";
 import TriviaGame from "@/components/TriviaGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import {
   getTriviaPuzzleByDate,
   getTodayDate,
@@ -95,6 +96,14 @@ export default async function TriviaPage() {
           <li>Use the hints page if you want to preview the categories before playing.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is 8 Second Trivia free to play?", answer: "Yes! 8 Second Trivia is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play 8 Second Trivia on my phone?", answer: "Absolutely. 8 Second Trivia works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does 8 Second Trivia update?", answer: "A brand-new set of trivia questions is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "Why only 8 seconds per question?", answer: "The 8-second timer is what makes this trivia game unique. It forces you to trust your instincts rather than overthink, creating a fast-paced and thrilling experience that sets it apart from traditional trivia games." },
+        { question: "What categories do the trivia questions cover?", answer: "Questions span a wide range of topics including current events, science, history, geography, entertainment, sports, and pop culture. The mix changes every day to keep things fresh." },
+      ]} />
     </main>
   );
 }

@@ -51,6 +51,11 @@ export default function HintsPageContent({ hintSet }: { hintSet: HintSet }) {
         >
           Play today&apos;s puzzle &rarr;
         </Link>
+        <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto">
+          Stuck on today&apos;s {hintSet.gameName}? We provide three levels of
+          progressive hints so you can get just the right amount of help without
+          spoiling the answer.
+        </p>
       </div>
 
       {/* Hint Sections */}
@@ -81,6 +86,24 @@ export default function HintsPageContent({ hintSet }: { hintSet: HintSet }) {
           </details>
         );
       })}
+
+      {/* About Hints */}
+      <section className="mt-8 mb-6 text-sm text-zinc-500 dark:text-zinc-400 space-y-2">
+        <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+          About {hintSet.gameName} Hints
+        </h2>
+        <p>
+          Our hints are designed to preserve the puzzle-solving experience. Start
+          with a mild hint for a gentle nudge, move to medium if you need more
+          direction, and use the strong hints only when you&apos;re truly stuck. We
+          never reveal the full answer — the goal is to help you get unstuck
+          while keeping the satisfaction of solving it yourself.
+        </p>
+        <p>
+          New hints are published every day alongside each {hintSet.gameName}{" "}
+          puzzle. Bookmark this page to check back whenever you need a hand.
+        </p>
+      </section>
 
       {/* FAQ Section */}
       <section className="mt-10 space-y-4">

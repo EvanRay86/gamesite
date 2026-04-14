@@ -2,6 +2,7 @@ import Link from "next/link";
 import ClusterGame from "@/components/ClusterGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import { getPuzzleByDate, getTodayDate, getFallbackPuzzle } from "@/lib/puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 
@@ -83,6 +84,14 @@ export default async function ClusterPage() {
           <li>Save your hardest guess for last when fewer words remain and the answer becomes clearer.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Cluster free to play?", answer: "Yes! Cluster is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Cluster on my phone?", answer: "Absolutely. Cluster works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Cluster update?", answer: "A brand-new Cluster puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "Is Cluster the same as NYT Connections?", answer: "Cluster is inspired by Connections but has its own twist — you sort fifteen words into five groups of three instead of sixteen words into four groups of four. The core concept of finding hidden word connections is similar, but the grouping sizes and difficulty curve are different." },
+        { question: "How many mistakes can I make in Cluster?", answer: "You get four mistakes before the game ends. Choose your guesses carefully and start with the group you are most confident about." },
+      ]} />
     </main>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import PeriodicPuzzleGame from "@/components/PeriodicPuzzleGame";
 import MoreDailyGames from "@/components/MoreDailyGames";
 import GameJsonLd from "@/components/seo/GameJsonLd";
+import GameFAQ from "@/components/seo/GameFAQ";
 import { getPeriodicPuzzleByDate, getTodayDate, getFallbackPeriodicPuzzle } from "@/lib/periodic-puzzle-puzzles";
 import { buildGameMetadata } from "@/lib/seo";
 
@@ -52,6 +53,14 @@ export default async function PeriodicPuzzlePage() {
           <li>Play daily to reinforce your periodic table knowledge. You will be surprised how quickly you memorize element positions and properties.</li>
         </ul>
       </section>
+
+      <GameFAQ faqs={[
+        { question: "Is Periodic Puzzle free to play?", answer: "Yes! Periodic Puzzle is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
+        { question: "Can I play Periodic Puzzle on my phone?", answer: "Absolutely. Periodic Puzzle works on any device with a modern web browser — phones, tablets, and desktops." },
+        { question: "How often does Periodic Puzzle update?", answer: "A brand-new Periodic Puzzle is published every day. Come back tomorrow for a fresh challenge." },
+        { question: "Do I need to know chemistry to play Periodic Puzzle?", answer: "A basic familiarity with the periodic table helps, but the comparison clues after each guess teach you as you play. Many players find they learn element properties naturally over time." },
+        { question: "How many guesses do I get in Periodic Puzzle?", answer: "You have six guesses to identify the mystery element. After each guess, you receive comparison clues for atomic number, period, group, element category, and state at room temperature." },
+      ]} />
     </main>
   );
 }
