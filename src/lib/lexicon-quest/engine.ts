@@ -1015,7 +1015,7 @@ export class LexiconQuestEngine {
       `📝 Words: ${s.wordsFormed} | Best: ${s.longestWord.toUpperCase() || "—"}`,
       `💥 Damage: ${s.totalDamage} | 👹 Kills: ${s.enemiesKilled}`,
       "",
-      "playgameportal.com/arcade/lexicon-quest",
+      "gamesite.app/arcade/lexicon-quest",
     ];
 
     return lines.join("\n");

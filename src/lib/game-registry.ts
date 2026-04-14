@@ -394,7 +394,6 @@ export const games: Game[] = [
       "Spell words to slay monsters in this roguelike dungeon crawler. How deep can you go?",
     category: "arcade",
     color: "purple",
-    hidden: true,
     creditCost: 0,
     featured: true,
   },
