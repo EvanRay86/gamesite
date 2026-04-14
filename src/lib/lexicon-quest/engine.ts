@@ -400,7 +400,7 @@ export class LexiconQuestEngine {
       (t) => !usedIds.has(t.id),
     );
 
-    // Generate replacement tiles
+    // Generate replacement tiles — rack-aware to maintain healthy letter balance
     const needed = this.getTileCount() - this.state.combat.tiles.length;
     if (needed > 0) {
       const newTiles = generatePlayableTiles(
@@ -408,6 +408,7 @@ export class LexiconQuestEngine {
         needed,
         this.state.floor,
         this.state.player.relics,
+        this.state.combat.tiles,
       );
       this.state.combat.tiles.push(...newTiles);
     }
@@ -505,7 +506,7 @@ export class LexiconQuestEngine {
       this.onPlayerDeath();
     }
 
-    // Replenish tiles if needed
+    // Replenish tiles if needed — rack-aware
     const needed = this.getTileCount() - this.state.combat.tiles.length;
     if (needed > 0 && this.state.player.hp > 0) {
       const newTiles = generatePlayableTiles(
@@ -513,6 +514,7 @@ export class LexiconQuestEngine {
         needed,
         this.state.floor,
         this.state.player.relics,
+        this.state.combat.tiles,
       );
       this.state.combat.tiles.push(...newTiles);
     }
