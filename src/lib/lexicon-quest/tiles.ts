@@ -14,6 +14,12 @@ const CONSONANT_WEIGHTS = [
   3, 4, 3, 2, 1, 6, 1, 4, 7, 3, 1, 5, 2, 6, 1, 6, 3, 1, 2, 2, 1,
 ]; // B C D F G H J K L M N P Q R S T V W X Y Z
 
+// Duplicate penalty: each copy of a letter already in the rack reduces the
+// weight for that letter. 1st copy = full weight, 2nd = 40%, 3rd = 10%,
+// 4th = 2%. Beyond 4 is blocked entirely.
+const DUPE_MULTIPLIERS = [1, 0.4, 0.1, 0.02];
+const MAX_DUPES = 4;
+
 function weightedPick(
   chars: string,
   weights: number[],
@@ -23,6 +29,37 @@ function weightedPick(
   let r = rng() * total;
   for (let i = 0; i < chars.length; i++) {
     r -= weights[i];
+    if (r <= 0) return chars[i];
+  }
+  return chars[chars.length - 1];
+}
+
+/**
+ * Pick a letter using weights adjusted for duplicates already in the rack.
+ * Letters at their max dupe count get zero weight.
+ */
+function weightedPickWithDupeControl(
+  chars: string,
+  baseWeights: number[],
+  existing: Map<string, number>,
+  rng: () => number,
+): string {
+  const adjusted = baseWeights.map((w, i) => {
+    const letter = chars[i];
+    const count = existing.get(letter) ?? 0;
+    if (count >= MAX_DUPES) return 0;
+    return w * (DUPE_MULTIPLIERS[count] ?? 0);
+  });
+
+  const total = adjusted.reduce((a, b) => a + b, 0);
+  if (total <= 0) {
+    // Fallback: all letters at max — just pick randomly ignoring dupes
+    return weightedPick(chars, baseWeights, rng);
+  }
+
+  let r = rng() * total;
+  for (let i = 0; i < chars.length; i++) {
+    r -= adjusted[i];
     if (r <= 0) return chars[i];
   }
   return chars[chars.length - 1];
@@ -55,23 +92,57 @@ function makeTile(letter: string, modifier: TileModifier = "normal"): LetterTile
 
 // ── Tile generation ─────────────────────────────────────────────────────────
 
+/**
+ * Count how many of each letter already exist in a set of tiles.
+ */
+function countLetters(tiles: LetterTile[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const t of tiles) {
+    if (t.modifier === "wildcard") continue;
+    const l = t.letter.toUpperCase();
+    counts.set(l, (counts.get(l) ?? 0) + 1);
+  }
+  return counts;
+}
+
 export function generateTiles(
   rng: () => number,
   count: number,
   floor: number,
   playerRelics: string[],
+  existingTiles?: LetterTile[],
 ): LetterTile[] {
   const tiles: LetterTile[] = [];
 
-  // Guarantee 3-4 vowels for playability
-  const vowelCount = 3 + (rng() < 0.5 ? 1 : 0);
-  for (let i = 0; i < vowelCount; i++) {
-    tiles.push(makeTile(weightedPick(VOWELS, VOWEL_WEIGHTS, rng)));
+  // Track letter counts across existing rack + new tiles for dupe control
+  const letterCounts = existingTiles ? countLetters(existingTiles) : new Map<string, number>();
+
+  // Count existing vowels in the rack
+  const existingVowels = existingTiles
+    ? existingTiles.filter((t) => t.modifier !== "wildcard" && VOWELS.includes(t.letter.toUpperCase())).length
+    : 0;
+  const totalRackSize = (existingTiles?.length ?? 0) + count;
+
+  // Target ~40% vowels (Scrabble-like ratio), scaled to total rack size
+  // Distribution: 20% chance low, 55% chance mid, 25% chance high
+  const r = rng();
+  const vowelRatio = r < 0.20 ? 0.30 : r < 0.75 ? 0.40 : 0.45;
+  const targetVowels = Math.round(totalRackSize * vowelRatio);
+  const vowelsNeeded = Math.max(0, Math.min(count, targetVowels - existingVowels));
+  const consonantsNeeded = count - vowelsNeeded;
+
+  // Generate vowels with diversity: first 2 must be different
+  for (let i = 0; i < vowelsNeeded; i++) {
+    const letter = weightedPickWithDupeControl(VOWELS, VOWEL_WEIGHTS, letterCounts, rng);
+    tiles.push(makeTile(letter));
+    letterCounts.set(letter, (letterCounts.get(letter) ?? 0) + 1);
   }
 
-  // Fill remaining with consonants
-  for (let i = tiles.length; i < count; i++) {
-    tiles.push(makeTile(weightedPick(CONSONANTS, CONSONANT_WEIGHTS, rng)));
+  // Generate consonants with dupe control
+  for (let i = 0; i < consonantsNeeded; i++) {
+    const letter = weightedPickWithDupeControl(CONSONANTS, CONSONANT_WEIGHTS, letterCounts, rng);
+    tiles.push(makeTile(letter));
+    letterCounts.set(letter, (letterCounts.get(letter) ?? 0) + 1);
   }
 
   // Apply special tile modifiers based on floor progression
@@ -156,13 +227,16 @@ export function generatePlayableTiles(
   count: number,
   floor: number,
   playerRelics: string[],
+  existingTiles?: LetterTile[],
 ): LetterTile[] {
   for (let attempt = 0; attempt < 50; attempt++) {
-    const tiles = generateTiles(rng, count, floor, playerRelics);
-    if (tilesHaveValidWord(tiles)) return tiles;
+    const tiles = generateTiles(rng, count, floor, playerRelics, existingTiles);
+    // When checking playability, consider new tiles together with existing rack
+    const allTiles = existingTiles ? [...existingTiles, ...tiles] : tiles;
+    if (tilesHaveValidWord(allTiles)) return tiles;
   }
   // Fallback: force a playable set
-  return generateTiles(rng, count, floor, playerRelics);
+  return generateTiles(rng, count, floor, playerRelics, existingTiles);
 }
 
 // ── Tile manipulation ───────────────────────────────────────────────────────
@@ -176,7 +250,7 @@ export function refreshTiles(
 ): LetterTile[] {
   const kept = current.filter((t) => keepIds.has(t.id));
   const newCount = current.length - kept.length;
-  const newTiles = generateTiles(rng, newCount, floor, relics);
+  const newTiles = generateTiles(rng, newCount, floor, relics, kept);
   return shuffle([...kept, ...newTiles], rng);
 }
 
