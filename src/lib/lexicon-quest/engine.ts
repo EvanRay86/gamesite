@@ -32,7 +32,8 @@ import {
   scrambleTiles,
   resetTileIds,
 } from "./tiles";
-import { validateWord, calculateWordResult } from "./word-scoring";
+import { calculateWordResult } from "./word-scoring";
+import { isValidEnglishWord } from "@/lib/dictionary";
 import {
   getEncounter,
   getBoss,
@@ -289,7 +290,12 @@ export class LexiconQuestEngine {
     const word = this.getSelectedWord();
     if (word.length < 3) return { result: null, enemyResults: [], error: "Word must be at least 3 letters" };
 
-    if (!validateWord(word, this.state.combat.tiles)) {
+    // Validate: word must contain only letters (no unresolved wildcards)
+    if (/[^A-Za-z]/.test(word)) {
+      return { result: null, enemyResults: [], error: "Assign a letter to each wildcard tile" };
+    }
+
+    if (!isValidEnglishWord(word.toLowerCase())) {
       return { result: null, enemyResults: [], error: "Not a valid word" };
     }
 
