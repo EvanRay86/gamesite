@@ -14,7 +14,7 @@ export default function LexiconQuestEmbed() {
     // The bundle auto-mounts to #game-container on load
     const script = document.createElement("script");
     script.type = "module";
-    script.src = "/lexicon-quest/assets/index-gCIqgAa7.js";
+    script.src = "/lexicon-quest/assets/lexicon-quest.js";
     document.body.appendChild(script);
 
     return () => {
