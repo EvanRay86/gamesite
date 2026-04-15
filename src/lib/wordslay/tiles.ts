@@ -239,12 +239,13 @@ function applySpecialTiles(
 // ── Playability check ───────────────────────────────────────────────────────
 
 export function tilesHaveValidWord(tiles: LetterTile[]): boolean {
-  const letters = tiles
+  const usable = tiles.filter((t) => t.modifier !== "cursed" && t.modifier !== "frozen");
+  const letters = usable
     .filter((t) => t.modifier !== "wildcard")
     .map((t) => t.letter.toLowerCase());
 
   // If we have a wildcard, always playable (can make any 3-letter word)
-  if (tiles.some((t) => t.modifier === "wildcard")) return true;
+  if (usable.some((t) => t.modifier === "wildcard")) return true;
 
   // Check all 3-letter combos
   for (let a = 0; a < letters.length; a++) {

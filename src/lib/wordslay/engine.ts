@@ -284,24 +284,25 @@ export class LexiconQuestEngine {
     result: WordResult | null;
     enemyResults: EnemyTurnResult[];
     error: string | null;
+    dodged: boolean;
   } {
-    if (!this.state.combat) return { result: null, enemyResults: [], error: "Not in combat" };
+    if (!this.state.combat) return { result: null, enemyResults: [], error: "Not in combat", dodged: false };
 
     const word = this.getSelectedWord();
-    if (word.length < 3) return { result: null, enemyResults: [], error: "Word must be at least 3 letters" };
+    if (word.length < 3) return { result: null, enemyResults: [], error: "Word must be at least 3 letters", dodged: false };
 
     // Validate: word must contain only letters (no unresolved wildcards)
     if (/[^A-Za-z]/.test(word)) {
-      return { result: null, enemyResults: [], error: "Assign a letter to each wildcard tile" };
+      return { result: null, enemyResults: [], error: "Assign a letter to each wildcard tile", dodged: false };
     }
 
     if (!isValidEnglishWord(word.toLowerCase())) {
-      return { result: null, enemyResults: [], error: "Not a valid word" };
+      return { result: null, enemyResults: [], error: "Not a valid word", dodged: false };
     }
 
     // Check if word was already used this combat
     if (this.state.combat.wordsThisCombat.includes(word.toUpperCase())) {
-      return { result: null, enemyResults: [], error: "Word already used this combat" };
+      return { result: null, enemyResults: [], error: "Word already used this combat", dodged: false };
     }
 
     // Calculate damage

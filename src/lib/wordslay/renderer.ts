@@ -507,7 +507,7 @@ export class LexiconQuestRenderer {
       ctx.shadowBlur = d.isCrit ? 8 : 0;
       ctx.shadowColor = d.color;
 
-      const text = (d as any).label ?? `${d.color === "#22c55e" ? "+" : "-"}${d.amount}`;
+      const text = d.label ?? `${d.color === "#22c55e" ? "+" : "-"}${d.amount}`;
       ctx.fillText(text, d.x, d.y);
       ctx.restore();
       return true;

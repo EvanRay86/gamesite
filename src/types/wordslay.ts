@@ -280,6 +280,7 @@ export interface DamageNumber {
   life: number;
   maxLife: number;
   isCrit: boolean;
+  label?: string;
 }
 
 export interface Particle {
