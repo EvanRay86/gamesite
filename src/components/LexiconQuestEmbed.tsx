@@ -32,7 +32,7 @@ export default function LexiconQuestEmbed() {
     <div
       id="root"
       ref={containerRef}
-      className="w-full max-w-[1280px] mx-auto"
+      className="w-full max-w-[800px] mx-auto overflow-hidden"
       style={{ aspectRatio: "4/3" }}
     />
   );
