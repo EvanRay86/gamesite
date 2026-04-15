@@ -10,16 +10,19 @@ export default function LexiconQuestEmbed() {
     if (loadedRef.current) return;
     loadedRef.current = true;
 
+    // Cache-busting: filenames have no content hash, so add build version
+    const buildVer = "20260415b";
+
     // Load the CSS
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/wordslay/assets/wordslay.css";
+    link.href = `/wordslay/assets/wordslay.css?v=${buildVer}`;
     document.head.appendChild(link);
 
     // Load the React+Phaser bundle — mounts to #root
     const script = document.createElement("script");
     script.type = "module";
-    script.src = "/wordslay/assets/wordslay.js";
+    script.src = `/wordslay/assets/wordslay.js?v=${buildVer}`;
     document.body.appendChild(script);
 
     return () => {
