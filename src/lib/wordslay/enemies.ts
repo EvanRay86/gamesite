@@ -1,11 +1,11 @@
-// Enemy definitions and AI for Lexicon Quest
+// Enemy definitions and AI for Wordslay
 
 import type {
   EnemyDef,
   EnemyState,
   EnemyIntent,
   ActId,
-} from "@/types/lexicon-quest";
+} from "@/types/wordslay";
 
 // ── Act 1: The Crypt ────────────────────────────────────────────────────────
 

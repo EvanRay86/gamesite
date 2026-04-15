@@ -10,11 +10,11 @@ export default function LexiconQuestEmbed() {
     if (loadedRef.current) return;
     loadedRef.current = true;
 
-    // Find the built Phaser bundle in /lexicon-quest/assets/
+    // Find the built Phaser bundle in /wordslay/assets/
     // The bundle auto-mounts to #game-container on load
     const script = document.createElement("script");
     script.type = "module";
-    script.src = "/lexicon-quest/assets/lexicon-quest.js";
+    script.src = "/wordslay/assets/wordslay.js";
     document.body.appendChild(script);
 
     return () => {

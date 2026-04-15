@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useCallback, useState } from "react";
-import { LexiconQuestEngine } from "@/lib/lexicon-quest/engine";
+import { LexiconQuestEngine } from "@/lib/wordslay/engine";
 import {
   LexiconQuestRenderer,
   CANVAS_W,
@@ -12,11 +12,11 @@ import {
   playDamageTaken,
   playHeal,
   playEnemyDeath,
-} from "@/lib/lexicon-quest/renderer";
-import { TILE_STYLES } from "@/lib/lexicon-quest/tiles";
-import { getRelicDef, getPotionDef, RELIC_DEFS } from "@/lib/lexicon-quest/relics";
-import { NODE_INFO, ACT_CONFIG, getAvailableNodes } from "@/lib/lexicon-quest/dungeon-gen";
-import { getWordTier, TIER_COLORS } from "@/lib/lexicon-quest/word-scoring";
+} from "@/lib/wordslay/renderer";
+import { TILE_STYLES } from "@/lib/wordslay/tiles";
+import { getRelicDef, getPotionDef, RELIC_DEFS } from "@/lib/wordslay/relics";
+import { NODE_INFO, ACT_CONFIG, getAvailableNodes } from "@/lib/wordslay/dungeon-gen";
+import { getWordTier, TIER_COLORS } from "@/lib/wordslay/word-scoring";
 import { shareOrCopy } from "@/lib/share";
 import XShareButton from "@/components/XShareButton";
 import type {
@@ -25,7 +25,7 @@ import type {
   EnemyState,
   WordResult,
   MetaProgress,
-} from "@/types/lexicon-quest";
+} from "@/types/wordslay";
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -174,7 +174,7 @@ export default function LexiconQuest() {
     const renderer = rendererRef.current;
     if (!engine || !renderer) return;
 
-    const { result, enemyResults, error } = engine.submitWord();
+    const { result, enemyResults, error, dodged } = engine.submitWord();
 
     if (error) {
       setToast(error);
@@ -200,19 +200,23 @@ export default function LexiconQuest() {
       );
       if (positions.length > 0) {
         const target = positions[0];
-        renderer.spawnDamageNumber(
-          target.x,
-          target.y - 30,
-          result.totalDamage,
-          result.tier,
-        );
-        renderer.spawnWordParticles(target.x, target.y, result.tier);
-
-        if (result.tier !== "normal") {
-          renderer.shakeScreen(
-            result.tier === "mythic" ? 8 : result.tier === "legendary" ? 6 : 4,
-            0.3,
+        if (dodged) {
+          renderer.spawnDodgeText(target.x, target.y - 30);
+        } else {
+          renderer.spawnDamageNumber(
+            target.x,
+            target.y - 30,
+            result.totalDamage,
+            result.tier,
           );
+          renderer.spawnWordParticles(target.x, target.y, result.tier);
+
+          if (result.tier !== "normal") {
+            renderer.shakeScreen(
+              result.tier === "mythic" ? 8 : result.tier === "legendary" ? 6 : 4,
+              0.3,
+            );
+          }
         }
       }
 
@@ -304,7 +308,7 @@ export default function LexiconQuest() {
       {/* Header */}
       <div className="text-center mb-4">
         <h1 className="text-3xl font-bold text-text-primary font-display">
-          Lexicon Quest
+          Wordslay
         </h1>
         <p className="text-text-dim text-sm mt-1">
           Spell words to slay monsters

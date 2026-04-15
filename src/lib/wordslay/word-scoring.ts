@@ -1,4 +1,4 @@
-// Word validation and damage calculation for Lexicon Quest
+// Word validation and damage calculation for Wordslay
 
 import { isValidEnglishWord } from "@/lib/dictionary";
 import type {
@@ -7,8 +7,8 @@ import type {
   DamageBonus,
   WordTier,
   RelicDef,
-} from "@/types/lexicon-quest";
-export type { WordTier } from "@/types/lexicon-quest";
+} from "@/types/wordslay";
+export type { WordTier } from "@/types/wordslay";
 import { RELIC_DEFS } from "./relics";
 
 // ── Scrabble-style letter values ────────────────────────────────────────────

@@ -725,7 +725,7 @@ function SnakePreview() {
   );
 }
 
-/* ─── Lexicon Quest Mini Preview ─────────────────────────────────────── */
+/* ─── Wordslay Mini Preview ─────────────────────────────────────────── */
 
 function LexiconPreview() {
   const tiles = ["Q", "U", "E", "S", "T"];
@@ -1186,7 +1186,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "meteor-mayhem": return <MeteorPreview />;
     case "ginormo-sword": return <SwordPreview />;
     case "sky-hopper": return <SkyHopperPreview />;
-    case "lexicon-quest": return <LexiconPreview />;
+    case "wordslay": return <LexiconPreview />;
     case "rift": return <RiftPreview />;
     case "word-bloom": return <WordBloomPreview />;
     case "orb-merge": return <OrbMergePreview />;

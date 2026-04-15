@@ -1,6 +1,6 @@
-// Letter tile generation and management for Lexicon Quest
+// Letter tile generation and management for Wordslay
 
-import type { LetterTile, TileModifier } from "@/types/lexicon-quest";
+import type { LetterTile, TileModifier } from "@/types/wordslay";
 import { isValidEnglishWord } from "@/lib/dictionary";
 import { LETTER_VALUES } from "./word-scoring";
 

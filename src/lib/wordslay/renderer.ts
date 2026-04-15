@@ -1,4 +1,4 @@
-// Canvas renderer for Lexicon Quest — combat arena, map, animations, SFX
+// Canvas renderer for Wordslay — combat arena, map, animations, SFX
 
 import type {
   GameState,
@@ -8,7 +8,7 @@ import type {
   DamageNumber,
   Particle,
   ActId,
-} from "@/types/lexicon-quest";
+} from "@/types/wordslay";
 import { getNodePosition, NODE_INFO, ACT_CONFIG } from "./dungeon-gen";
 import { TIER_COLORS, type WordTier } from "./word-scoring";
 
@@ -222,6 +222,15 @@ export class LexiconQuestRenderer {
         x + HP_BAR_W * 0.6,
         y - ENEMY_SIZE * 0.3,
       );
+    }
+
+    // Ability descriptions
+    let abilityY = y + ENEMY_SIZE * 0.6 + (enemy.phase === 2 ? 44 : 30);
+    ctx.font = "italic 10px 'Outfit', sans-serif";
+    ctx.fillStyle = "#fbbf24";
+    for (const ability of enemy.def.abilities) {
+      ctx.fillText(ability.desc, x, abilityY);
+      abilityY += 14;
     }
   }
 
@@ -468,6 +477,19 @@ export class LexiconQuestRenderer {
     });
   }
 
+  spawnDodgeText(x: number, y: number) {
+    this.damageNumbers.push({
+      x: x + (Math.random() - 0.5) * 20,
+      y,
+      amount: 0,
+      color: "#fbbf24",
+      life: 1.5,
+      maxLife: 1.5,
+      isCrit: true,
+      label: "DODGED!",
+    });
+  }
+
   private updateAndDrawDamageNumbers(dt: number) {
     const ctx = this.ctx;
     this.damageNumbers = this.damageNumbers.filter((d) => {
@@ -485,8 +507,8 @@ export class LexiconQuestRenderer {
       ctx.shadowBlur = d.isCrit ? 8 : 0;
       ctx.shadowColor = d.color;
 
-      const prefix = d.color === "#22c55e" ? "+" : "-";
-      ctx.fillText(`${prefix}${d.amount}`, d.x, d.y);
+      const text = (d as any).label ?? `${d.color === "#22c55e" ? "+" : "-"}${d.amount}`;
+      ctx.fillText(text, d.x, d.y);
       ctx.restore();
       return true;
     });

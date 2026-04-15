@@ -1,4 +1,4 @@
-// Procedural dungeon map generation for Lexicon Quest
+// Procedural dungeon map generation for Wordslay
 // Generates Slay the Spire-style branching node maps
 
 import type {
@@ -7,7 +7,7 @@ import type {
   NodeType,
   ActId,
   GameEvent,
-} from "@/types/lexicon-quest";
+} from "@/types/wordslay";
 
 // ── Seeded RNG (shared pattern from wordsmith-engine) ───────────────────────
 

@@ -1,4 +1,4 @@
-// Types for Lexicon Quest — word-powered roguelike dungeon crawler
+// Types for Wordslay — word-powered roguelike dungeon crawler
 
 // ── Core Enums & Unions ─────────────────────────────────────────────────────
 

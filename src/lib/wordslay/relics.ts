@@ -1,6 +1,6 @@
-// Relic and potion definitions for Lexicon Quest
+// Relic and potion definitions for Wordslay
 
-import type { RelicDef, PotionDef, RelicRarity } from "@/types/lexicon-quest";
+import type { RelicDef, PotionDef, RelicRarity } from "@/types/wordslay";
 
 // ── Relics ──────────────────────────────────────────────────────────────────
 

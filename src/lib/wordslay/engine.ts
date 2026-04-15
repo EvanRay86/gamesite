@@ -1,4 +1,4 @@
-// Core game engine for Lexicon Quest — state machine managing all game flow
+// Core game engine for Wordslay — state machine managing all game flow
 
 import type {
   GameState,
@@ -13,7 +13,7 @@ import type {
   ShopItem,
   MetaProgress,
   ActId,
-} from "@/types/lexicon-quest";
+} from "@/types/wordslay";
 import {
   generateFloor,
   getAvailableNodes,
@@ -53,8 +53,8 @@ import {
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
-const META_KEY = "lexicon-quest-meta";
-const DAILY_KEY_PREFIX = "lexicon-quest-daily-";
+const META_KEY = "wordslay-meta";
+const DAILY_KEY_PREFIX = "wordslay-daily-";
 const STARTING_HP = 80;
 const STARTING_GOLD = 0;
 const MAX_POTIONS = 3;
@@ -331,24 +331,27 @@ export class LexiconQuestEngine {
     // Apply damage to first alive enemy (or all if AoE via allVowelsUsed)
     const aliveEnemies = this.state.combat.enemies.filter((e) => e.hp > 0);
     let totalReflected = 0;
+    let dodged = false;
 
     if (result.allVowelsUsed) {
       // AoE: damage all enemies
       for (const enemy of aliveEnemies) {
-        const { reflected } = applyDamageToEnemy(
+        const dmgResult = applyDamageToEnemy(
           enemy,
           result.totalDamage,
           word.length,
         );
-        totalReflected += reflected;
+        totalReflected += dmgResult.reflected;
+        if (dmgResult.dodged) dodged = true;
       }
     } else if (aliveEnemies.length > 0) {
-      const { reflected } = applyDamageToEnemy(
+      const dmgResult = applyDamageToEnemy(
         aliveEnemies[0],
         result.totalDamage,
         word.length,
       );
-      totalReflected = reflected;
+      totalReflected = dmgResult.reflected;
+      dodged = dmgResult.dodged;
     }
 
     // Apply reflect damage to player
@@ -432,7 +435,7 @@ export class LexiconQuestEngine {
 
     this.state.stats.score = this.calculateScore();
     this.emit();
-    return { result, enemyResults, error: null };
+    return { result, enemyResults, error: null, dodged };
   }
 
   // ── Enemy Turn ──────────────────────────────────────────────────────────
@@ -1023,8 +1026,8 @@ export class LexiconQuestEngine {
     const s = this.state.stats;
     const won = this.state.phase === "victory";
     const header = this.state.isDailyRun
-      ? `Lexicon Quest Daily 🗡️`
-      : `Lexicon Quest 🗡️`;
+      ? `Wordslay Daily 🗡️`
+      : `Wordslay 🗡️`;
 
     const lines = [
       header,
@@ -1033,7 +1036,7 @@ export class LexiconQuestEngine {
       `📝 Words: ${s.wordsFormed} | Best: ${s.longestWord.toUpperCase() || "—"}`,
       `💥 Damage: ${s.totalDamage} | 👹 Kills: ${s.enemiesKilled}`,
       "",
-      "gamesite.app/arcade/lexicon-quest",
+      "gamesite.app/arcade/wordslay",
     ];
 
     return lines.join("\n");

@@ -388,8 +388,8 @@ export const games: Game[] = [
   },
 
   {
-    slug: "lexicon-quest",
-    name: "Lexicon Quest",
+    slug: "wordslay",
+    name: "Wordslay",
     description:
       "Spell words to slay monsters in this roguelike dungeon crawler. How deep can you go?",
     category: "arcade",
