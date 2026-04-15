@@ -10,8 +10,13 @@ export default function LexiconQuestEmbed() {
     if (loadedRef.current) return;
     loadedRef.current = true;
 
-    // Find the built Phaser bundle in /wordslay/assets/
-    // The bundle auto-mounts to #game-container on load
+    // Load the CSS
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "/wordslay/assets/wordslay.css";
+    document.head.appendChild(link);
+
+    // Load the React+Phaser bundle — mounts to #root
     const script = document.createElement("script");
     script.type = "module";
     script.src = "/wordslay/assets/wordslay.js";
@@ -19,15 +24,16 @@ export default function LexiconQuestEmbed() {
 
     return () => {
       script.remove();
+      link.remove();
     };
   }, []);
 
   return (
     <div
-      id="game-container"
+      id="root"
       ref={containerRef}
-      className="w-full max-w-[800px] mx-auto"
-      style={{ aspectRatio: "4/3", imageRendering: "pixelated" }}
+      className="w-full max-w-[1280px] mx-auto"
+      style={{ aspectRatio: "4/3" }}
     />
   );
 }
