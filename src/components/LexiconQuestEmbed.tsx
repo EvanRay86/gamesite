@@ -11,7 +11,7 @@ export default function LexiconQuestEmbed() {
     loadedRef.current = true;
 
     // Cache-busting: filenames have no content hash, so add build version
-    const buildVer = "20260415q";
+    const buildVer = "20260415r";
 
     // Load the CSS
     const link = document.createElement("link");
