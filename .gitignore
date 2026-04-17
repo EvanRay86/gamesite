@@ -6,3 +6,5 @@ out/
 tsconfig.tsbuildinfo
 supabase/.temp/
 .vercel
+.DS_Store
+**/.DS_Store
