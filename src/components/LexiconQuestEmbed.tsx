@@ -2,17 +2,14 @@
 
 import { useRef, useEffect } from "react";
 
-// Wordslay's React UI is designed against a fixed 800×600 "design" canvas
-// (button widths, rack padding, HUD offsets all assume that size). On a
-// desktop browser the embed is already 800 wide so everything renders at
-// native scale. On narrow viewports (e.g. iPhone 14 @ 390px wide) the UI
-// would otherwise overflow. We wrap the game in an outer viewport-responsive
-// frame, keep an inner element fixed at 800×600, and CSS-scale the inner
-// uniformly so it matches the outer's rendered width — via container query
-// units (cqw), so no JS / ResizeObserver and no first-paint flash on mobile.
-// At ≥800px outer width the scale caps at 1 (desktop bit-identical). Touch
-// input works unchanged because the browser translates pointer coordinates
-// through the CSS transform.
+// Wordslay's React UI is designed against a fixed 800×600 "design" canvas.
+// The game's own App.tsx scales itself via CSS container queries (100cqw/cqh)
+// anchored to #root. The embed's only job is to provide that sized container:
+// a responsive wrapper that preserves 4:3 and caps at 800px wide on desktop.
+//
+// IMPORTANT: do NOT add an extra transform: scale() here. The game's internal
+// scaling already fits to #root. Adding a second scale caused double-shrinking
+// on mobile (iPhone 14 rendered the game at ~190px inside 390px of viewport).
 
 const DESIGN_WIDTH = 800;
 const DESIGN_HEIGHT = 600;
@@ -26,7 +23,7 @@ export default function LexiconQuestEmbed() {
     loadedRef.current = true;
 
     // Cache-busting: filenames have no content hash, so add build version
-    const buildVer = "20260419a";
+    const buildVer = "20260421a";
 
     // Load the CSS
     const link = document.createElement("link");
@@ -46,22 +43,24 @@ export default function LexiconQuestEmbed() {
     };
   }, []);
 
+  // The wrapper sets size + container-type. #root is sized 100% of the wrapper
+  // and declared as a query container (inherited from the game's own index.html
+  // pattern); App.tsx's own 100cqw/cqh math takes it from there.
   return (
     <div
-      className="w-full max-w-[800px] mx-auto overflow-hidden"
+      className="w-full max-w-[800px] mx-auto"
       style={{
         aspectRatio: `${DESIGN_WIDTH}/${DESIGN_HEIGHT}`,
-        containerType: "inline-size",
       }}
     >
       <div
         id="root"
         ref={containerRef}
         style={{
-          width: DESIGN_WIDTH,
-          height: DESIGN_HEIGHT,
-          transform: `scale(min(1, calc(100cqw / ${DESIGN_WIDTH}px)))`,
-          transformOrigin: "top left",
+          width: "100%",
+          height: "100%",
+          containerType: "size",
+          overflow: "hidden",
         }}
       />
     </div>

@@ -2,12 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Wordslay</title>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+    /* #root becomes the container-query root for the game's internal scaling.
+       Standalone: fills the viewport. Embedded: fills its parent. App.tsx uses
+       100cqw/100cqh so the math works in both cases without double-scaling. */
+    #root {
+      width: 100%;
+      height: 100%;
+      container-type: size;
+      -webkit-text-size-adjust: 100%;
+    }
+  </style>
   <script type="module" crossorigin src="/wordslay/assets/wordslay.js"></script>
   <link rel="stylesheet" crossorigin href="/wordslay/assets/wordslay.css">
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root"></div>
 </body>
 </html>
