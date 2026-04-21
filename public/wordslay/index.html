@@ -14,6 +14,15 @@
       height: 100%;
       container-type: size;
       -webkit-text-size-adjust: 100%;
+      /* Mobile: prevent browser from intercepting touches for scroll /
+         double-tap-zoom / pinch. Phaser and React click handlers then
+         receive taps directly. Without this, taps on the map register as
+         scroll attempts on iOS Safari. */
+      touch-action: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+           user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
   </style>
   <script type="module" crossorigin src="/wordslay/assets/wordslay.js"></script>

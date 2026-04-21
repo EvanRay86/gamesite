@@ -23,7 +23,7 @@ export default function LexiconQuestEmbed() {
     loadedRef.current = true;
 
     // Cache-busting: filenames have no content hash, so add build version
-    const buildVer = "20260421a";
+    const buildVer = "20260421b";
 
     // Load the CSS
     const link = document.createElement("link");
@@ -61,6 +61,14 @@ export default function LexiconQuestEmbed() {
           height: "100%",
           containerType: "size",
           overflow: "hidden",
+          // Mobile: tell the browser the game canvas handles its own touches
+          // so taps don't get swallowed by scroll / double-tap-zoom. Without
+          // this, iOS Safari treats taps on the map as scroll attempts and
+          // the Phaser click handlers never fire.
+          touchAction: "none",
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          WebkitTapHighlightColor: "transparent",
         }}
       />
     </div>
