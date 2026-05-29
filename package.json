@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate:words": "node scripts/generate-word-list.js"
+    "generate:words": "node scripts/generate-word-list.js",
+    "generate:outrank": "node scripts/generate-outrank-seed.js"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.0.0",

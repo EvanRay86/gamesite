@@ -436,6 +436,16 @@ export const games: Game[] = [
     color: "purple",
     creditCost: 0,
   },
+
+  {
+    slug: "outrank",
+    name: "Outrank",
+    description:
+      "Two things, one question: which is more? Build an endless streak and challenge a friend.",
+    category: "arcade",
+    color: "sky",
+    creditCost: 0,
+  },
 ];
 
 // ---------------------------------------------------------------------------
