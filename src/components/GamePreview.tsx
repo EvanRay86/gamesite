@@ -1271,6 +1271,63 @@ function BrickBlitzPreview() {
   );
 }
 
+/* ─── Cascade Mini Preview ─────────────────────────────────────────────── */
+
+function CascadePreview() {
+  // A mini well: a purple T-piece falling above a multi-colored stack with a
+  // gap waiting to be cleared, plus a NEXT box — the falling-block at a glance.
+  const C = "#22d3ee", P = "#a855f7", G = "#22c55e", Y = "#fbbf24", O = "#fb923c", R = "#ff6b6b", B = "#3b82f6";
+  const X: string | null = null;
+  const rows: (string | null)[][] = [
+    [X, X, X, X, X, X],
+    [X, X, P, P, P, X],
+    [X, X, X, P, X, X],
+    [X, X, X, X, X, X],
+    [X, X, X, X, X, X],
+    [C, X, X, X, X, G],
+    [C, C, X, X, Y, G],
+    [B, C, O, X, Y, G],
+    [B, B, O, O, Y, R],
+  ];
+  return (
+    <div
+      className="mb-3 rounded-xl border border-cyan-400/20 p-3.5 relative overflow-hidden"
+      style={{ background: "linear-gradient(180deg, #0b1020 0%, #121633 55%, #0a0f1f 100%)" }}
+    >
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300">Score: 12,400</span>
+        <span className="text-[10px] font-bold text-coral bg-coral/15 px-2 py-0.5 rounded-full">LVL 4</span>
+      </div>
+      <div className="flex justify-center gap-2.5">
+        {/* Well */}
+        <div className="grid" style={{ gridTemplateColumns: "repeat(6, 15px)", gap: 2 }}>
+          {rows.flat().map((col, i) => (
+            <div
+              key={i}
+              className="rounded-[2px]"
+              style={{
+                width: 15,
+                height: 15,
+                background: col ?? "rgba(255,255,255,0.04)",
+                boxShadow: col ? `0 0 5px ${col}aa` : undefined,
+              }}
+            />
+          ))}
+        </div>
+        {/* Next */}
+        <div className="flex flex-col items-center gap-1 pt-1">
+          <span className="text-[8px] font-bold text-white/40">NEXT</span>
+          <div className="grid grid-cols-2 gap-[2px]">
+            {[Y, Y, Y, Y].map((c, i) => (
+              <div key={i} className="rounded-[2px]" style={{ width: 11, height: 11, background: c, boxShadow: `0 0 4px ${c}aa` }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Game Preview Router ───────────────────────────────────────────────── */
 
 export default function GamePreview({ slug }: { slug: string }) {
@@ -1303,6 +1360,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "word-bloom": return <WordBloomPreview />;
     case "orb-merge": return <OrbMergePreview />;
     case "brick-blitz": return <BrickBlitzPreview />;
+    case "cascade": return <CascadePreview />;
     case "outrank": return <OutrankPreview />;
     case "globle": return <GloblePreview />;
     case "vocab-vault": return <VocabVaultPreview />;

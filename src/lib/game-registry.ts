@@ -456,6 +456,16 @@ export const games: Game[] = [
     color: "sky",
     creditCost: 0,
   },
+
+  {
+    slug: "cascade",
+    name: "Cascade",
+    description:
+      "Stack and rotate falling blocks, clear neon lines, and chase your high score as the speed climbs.",
+    category: "arcade",
+    color: "sky",
+    creditCost: 0,
+  },
 ];
 
 // ---------------------------------------------------------------------------
