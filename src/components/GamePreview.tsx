@@ -1208,6 +1208,69 @@ function OutrankPreview() {
   );
 }
 
+/* ─── Brick Blitz Mini Preview ─────────────────────────────────────────── */
+
+function BrickBlitzPreview() {
+  // Three rows of neon bricks (color = durability), a ball, and the paddle.
+  const rows = [
+    { color: "#A855F7", glow: "rgba(168,85,247,0.5)", cells: [1, 1, 0, 1, 1, 1, 0, 1] },
+    { color: "#45B7D1", glow: "rgba(69,183,209,0.5)", cells: [1, 1, 1, 1, 1, 1, 1, 1] },
+    { color: "#4ECDC4", glow: "rgba(78,205,196,0.5)", cells: [1, 0, 1, 1, 1, 1, 0, 1] },
+  ];
+  return (
+    <div
+      className="mb-3 rounded-xl border border-teal/20 p-3.5 relative overflow-hidden"
+      style={{ background: "linear-gradient(180deg, #0b1020 0%, #121633 55%, #0a0f1f 100%)" }}
+    >
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-teal">Score: 2,480</span>
+        <span className="text-[10px] font-bold text-coral bg-coral/15 px-2 py-0.5 rounded-full">3× COMBO</span>
+      </div>
+
+      {/* Brick field */}
+      <div className="relative h-24 sm:h-28">
+        <div className="flex flex-col gap-1">
+          {rows.map((row, ri) => (
+            <div key={ri} className="flex gap-1 justify-center">
+              {row.cells.map((on, ci) =>
+                on ? (
+                  <div
+                    key={ci}
+                    className="h-3 flex-1 rounded-[2px]"
+                    style={{ background: row.color, boxShadow: `0 0 5px ${row.glow}`, maxWidth: 30 }}
+                  />
+                ) : (
+                  <div key={ci} className="h-3 flex-1" style={{ maxWidth: 30 }} />
+                ),
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Falling power-up */}
+        <div
+          className="absolute left-[30%] top-[52%] w-5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold text-[#0b1020]"
+          style={{ background: "#FF6B6B", boxShadow: "0 0 8px rgba(255,107,107,0.6)" }}
+        >
+          ✦
+        </div>
+
+        {/* Ball */}
+        <div
+          className="absolute left-[58%] top-[68%] w-2.5 h-2.5 rounded-full bg-white"
+          style={{ boxShadow: "0 0 8px rgba(255,255,255,0.9)" }}
+        />
+
+        {/* Paddle */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 bottom-0 h-2 w-12 rounded-full"
+          style={{ background: "linear-gradient(180deg,#fff,#4ECDC4)", boxShadow: "0 0 10px rgba(78,205,196,0.7)" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 /* ─── Game Preview Router ───────────────────────────────────────────────── */
 
 export default function GamePreview({ slug }: { slug: string }) {
@@ -1239,6 +1302,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "rift": return <RiftPreview />;
     case "word-bloom": return <WordBloomPreview />;
     case "orb-merge": return <OrbMergePreview />;
+    case "brick-blitz": return <BrickBlitzPreview />;
     case "outrank": return <OutrankPreview />;
     case "globle": return <GloblePreview />;
     case "vocab-vault": return <VocabVaultPreview />;

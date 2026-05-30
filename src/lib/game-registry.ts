@@ -409,6 +409,16 @@ export const games: Game[] = [
   },
 
   {
+    slug: "brick-blitz",
+    name: "Brick Blitz",
+    description:
+      "Smash every brick, catch power-ups, and chain combos in this neon brick breaker.",
+    category: "arcade",
+    color: "teal",
+    creditCost: 0,
+  },
+
+  {
     slug: "warp",
     name: "WARP",
     description:
