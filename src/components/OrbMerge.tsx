@@ -17,7 +17,6 @@ const MERGE_TOLERANCE = 3; // px tolerance beyond touching
 const MERGE_SHRINK_FRAMES = 32;
 const SCALE_ANIM_FRAMES = 56;
 const COMBO_WINDOW = 120;
-const STICKY_FORCE = 0.08; // attraction between touching non-merge orbs
 const STICKY_DAMPING = 0.85; // velocity damping on contact
 const SAVE_KEY = "orb-merge-best";
 const STATS_KEY = "orb-merge-stats";
@@ -37,10 +36,8 @@ const CUP_RIM_R = CUP_CX + CUP_TOP_W / 2;
 const CUP_BOT_L = CUP_CX - CUP_BOTTOM_W / 2;
 const CUP_BOT_R = CUP_CX + CUP_BOTTOM_W / 2;
 
-// Drop zone — wider than the cup so you can aim past the edges
+// Drop height above the rim. Aim is constrained to the cup opening.
 const DROP_Y = CUP_RIM_Y - 100;
-const DROP_LEFT = 30; // much wider than cup
-const DROP_RIGHT = CANVAS_W - 30;
 
 // Death line — orbs falling below this = game over
 const DEATH_LINE_Y = CUP_BOTTOM_Y + 100;
@@ -122,6 +119,10 @@ interface Orb {
   vy: number;
   tier: number;
   radius: number;
+  /** True once the orb has entered the cup through the rim opening. Cleared
+   * only if it spills back over the top rim. Gates wall collision so the
+   * inward-sloping walls can't let a settling orb slip through. */
+  contained: boolean;
   merging: boolean;
   mergingTimer: number;
   mergeTargetX: number;
@@ -133,7 +134,6 @@ interface Orb {
   lookY: number;
   squishX: number; // 1.0 = circle, >1 = wide, <1 = tall
   squishY: number; // inverse of squishX for volume preservation
-  insideCup: boolean; // true if orb entered the cup from the top
 }
 
 interface Particle {
@@ -662,7 +662,7 @@ export default function OrbMerge() {
 
     const tier = currentTierRef.current;
     const def = TIERS[tier];
-    const x = clamp(cursorXRef.current, DROP_LEFT + def.radius, DROP_RIGHT - def.radius);
+    const x = clamp(cursorXRef.current, CUP_RIM_L + def.radius + 2, CUP_RIM_R - def.radius - 2);
 
     orbsRef.current.push({
       id: nextIdRef.current++,
@@ -672,6 +672,7 @@ export default function OrbMerge() {
       vy: 0.1,
       tier,
       radius: def.radius,
+      contained: false,
       merging: false,
       mergingTimer: 0,
       mergeTargetX: 0,
@@ -683,7 +684,6 @@ export default function OrbMerge() {
       lookY: 0,
       squishX: 1,
       squishY: 1,
-      insideCup: false, // dropped from above — not inside yet
     });
 
     currentTierRef.current = nextTierRef.current;
@@ -717,20 +717,22 @@ export default function OrbMerge() {
       orb.x += orb.vx;
       orb.y += orb.vy;
 
-      // Track insideCup state: once an orb enters the cup, it stays "inside"
-      // until it goes above the rim (pushed out over the top).
-      // Orbs that were never inside (dropped outside) stay outside.
+      // Wall + floor collisions. The cup is open at the top. An orb becomes
+      // "contained" the moment its center drops below the rim while within the
+      // rim opening — the only way in. Once contained it always collides with
+      // the walls (the walls slope inward, so a center-inside test would let a
+      // descending orb slip through as the wall overtakes its center). An orb
+      // only loses containment by spilling back over the top rim — that
+      // overflow is how you lose.
       if (orb.y > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
-        const leftWall = cupLeftX(orb.y);
-        const rightWall = cupRightX(orb.y);
-
-        // Mark as inside if orb center enters between the walls
-        if (!orb.insideCup && orb.x > leftWall + orb.radius && orb.x < rightWall - orb.radius) {
-          orb.insideCup = true;
+        if (!orb.contained && orb.x > CUP_RIM_L && orb.x < CUP_RIM_R) {
+          orb.contained = true;
         }
 
-        // Wall + floor collisions only for orbs that are inside the cup
-        if (orb.insideCup) {
+        if (orb.contained) {
+          const leftWall = cupLeftX(orb.y);
+          const rightWall = cupRightX(orb.y);
+
           // Left wall
           if (orb.x - orb.radius < leftWall) {
             orb.x = leftWall + orb.radius;
@@ -784,11 +786,15 @@ export default function OrbMerge() {
             orb.squishY = Math.max(0.5, orb.squishY - squishAmt);
           }
         }
-        // else: orb never entered the cup — falls freely past the walls
-      } else if (orb.y <= CUP_RIM_Y && orb.insideCup) {
-        // Orb went above the rim — it's escaping, mark as outside
-        // so it doesn't re-collide with walls if it falls back alongside the cup
-        orb.insideCup = false;
+      } else if (
+        orb.contained &&
+        orb.y <= CUP_RIM_Y &&
+        (orb.x <= CUP_RIM_L || orb.x >= CUP_RIM_R)
+      ) {
+        // A contained orb that has risen above the rim and drifted past a rim
+        // corner has spilled over the top — release it so it falls freely
+        // down the outside of the cup (and past the death line = game over).
+        orb.contained = false;
       }
 
       // Decay squish back to circle (slow spring for jelly feel)
@@ -863,26 +869,14 @@ export default function OrbMerge() {
             }
           }
         }
-
-        // Sticky attraction — slight pull between nearby orbs
-        if (d < minDist * 1.15 && d > 0.01) {
-          const nx = dx / d;
-          const ny = dy / d;
-          const pullStrength = STICKY_FORCE / PHYSICS_SUBSTEPS;
-          const massA = a.radius * a.radius;
-          const massB = b.radius * b.radius;
-          const totalMass = massA + massB;
-          a.vx += nx * pullStrength * (massB / totalMass);
-          a.vy += ny * pullStrength * (massB / totalMass);
-          b.vx -= nx * pullStrength * (massA / totalMass);
-          b.vy -= ny * pullStrength * (massA / totalMass);
-        }
       }
     }
 
-    // Post-collision clamp: ensure insideCup orbs can't be pushed through walls
+    // Post-collision clamp: keep contained orbs from being shoved through walls
+    // by orb-orb pushes. Uses the same containment flag so overflowing orbs
+    // (falling outside the cup) are left alone.
     for (const orb of orbs) {
-      if (!orb.insideCup || orb.merging) continue;
+      if (orb.merging || !orb.contained) continue;
       if (orb.y > CUP_RIM_Y && orb.y < CUP_BOTTOM_Y) {
         const leftWall = cupLeftX(orb.y);
         const rightWall = cupRightX(orb.y);
@@ -898,6 +892,35 @@ export default function OrbMerge() {
           orb.y = CUP_BOTTOM_Y - orb.radius;
           if (orb.vy > 0) orb.vy = 0;
         }
+      }
+    }
+
+    // Settle: zero tiny velocities of slow orbs that are supported (by the
+    // floor or by another orb beneath them) so resting piles come to a full
+    // stop instead of jittering forever.
+    for (let i = 0; i < orbs.length; i++) {
+      const orb = orbs[i];
+      if (orb.merging || orb.justDropped > 0) continue;
+      if (Math.abs(orb.vx) + Math.abs(orb.vy) >= SLEEP_THRESHOLD) continue;
+      let supported = orb.y + orb.radius >= CUP_BOTTOM_Y - 2;
+      if (!supported) {
+        for (let j = 0; j < orbs.length; j++) {
+          if (j === i) continue;
+          const other = orbs[j];
+          if (other.merging) continue;
+          const dx = other.x - orb.x;
+          const dy = other.y - orb.y;
+          if (dy <= 0) continue; // supporting orb must be below
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d > 0.01 && d <= orb.radius + other.radius + 2 && dy / d > 0.5) {
+            supported = true;
+            break;
+          }
+        }
+      }
+      if (supported) {
+        orb.vx = 0;
+        orb.vy = 0;
       }
     }
   }, []);
@@ -1016,6 +1039,7 @@ export default function OrbMerge() {
             vy: (a.vy + b.vy) * 0.2 - 1,
             tier: newTier,
             radius: def.radius,
+            contained: true,
             merging: false,
             mergingTimer: 0,
             mergeTargetX: 0,
@@ -1027,7 +1051,6 @@ export default function OrbMerge() {
             lookY: 0,
             squishX: 1,
             squishY: 1,
-            insideCup: true, // merged inside the cup
           });
 
           // Score
@@ -1399,7 +1422,7 @@ export default function OrbMerge() {
       if (phase === "playing" && dropCooldownRef.current <= 0) {
         const tier = currentTierRef.current;
         const def = TIERS[tier];
-        const cx2 = clamp(cursorXRef.current, DROP_LEFT + def.radius, DROP_RIGHT - def.radius);
+        const cx2 = clamp(cursorXRef.current, CUP_RIM_L + def.radius + 2, CUP_RIM_R - def.radius - 2);
 
         // Guide line (down into cup)
         ctx.strokeStyle = "rgba(255,255,255,0.1)";
@@ -1545,7 +1568,7 @@ export default function OrbMerge() {
       const rect = canvasRef.current?.getBoundingClientRect();
       if (!rect) return;
       const x = ((e.clientX - rect.left) / rect.width) * CANVAS_W;
-      cursorXRef.current = clamp(x, DROP_LEFT + 10, DROP_RIGHT - 10);
+      cursorXRef.current = clamp(x, CUP_RIM_L, CUP_RIM_R);
     },
     []
   );
@@ -1572,7 +1595,7 @@ export default function OrbMerge() {
         const rect = canvasRef.current?.getBoundingClientRect();
         if (rect) {
           const x = ((e.clientX - rect.left) / rect.width) * CANVAS_W;
-          cursorXRef.current = clamp(x, DROP_LEFT + 10, DROP_RIGHT - 10);
+          cursorXRef.current = clamp(x, CUP_RIM_L, CUP_RIM_R);
         }
         dropOrb();
       }
@@ -1598,10 +1621,10 @@ export default function OrbMerge() {
         }
       }
       if (e.code === "ArrowLeft") {
-        cursorXRef.current = clamp(cursorXRef.current - 8, DROP_LEFT + 10, DROP_RIGHT - 10);
+        cursorXRef.current = clamp(cursorXRef.current - 8, CUP_RIM_L, CUP_RIM_R);
       }
       if (e.code === "ArrowRight") {
-        cursorXRef.current = clamp(cursorXRef.current + 8, DROP_LEFT + 10, DROP_RIGHT - 10);
+        cursorXRef.current = clamp(cursorXRef.current + 8, CUP_RIM_L, CUP_RIM_R);
       }
     }
     window.addEventListener("keydown", onKey);
