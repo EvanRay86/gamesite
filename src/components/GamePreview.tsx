@@ -1159,6 +1159,55 @@ function PeriodicPuzzlePreview() {
   );
 }
 
+/* ─── Outrank Mini Preview ─────────────────────────────────────────────── */
+
+function OutrankPreview() {
+  return (
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-sky/5 to-sky/10 border border-sky/15 p-3.5">
+      {/* Header: concept + current streak */}
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-sky">Which is more?</span>
+        <span className="text-[10px] font-bold text-coral tabular-nums bg-coral/8 px-2 py-0.5 rounded-full">🔥 12</span>
+      </div>
+
+      {/* The question */}
+      <p className="text-[11px] font-semibold text-text-primary text-center mb-2.5 leading-snug">
+        Bigger population?
+      </p>
+
+      {/* Head-to-head reveal */}
+      <div className="flex items-stretch gap-2">
+        {/* Left — picked + correct */}
+        <div className="flex-1 rounded-lg bg-sky text-white px-2 py-2.5 text-center shadow-[0_2px_8px_rgba(69,183,209,0.3)] relative">
+          <span className="absolute top-1 right-1.5 text-[9px] font-bold">✓</span>
+          <div className="text-xl leading-none mb-1">🗼</div>
+          <div className="text-[10px] font-bold leading-tight">Tokyo</div>
+          <div className="text-[11px] font-extrabold tabular-nums mt-0.5">37.4M</div>
+        </div>
+
+        {/* VS badge */}
+        <div className="flex items-center justify-center">
+          <span className="text-[8px] font-extrabold text-text-dim bg-white rounded-full w-5 h-5 flex items-center justify-center border border-black/5 shadow-sm">
+            VS
+          </span>
+        </div>
+
+        {/* Right — the lower value */}
+        <div className="flex-1 rounded-lg bg-white/80 border border-black/5 px-2 py-2.5 text-center">
+          <div className="text-xl leading-none mb-1">🎡</div>
+          <div className="text-[10px] font-bold text-text-secondary leading-tight">London</div>
+          <div className="text-[11px] font-semibold text-text-dim tabular-nums mt-0.5">9.0M</div>
+        </div>
+      </div>
+
+      {/* Viral hook */}
+      <p className="text-[9px] text-text-dim text-center mt-2.5">
+        Build a streak &middot; challenge a friend
+      </p>
+    </div>
+  );
+}
+
 /* ─── Game Preview Router ───────────────────────────────────────────────── */
 
 export default function GamePreview({ slug }: { slug: string }) {
@@ -1190,6 +1239,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "rift": return <RiftPreview />;
     case "word-bloom": return <WordBloomPreview />;
     case "orb-merge": return <OrbMergePreview />;
+    case "outrank": return <OutrankPreview />;
     case "globle": return <GloblePreview />;
     case "vocab-vault": return <VocabVaultPreview />;
     case "root-words": return <RootWordsPreview />;
