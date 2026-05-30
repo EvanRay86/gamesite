@@ -1328,6 +1328,32 @@ function CascadePreview() {
   );
 }
 
+/* ─── SAT/ACT Vocab Mini Preview ───────────────────────────────────────── */
+
+function SATACTVocabPreview() {
+  return (
+    <div className="mb-3 rounded-xl bg-gradient-to-br from-purple/5 to-purple/10 border border-purple/15 p-3.5">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-purple">Word → Definition</span>
+        <span className="text-[10px] font-bold text-amber bg-amber/8 px-2 py-0.5 rounded-full">🔥 5</span>
+      </div>
+      <p className="text-base font-bold text-text-primary leading-none">aberration</p>
+      <p className="text-[10px] text-text-dim italic mb-2">noun</p>
+      <div className="space-y-1">
+        <div className="rounded-lg bg-purple text-white px-2.5 py-1.5 text-[10px] font-bold shadow-[0_2px_8px_rgba(168,85,247,0.3)]">
+          A departure from what is normal or expected
+        </div>
+        <div className="rounded-lg bg-white/80 border border-black/5 px-2.5 py-1.5 text-[10px] font-medium text-text-secondary">
+          An award or expression of praise
+        </div>
+        <div className="rounded-lg bg-white/80 border border-black/5 px-2.5 py-1.5 text-[10px] font-medium text-text-secondary">
+          Extreme greed for wealth
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Game Preview Router ───────────────────────────────────────────────── */
 
 export default function GamePreview({ slug }: { slug: string }) {
@@ -1364,6 +1390,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "outrank": return <OutrankPreview />;
     case "globle": return <GloblePreview />;
     case "vocab-vault": return <VocabVaultPreview />;
+    case "sat-act-vocab": return <SATACTVocabPreview />;
     case "root-words": return <RootWordsPreview />;
     case "periodic-puzzle": return <PeriodicPuzzlePreview />;
     default: return null;

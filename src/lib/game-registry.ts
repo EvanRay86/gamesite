@@ -263,6 +263,15 @@ export const games: Game[] = [
   },
 
   {
+    slug: "sat-act-vocab",
+    name: "SAT/ACT Vocab",
+    description:
+      "Master 650+ high-frequency SAT and ACT vocabulary words through five question types — track every word you've nailed.",
+    category: "learn",
+    color: "purple",
+  },
+
+  {
     slug: "globle",
     name: "Globle",
     description:
