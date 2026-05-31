@@ -7,7 +7,7 @@ import MoreArcadeGames from "@/components/MoreArcadeGames";
 export const metadata = buildGameMetadata({
   title: "Wave Rider — Surf the Music",
   description:
-    "Upload a song or paste a SoundCloud link. Ride the waveform, dodge obstacles, and collect orbs in this music-powered arcade game.",
+    "Upload a song or paste a direct audio link. Ride the waveform, dodge obstacles, and collect orbs in this music-powered arcade game.",
   path: "arcade/wave-rider",
   color: "purple",
 });
@@ -17,7 +17,7 @@ export default function WaveRiderPage() {
     <main>
       <GameJsonLd
         name="Wave Rider"
-        description="Upload a song or paste a SoundCloud link. Ride the waveform, dodge obstacles, and collect orbs."
+        description="Upload a song or paste a direct audio link. Ride the waveform, dodge obstacles, and collect orbs."
         path="arcade/wave-rider"
         category="arcade"
       />
@@ -30,7 +30,7 @@ export default function WaveRiderPage() {
         </h2>
         <p>
           Wave Rider turns your music into a playable arcade course. Upload a song
-          or paste a SoundCloud link and the game generates a waveform track from
+          or paste a direct audio link and the game generates a waveform track from
           the audio. Ride the peaks and valleys, dodge obstacles that sync to the
           beat, and collect orbs as you surf through your favorite tracks.
         </p>
@@ -43,7 +43,7 @@ export default function WaveRiderPage() {
           How to Play
         </h2>
         <ol className="list-decimal list-inside space-y-1">
-          <li>Upload an audio file from your device or paste a SoundCloud link to generate your track.</li>
+          <li>Upload an audio file from your device or paste a direct audio link to generate your track.</li>
           <li>Your rider auto-surfs the terrain — press Space or the up arrow (or tap) to jump.</li>
           <li>Jump over the red obstacles, which spawn in time with the music&apos;s rhythm.</li>
           <li>Grab glowing orbs at the top of your jumps for bonus points and combo multipliers.</li>
@@ -66,7 +66,7 @@ export default function WaveRiderPage() {
         { question: "Is Wave Rider free to play?", answer: "Yes! Wave Rider is completely free to play on Gamesite. No downloads, no accounts, no hidden fees." },
         { question: "Can I play Wave Rider on my phone?", answer: "Absolutely. Wave Rider works on any device with a modern web browser — phones, tablets, and desktops." },
         { question: "Does Wave Rider save my progress?", answer: "Each song creates a unique level, so there is no persistent progress. Your scores for individual songs are tracked so you can try to beat your best on your favorite tracks." },
-        { question: "What audio formats does Wave Rider support?", answer: "You can upload most common audio formats from your device or paste a SoundCloud link. The game analyzes the audio waveform to generate the track, so songs with clear rhythms create the best levels." },
+        { question: "What audio formats does Wave Rider support?", answer: "You can upload most common audio formats from your device or paste a direct audio link. The game analyzes the audio waveform to generate the track, so songs with clear rhythms create the best levels." },
         { question: "Does every song create a different level?", answer: "Yes! Wave Rider analyzes the waveform and rhythm of each song to generate a unique obstacle course. Different tempos, beats, and dynamics create entirely different gameplay experiences." },
       ]} />
     </main>

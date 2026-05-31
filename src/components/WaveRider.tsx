@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   decodeAndAnalyze,
-  buildAudioDataFromSamples,
+  decodeAndAnalyzeBuffer,
   type WaveRiderAudioData,
 } from "@/lib/wave-rider/audio-analysis";
 import {
@@ -49,29 +49,6 @@ interface Star {
 
 type GameScreen = "menu" | "analyzing" | "playing" | "paused" | "gameover";
 
-// SoundCloud Widget API types
-interface SCWidget {
-  bind(event: string, callback: (...args: unknown[]) => void): void;
-  unbind(event: string): void;
-  play(): void;
-  pause(): void;
-  seekTo(ms: number): void;
-  getDuration(callback: (dur: number) => void): void;
-}
-
-interface SCWidgetStatic {
-  (iframe: HTMLIFrameElement): SCWidget;
-  Events: {
-    READY: string;
-    PLAY: string;
-    PAUSE: string;
-    PLAY_PROGRESS: string;
-    FINISH: string;
-  };
-}
-
-// Window.SC is already declared globally in HeardleGame.tsx
-
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const CANVAS_W = 800;
@@ -104,8 +81,6 @@ const HORIZON_Y = CANVAS_H * 0.52;
 const SUN_X = CANVAS_W * 0.74;
 const SUN_Y = CANVAS_H * 0.4;
 const SUN_R = 92;
-
-const SC_WIDGET_API = "https://w.soundcloud.com/player/api.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -314,7 +289,7 @@ export default function WaveRider() {
   const [lives, setLives] = useState(MAX_LIVES);
   const [analyzeProgress, setAnalyzeProgress] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  const [scUrl, setScUrl] = useState("");
+  const [audioUrl, setAudioUrl] = useState("");
   const [songName, setSongName] = useState("");
 
   // Refs for game loop (avoid re-renders in hot path)
@@ -329,11 +304,6 @@ export default function WaveRider() {
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const audioBufferRef = useRef<AudioBuffer | null>(null);
   const audioStartTimeRef = useRef(0);
-  const scWidgetRef = useRef<SCWidget | null>(null);
-  const scIframeRef = useRef<HTMLIFrameElement>(null);
-  const scProgressRef = useRef(0); // 0-1 progress from SC widget
-  const scDurationRef = useRef(0);
-  const usingScRef = useRef(false);
 
   // Game world refs
   const terrainRef = useRef<TerrainPoint[]>([]);
@@ -373,42 +343,6 @@ export default function WaveRider() {
     screenRef.current = screen;
   }, [screen]);
 
-  // ── SoundCloud widget setup ──────────────────────────────────────────────
-
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    if (document.querySelector(`script[src="${SC_WIDGET_API}"]`)) return;
-    const script = document.createElement("script");
-    script.src = SC_WIDGET_API;
-    script.async = true;
-    document.head.appendChild(script);
-  }, []);
-
-  const initScWidget = useCallback(() => {
-    const iframe = scIframeRef.current;
-    if (!iframe || !window.SC?.Widget) return;
-
-    const widget = window.SC.Widget(iframe);
-    scWidgetRef.current = widget;
-
-    widget.bind(window.SC.Widget.Events.PLAY_PROGRESS, ((...args: unknown[]) => {
-      const data = args[0] as { currentPosition: number; relativePosition: number };
-      scProgressRef.current = data.relativePosition;
-    }));
-
-    widget.bind(window.SC.Widget.Events.READY, () => {
-      widget.getDuration((dur: number) => {
-        scDurationRef.current = dur / 1000;
-      });
-    });
-
-    widget.bind(window.SC.Widget.Events.FINISH, () => {
-      if (screenRef.current === "playing") {
-        endGame();
-      }
-    });
-  }, []);
-
   // ── Audio playback helpers ───────────────────────────────────────────────
 
   const stopAudio = useCallback(() => {
@@ -416,7 +350,6 @@ export default function WaveRider() {
     try { audioCtxRef.current?.close(); } catch { /* ignore */ }
     sourceNodeRef.current = null;
     audioCtxRef.current = null;
-    try { scWidgetRef.current?.pause(); } catch { /* ignore */ }
   }, []);
 
   const playFileAudio = useCallback(async () => {
@@ -454,9 +387,6 @@ export default function WaveRider() {
   }, []);
 
   const getProgress = useCallback((): number => {
-    if (usingScRef.current) {
-      return scProgressRef.current;
-    }
     if (audioCtxRef.current && audioDataRef.current) {
       const elapsed = audioCtxRef.current.currentTime - audioStartTimeRef.current;
       return clamp(elapsed / audioDataRef.current.duration, 0, 1);
@@ -479,7 +409,6 @@ export default function WaveRider() {
       audioBufferRef.current = data.audioBuffer ?? null;
 
       setAnalyzeProgress("Generating terrain...");
-      usingScRef.current = false;
       audioDataRef.current = data;
 
       const terrain = generateTerrainPoints(data, CANVAS_H);
@@ -497,78 +426,60 @@ export default function WaveRider() {
     }
   }, []);
 
-  const handleSoundCloudUrl = useCallback(async (url: string) => {
-    if (!url.includes("soundcloud.com/")) {
-      setErrorMsg("Please enter a valid SoundCloud URL.");
+  const handleAudioUrl = useCallback(async (url: string) => {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      setErrorMsg("Please enter a valid URL.");
       return;
     }
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      setErrorMsg("Please enter an http(s) link to an audio file.");
+      return;
+    }
+
     setScreen("analyzing");
     setErrorMsg("");
-    setAnalyzeProgress("Fetching track…");
+    setAnalyzeProgress("Fetching audio…");
+    const guessName =
+      decodeURIComponent(parsed.pathname.split("/").pop() || "").replace(/\.[^.]+$/, "") ||
+      "Audio Track";
+    setSongName(guessName);
 
     try {
-      // SoundCloud's endpoints are CORS-locked, so a same-origin server route
-      // resolves the track and returns its real waveform peaks.
-      const resp = await fetch(
-        `/api/wave-rider/soundcloud?url=${encodeURIComponent(url)}`
-      );
-      const payload = await resp.json();
+      // Direct browser fetches of a foreign audio URL are almost always
+      // CORS-blocked, so we pull the bytes through a same-origin proxy and
+      // decode them with Web Audio — true waveform analysis, just like upload.
+      const resp = await fetch(`/api/wave-rider/audio-proxy?url=${encodeURIComponent(url)}`);
       if (!resp.ok) {
-        throw new Error(payload?.error || "Could not load that track.");
+        let msg = "Could not load that audio link.";
+        try { msg = (await resp.json())?.error || msg; } catch { /* ignore */ }
+        throw new Error(msg);
       }
+      const arrayBuf = await resp.arrayBuffer();
 
-      const { title, durationMs, samples, height } = payload as {
-        title: string;
-        durationMs: number;
-        samples: number[];
-        height: number;
-      };
+      setAnalyzeProgress("Analyzing waveform…");
+      const data = await decodeAndAnalyzeBuffer(arrayBuf);
+      audioBufferRef.current = data.audioBuffer ?? null;
+      audioDataRef.current = data;
 
-      setSongName(title || "SoundCloud Track");
-      setAnalyzeProgress("Building your wave…");
-
-      // Build the level from the real waveform envelope.
-      const audioData = buildAudioDataFromSamples(samples, height, durationMs / 1000);
-      usingScRef.current = true;
-      audioDataRef.current = audioData;
-
-      const terrain = generateTerrainPoints(audioData, CANVAS_H);
+      const terrain = generateTerrainPoints(data, CANVAS_H);
       const obstacles = placeObstacles(terrain);
       terrainRef.current = terrain;
       obstaclesRef.current = obstacles;
       collectiblesRef.current = placeCollectibles(terrain, obstacles, CANVAS_H);
-      worldWidthRef.current = getWorldWidth(audioData);
-
-      // Load the track into the hidden widget — playback is driven by it, and
-      // PLAY_PROGRESS scrolls the world in lockstep with the audio.
-      if (scIframeRef.current) {
-        const embedUrl = `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false&hide_related=true&visual=false`;
-        scIframeRef.current.src = embedUrl;
-        // Wait for the SoundCloud Widget API to be available, then bind events.
-        await new Promise<void>((resolve) => {
-          const check = setInterval(() => {
-            if (window.SC?.Widget) {
-              clearInterval(check);
-              initScWidget();
-              resolve();
-            }
-          }, 100);
-          setTimeout(() => {
-            clearInterval(check);
-            resolve();
-          }, 6000);
-        });
-      }
+      worldWidthRef.current = getWorldWidth(data);
 
       startGame();
     } catch (err) {
       setErrorMsg(
-        err instanceof Error ? err.message : "Could not load SoundCloud track."
+        err instanceof Error ? err.message : "Could not load that audio link."
       );
       setScreen("menu");
       console.error(err);
     }
-  }, [initScWidget]);
+  }, []);
 
   // ── Game lifecycle ─────────────────────────────────────────────────────────
 
@@ -608,16 +519,8 @@ export default function WaveRider() {
     setLives(MAX_LIVES);
     setScreen("playing");
 
-    // Start audio
-    if (usingScRef.current) {
-      scProgressRef.current = 0;
-      setTimeout(() => {
-        try { scWidgetRef.current?.seekTo(0); } catch { /* ignore */ }
-        scWidgetRef.current?.play();
-      }, 300);
-    } else {
-      void playFileAudio();
-    }
+    // Start audio (Web Audio playback drives world scroll via getProgress)
+    void playFileAudio();
   }, [playFileAudio]);
 
   const endGame = useCallback(() => {
@@ -1198,7 +1101,7 @@ export default function WaveRider() {
               Wave Rider
             </h1>
             <p className="mt-1 text-text-muted text-sm">
-              Upload a song or paste a SoundCloud link. Surf the waveform.
+              Upload a song or paste a direct audio link. Surf the waveform.
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -1225,17 +1128,6 @@ export default function WaveRider() {
           </div>
         </div>
       </div>
-
-      {/* SoundCloud hidden iframe */}
-      <iframe
-        ref={scIframeRef}
-        className="hidden"
-        width="100%"
-        height="0"
-        scrolling="no"
-        frameBorder="no"
-        allow="autoplay"
-      />
 
       {/* Menu */}
       {screen === "menu" && (
@@ -1280,22 +1172,25 @@ export default function WaveRider() {
 
           <div className="space-y-3 text-center">
             <h2 className="font-body text-lg font-semibold text-text-primary">
-              Paste a SoundCloud URL
+              Paste a Direct Audio Link
             </h2>
+            <p className="text-sm text-text-muted">
+              A direct URL to an audio file (ends in .mp3, .wav, or .ogg)
+            </p>
             <div className="flex gap-2 max-w-md mx-auto">
               <input
                 type="text"
-                value={scUrl}
-                onChange={(e) => setScUrl(e.target.value)}
-                placeholder="https://soundcloud.com/artist/track"
+                value={audioUrl}
+                onChange={(e) => setAudioUrl(e.target.value)}
+                placeholder="https://example.com/song.mp3"
                 className="flex-1 px-4 py-2.5 rounded-xl border border-border-light text-sm
                            focus:outline-none focus:ring-2 focus:ring-purple/30 focus:border-purple"
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && scUrl.trim()) handleSoundCloudUrl(scUrl.trim());
+                  if (e.key === "Enter" && audioUrl.trim()) handleAudioUrl(audioUrl.trim());
                 }}
               />
               <button
-                onClick={() => scUrl.trim() && handleSoundCloudUrl(scUrl.trim())}
+                onClick={() => audioUrl.trim() && handleAudioUrl(audioUrl.trim())}
                 className="px-5 py-2.5 rounded-xl bg-purple text-white font-semibold text-sm hover:opacity-90 transition-opacity"
               >
                 Ride
@@ -1367,7 +1262,7 @@ export default function WaveRider() {
               onClick={() => {
                 stopAudio();
                 setScreen("menu");
-                setScUrl("");
+                setAudioUrl("");
                 setSongName("");
                 setErrorMsg("");
               }}

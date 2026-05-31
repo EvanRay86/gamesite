@@ -23,8 +23,8 @@ export interface Collectible {
 }
 
 // Pace is time-based, not sample-based: the world scrolls at a fixed speed no
-// matter how many samples a song produced. This keeps a 90-second upload and a
-// 6-minute SoundCloud track feeling identically brisk.
+// matter how many samples a song produced. This keeps a 90-second clip and a
+// 6-minute track feeling identically brisk.
 export const SCROLL_PX_PER_SEC = 210;
 
 const MIN_HEIGHT_RATIO = 0.18; // terrain never lower than 18% of canvas

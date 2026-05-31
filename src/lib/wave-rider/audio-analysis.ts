@@ -3,16 +3,14 @@
 //   • amplitudes — a smooth 0-1 envelope used to draw the rolling terrain
 //   • beats      — onset indices (energy spikes) where we drop obstacles
 //
-// Uploaded files get real PCM analysis via Web Audio. SoundCloud tracks can't be
-// decoded in the browser (cross-origin), so their real waveform peaks are fetched
-// server-side (see /api/wave-rider/soundcloud) and fed into buildAudioDataFromSamples.
+// Both uploaded files and tracks pulled through the audio proxy are decoded with
+// Web Audio for true PCM analysis (see decodeAndAnalyzeBuffer).
 
 export interface WaveRiderAudioData {
   amplitudes: number[]; // normalized 0-1, one per time-window (terrain envelope)
   beats: number[];      // indices into amplitudes where beats land
   duration: number;     // seconds
-  source: "file" | "soundcloud";
-  audioBuffer?: AudioBuffer; // only present for file uploads (for Web Audio playback)
+  audioBuffer?: AudioBuffer; // decoded PCM, for Web Audio playback
 }
 
 const WINDOW_MS = 50; // 50ms windows for amplitude sampling of uploaded files
@@ -27,7 +25,16 @@ interface BeatOptions {
 
 /** Decode an uploaded audio file and extract amplitude + beat data. */
 export async function decodeAndAnalyze(file: File): Promise<WaveRiderAudioData> {
-  const arrayBuf = await file.arrayBuffer();
+  return decodeAndAnalyzeBuffer(await file.arrayBuffer());
+}
+
+/**
+ * Decode raw audio bytes (an uploaded file, or a track pulled through the audio
+ * proxy) and extract amplitude + beat data via true Web Audio PCM analysis.
+ */
+export async function decodeAndAnalyzeBuffer(
+  arrayBuf: ArrayBuffer
+): Promise<WaveRiderAudioData> {
   const ctx = new AudioContext();
   const audioBuffer = await ctx.decodeAudioData(arrayBuf);
   ctx.close();
@@ -49,29 +56,10 @@ export async function decodeAndAnalyze(file: File): Promise<WaveRiderAudioData> 
   const maxAmp = Math.max(...rawAmps, 0.0001);
   const normalized = rawAmps.map((a) => a / maxAmp);
 
-  return finishAnalysis(normalized, audioBuffer.duration, "file", {
+  return finishAnalysis(normalized, audioBuffer.duration, {
     windowMs: WINDOW_MS,
     terrainSmoothing: 7,
     audioBuffer,
-  });
-}
-
-/**
- * Build game data from a pre-extracted waveform (e.g. SoundCloud's peak samples).
- * `samples` are raw peak values; `height` is the max possible value (for normalize).
- */
-export function buildAudioDataFromSamples(
-  samples: number[],
-  height: number,
-  durationSec: number
-): WaveRiderAudioData {
-  const max = Math.max(height, ...samples, 1);
-  const normalized = samples.map((s) => clamp01(s / max));
-  const windowMs = (durationSec * 1000) / Math.max(1, samples.length);
-
-  return finishAnalysis(normalized, durationSec, "soundcloud", {
-    windowMs,
-    terrainSmoothing: 2,
   });
 }
 
@@ -79,7 +67,6 @@ export function buildAudioDataFromSamples(
 function finishAnalysis(
   normalized: number[],
   duration: number,
-  source: "file" | "soundcloud",
   opts: { windowMs: number; terrainSmoothing: number; audioBuffer?: AudioBuffer }
 ): WaveRiderAudioData {
   // Terrain uses a smoothed envelope so hills roll instead of jittering.
@@ -99,7 +86,6 @@ function finishAnalysis(
     amplitudes,
     beats,
     duration,
-    source,
     ...(opts.audioBuffer ? { audioBuffer: opts.audioBuffer } : {}),
   };
 }
@@ -171,8 +157,4 @@ export function detectBeats(envelope: number[], options: BeatOptions): number[] 
   }
 
   return beats;
-}
-
-function clamp01(v: number): number {
-  return v < 0 ? 0 : v > 1 ? 1 : v;
 }
