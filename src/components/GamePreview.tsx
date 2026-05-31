@@ -1354,6 +1354,139 @@ function SATACTVocabPreview() {
   );
 }
 
+/* ─── Wave Rider Mini Preview ──────────────────────────────────────────── */
+
+function WaveRiderPreview() {
+  // A synthwave scene: sun + neon waveform terrain with a surfer riding it,
+  // a golden orb, a red crystal hazard, and a live equalizer to say "music".
+  const stars = [
+    { x: 8, y: 16 }, { x: 22, y: 9 }, { x: 34, y: 22 }, { x: 58, y: 12 },
+    { x: 71, y: 8 }, { x: 84, y: 20 }, { x: 92, y: 11 }, { x: 16, y: 28 },
+    { x: 48, y: 7 }, { x: 64, y: 25 },
+  ];
+  const eqBars = [0.4, 0.7, 0.55, 0.95, 0.6, 0.8, 0.45, 0.7, 0.9, 0.5, 0.75, 0.6, 0.85, 0.5, 0.65, 0.8];
+
+  return (
+    <div
+      className="mb-3 rounded-xl border border-purple/20 p-3.5 relative overflow-hidden"
+      style={{ background: "linear-gradient(180deg, #070418 0%, #1b0b3a 55%, #3a1d63 100%)" }}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-purple">Surf the music</span>
+        <span className="text-[10px] font-bold text-amber bg-amber/10 px-2 py-0.5 rounded-full">♥♥♥♥♥</span>
+      </div>
+
+      {/* Scene */}
+      <div className="relative h-24 sm:h-28 rounded-lg overflow-hidden" style={{ background: "linear-gradient(180deg, #0a0420 0%, #1b0b3a 60%, #2a1356 100%)" }}>
+        {/* Sun */}
+        <div
+          className="absolute"
+          style={{
+            left: "68%", top: 10, width: 56, height: 56, borderRadius: "9999px",
+            background: "radial-gradient(circle at 50% 40%, #ffe79e, #ff9e5e 42%, #ff4d8d 72%, rgba(155,93,229,0.15))",
+            boxShadow: "0 0 22px rgba(255,77,141,0.55)",
+            animation: "wr-sun-glow 3.2s ease-in-out infinite",
+          }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              borderRadius: "9999px",
+              background: "repeating-linear-gradient(to bottom, transparent 0 5px, rgba(10,4,25,0.92) 5px 7px)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent 48%, #000 48%)",
+              maskImage: "linear-gradient(to bottom, transparent 48%, #000 48%)",
+            }}
+          />
+        </div>
+
+        {/* Stars */}
+        {stars.map((s, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-white"
+            style={{
+              width: 1.5, height: 1.5, left: `${s.x}%`, top: `${s.y}%`, opacity: 0.55,
+              animation: `wr-twinkle ${1.6 + (i % 4) * 0.4}s ease-in-out ${i * 0.18}s infinite`,
+            }}
+          />
+        ))}
+
+        {/* Synthwave floor */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-14"
+          style={{
+            background:
+              "repeating-linear-gradient(to bottom, rgba(0,245,212,0.10) 0 1px, transparent 1px 12px), repeating-linear-gradient(to right, rgba(0,245,212,0.08) 0 1px, transparent 1px 22px)",
+          }}
+        />
+
+        {/* Waveform terrain */}
+        <svg className="absolute bottom-0 left-0 w-full" height="58" viewBox="0 0 280 58" preserveAspectRatio="none">
+          <path
+            d="M0,42 L18,36 L36,26 L54,40 L72,18 L90,34 L108,12 L126,38 L144,24 L162,42 L180,16 L198,38 L216,26 L234,44 L252,16 L270,36 L280,30 L280,58 L0,58 Z"
+            fill="rgba(0,245,212,0.13)"
+          />
+          <polyline
+            points="0,42 18,36 36,26 54,40 72,18 90,34 108,12 126,38 144,24 162,42 180,16 198,38 216,26 234,44 252,16 270,36 280,30"
+            fill="none"
+            stroke="#00f5d4"
+            strokeWidth="1.8"
+            style={{ filter: "drop-shadow(0 0 3px #00f5d4)" }}
+          />
+        </svg>
+
+        {/* Golden orb */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            left: "47%", top: "28%", width: 8, height: 8,
+            background: "radial-gradient(circle at 35% 35%, #fff7e0, #f7b731 70%)",
+            boxShadow: "0 0 8px rgba(247,183,49,0.8)",
+            animation: "wr-orb-pulse 1.4s ease-in-out infinite",
+          }}
+        />
+
+        {/* Red crystal hazard */}
+        <div
+          className="absolute"
+          style={{
+            left: "80%", bottom: 26, width: 10, height: 16,
+            background: "linear-gradient(180deg, #ff9aae, #ff4444 55%, #b3002d)",
+            clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+            boxShadow: "0 0 6px rgba(255,68,68,0.7)",
+          }}
+        />
+
+        {/* Surfer */}
+        <div className="absolute" style={{ left: "36%", bottom: 30, animation: "wr-bob 1.5s ease-in-out infinite" }}>
+          <svg width="30" height="24" viewBox="0 0 34 26" fill="none">
+            <ellipse cx="17" cy="20" rx="16" ry="3" fill="#00f5d4" style={{ filter: "drop-shadow(0 0 4px #00f5d4)" }} />
+            <polygon points="13,17 21,17 18.5,6 15.5,6" fill="#ff006e" style={{ filter: "drop-shadow(0 0 4px #ff006e)" }} />
+            <circle cx="17" cy="4.5" r="3" fill="#ff006e" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Equalizer */}
+      <div className="flex items-end justify-center gap-[3px] h-4 mt-2.5">
+        {eqBars.map((h, i) => (
+          <div
+            key={i}
+            className="flex-1 rounded-sm"
+            style={{
+              maxWidth: 5,
+              height: `${h * 100}%`,
+              background: "linear-gradient(180deg, #ff006e, #00f5d4)",
+              transformOrigin: "bottom",
+              animation: `wr-eq ${0.7 + (i % 5) * 0.12}s ease-in-out ${i * 0.05}s infinite`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Game Preview Router ───────────────────────────────────────────────── */
 
 export default function GamePreview({ slug }: { slug: string }) {
@@ -1382,6 +1515,7 @@ export default function GamePreview({ slug }: { slug: string }) {
     case "ginormo-sword": return <SwordPreview />;
     case "sky-hopper": return <SkyHopperPreview />;
     case "wordslay": return <LexiconPreview />;
+    case "wave-rider": return <WaveRiderPreview />;
     case "rift": return <RiftPreview />;
     case "word-bloom": return <WordBloomPreview />;
     case "orb-merge": return <OrbMergePreview />;

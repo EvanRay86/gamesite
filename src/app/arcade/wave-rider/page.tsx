@@ -44,10 +44,10 @@ export default function WaveRiderPage() {
         </h2>
         <ol className="list-decimal list-inside space-y-1">
           <li>Upload an audio file from your device or paste a SoundCloud link to generate your track.</li>
-          <li>Your rider moves forward automatically — use the up and down keys (or tap) to change lanes.</li>
-          <li>Dodge red obstacles that appear in time with the music&apos;s rhythm.</li>
-          <li>Collect glowing orbs for bonus points — they often appear on the beat drops.</li>
-          <li>Survive until the song ends to see your final score and accuracy rating.</li>
+          <li>Your rider auto-surfs the terrain — press Space or the up arrow (or tap) to jump.</li>
+          <li>Jump over the red obstacles, which spawn in time with the music&apos;s rhythm.</li>
+          <li>Grab glowing orbs at the top of your jumps for bonus points and combo multipliers.</li>
+          <li>Survive until the song ends to see your final score.</li>
         </ol>
 
         <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
