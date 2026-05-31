@@ -3,8 +3,8 @@
 //   • amplitudes — a smooth 0-1 envelope used to draw the rolling terrain
 //   • beats      — onset indices (energy spikes) where we drop obstacles
 //
-// Both uploaded files and tracks pulled through the audio proxy are decoded with
-// Web Audio for true PCM analysis (see decodeAndAnalyzeBuffer).
+// Files chosen from the visitor's device are decoded with Web Audio for true PCM
+// analysis — entirely in the browser; nothing is uploaded to the server.
 
 export interface WaveRiderAudioData {
   amplitudes: number[]; // normalized 0-1, one per time-window (terrain envelope)
@@ -28,10 +28,7 @@ export async function decodeAndAnalyze(file: File): Promise<WaveRiderAudioData> 
   return decodeAndAnalyzeBuffer(await file.arrayBuffer());
 }
 
-/**
- * Decode raw audio bytes (an uploaded file, or a track pulled through the audio
- * proxy) and extract amplitude + beat data via true Web Audio PCM analysis.
- */
+/** Decode raw audio bytes and extract amplitude + beat data via Web Audio PCM analysis. */
 export async function decodeAndAnalyzeBuffer(
   arrayBuf: ArrayBuffer
 ): Promise<WaveRiderAudioData> {

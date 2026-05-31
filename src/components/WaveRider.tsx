@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   decodeAndAnalyze,
-  decodeAndAnalyzeBuffer,
   type WaveRiderAudioData,
 } from "@/lib/wave-rider/audio-analysis";
 import {
@@ -289,7 +288,6 @@ export default function WaveRider() {
   const [lives, setLives] = useState(MAX_LIVES);
   const [analyzeProgress, setAnalyzeProgress] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  const [audioUrl, setAudioUrl] = useState("");
   const [songName, setSongName] = useState("");
 
   // Refs for game loop (avoid re-renders in hot path)
@@ -421,61 +419,6 @@ export default function WaveRider() {
       startGame();
     } catch (err) {
       setErrorMsg("Could not decode audio file. Try a different MP3 or WAV.");
-      setScreen("menu");
-      console.error(err);
-    }
-  }, []);
-
-  const handleAudioUrl = useCallback(async (url: string) => {
-    let parsed: URL;
-    try {
-      parsed = new URL(url);
-    } catch {
-      setErrorMsg("Please enter a valid URL.");
-      return;
-    }
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      setErrorMsg("Please enter an http(s) link to an audio file.");
-      return;
-    }
-
-    setScreen("analyzing");
-    setErrorMsg("");
-    setAnalyzeProgress("Fetching audio…");
-    const guessName =
-      decodeURIComponent(parsed.pathname.split("/").pop() || "").replace(/\.[^.]+$/, "") ||
-      "Audio Track";
-    setSongName(guessName);
-
-    try {
-      // Direct browser fetches of a foreign audio URL are almost always
-      // CORS-blocked, so we pull the bytes through a same-origin proxy and
-      // decode them with Web Audio — true waveform analysis, just like upload.
-      const resp = await fetch(`/api/wave-rider/audio-proxy?url=${encodeURIComponent(url)}`);
-      if (!resp.ok) {
-        let msg = "Could not load that audio link.";
-        try { msg = (await resp.json())?.error || msg; } catch { /* ignore */ }
-        throw new Error(msg);
-      }
-      const arrayBuf = await resp.arrayBuffer();
-
-      setAnalyzeProgress("Analyzing waveform…");
-      const data = await decodeAndAnalyzeBuffer(arrayBuf);
-      audioBufferRef.current = data.audioBuffer ?? null;
-      audioDataRef.current = data;
-
-      const terrain = generateTerrainPoints(data, CANVAS_H);
-      const obstacles = placeObstacles(terrain);
-      terrainRef.current = terrain;
-      obstaclesRef.current = obstacles;
-      collectiblesRef.current = placeCollectibles(terrain, obstacles, CANVAS_H);
-      worldWidthRef.current = getWorldWidth(data);
-
-      startGame();
-    } catch (err) {
-      setErrorMsg(
-        err instanceof Error ? err.message : "Could not load that audio link."
-      );
       setScreen("menu");
       console.error(err);
     }
@@ -1101,7 +1044,7 @@ export default function WaveRider() {
               Wave Rider
             </h1>
             <p className="mt-1 text-text-muted text-sm">
-              Upload a song or paste a direct audio link. Surf the waveform.
+              Pick a track from your device and surf its waveform — nothing is uploaded.
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -1141,9 +1084,11 @@ export default function WaveRider() {
 
           <div className="space-y-3 text-center">
             <h2 className="font-body text-lg font-semibold text-text-primary">
-              Upload an Audio File
+              Choose a Song
             </h2>
-            <p className="text-sm text-text-muted">MP3, WAV, or OGG — surf your own track</p>
+            <p className="text-sm text-text-muted">
+              MP3, WAV, or OGG — read on your device, never uploaded
+            </p>
             <label className="inline-flex cursor-pointer items-center gap-2 px-6 py-3 rounded-xl bg-purple text-white font-semibold hover:opacity-90 transition-opacity">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -1159,43 +1104,6 @@ export default function WaveRider() {
                 }}
               />
             </label>
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border-light" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-text-dim">or</span>
-            </div>
-          </div>
-
-          <div className="space-y-3 text-center">
-            <h2 className="font-body text-lg font-semibold text-text-primary">
-              Paste a Direct Audio Link
-            </h2>
-            <p className="text-sm text-text-muted">
-              A direct URL to an audio file (ends in .mp3, .wav, or .ogg)
-            </p>
-            <div className="flex gap-2 max-w-md mx-auto">
-              <input
-                type="text"
-                value={audioUrl}
-                onChange={(e) => setAudioUrl(e.target.value)}
-                placeholder="https://example.com/song.mp3"
-                className="flex-1 px-4 py-2.5 rounded-xl border border-border-light text-sm
-                           focus:outline-none focus:ring-2 focus:ring-purple/30 focus:border-purple"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && audioUrl.trim()) handleAudioUrl(audioUrl.trim());
-                }}
-              />
-              <button
-                onClick={() => audioUrl.trim() && handleAudioUrl(audioUrl.trim())}
-                className="px-5 py-2.5 rounded-xl bg-purple text-white font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                Ride
-              </button>
-            </div>
           </div>
         </div>
       )}
@@ -1262,7 +1170,6 @@ export default function WaveRider() {
               onClick={() => {
                 stopAudio();
                 setScreen("menu");
-                setAudioUrl("");
                 setSongName("");
                 setErrorMsg("");
               }}

@@ -459,7 +459,7 @@ export const games: Game[] = [
   {
     slug: "wave-rider",
     name: "Wave Rider",
-    description: "Upload a song or paste a direct audio link and surf the waveform.",
+    description: "Pick a song from your device and surf its waveform — nothing is uploaded.",
     category: "arcade",
     color: "purple",
     creditCost: 0,
