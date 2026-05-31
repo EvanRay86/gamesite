@@ -272,6 +272,15 @@ export const games: Game[] = [
   },
 
   {
+    slug: "calculus",
+    name: "Teach Me Calculus",
+    description:
+      "Learn calculus from scratch on one page — interactive graphs you can drag, unlimited practice problems with step-by-step solutions, and real-world examples, from limits through multivariable.",
+    category: "learn",
+    color: "purple",
+  },
+
+  {
     slug: "globle",
     name: "Globle",
     description:
